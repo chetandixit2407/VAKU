@@ -11,6 +11,7 @@ import {
   Sparkles,
   ArrowRight,
   Award,
+  MessageSquare,
 } from 'lucide-react';
 import type { Candidate, Interview, Room } from '../../types/index.ts';
 import { authenticatedFetch } from '../../utils/apiClient.ts';
@@ -21,6 +22,7 @@ interface HRDashboardProps {
   rooms: Room[];
   onOpenDossier: (candidateId: string) => void;
   onAssignRoom: (candidateId: string, interviewId?: string) => void;
+  onOpenChat?: () => void;
   onRefresh: () => void;
 }
 
@@ -30,6 +32,7 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
   rooms,
   onOpenDossier,
   onAssignRoom,
+  onOpenChat,
   onRefresh,
 }) => {
   const [assigningKimmiId, setAssigningKimmiId] = useState<string | null>(null);
@@ -58,7 +61,19 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
       c.status === 'With Kimmi Mam – Senior HR Interview'
   );
   const inInterviewCandidates = candidates.filter((c) => c.status === 'IN_INTERVIEW');
-  const availableRooms = rooms.filter((r) => r.status === 'AVAILABLE');
+
+  // Operational rooms strictly exclude reserved Next Round rooms (Lalit Sir Cabin & Elegance Suite)
+  const operationalRooms = rooms.filter(
+    (r) =>
+      r.id !== 'room-lalit-cabin' &&
+      r.id !== 'room-kimmi-cabin' &&
+      r.roomId !== 'room-lalit-cabin' &&
+      r.roomId !== 'room-kimmi-cabin' &&
+      r.name !== 'Lalit Sir Cabin' &&
+      r.name !== 'Elegance Suite' &&
+      !r.isReservedNextRound
+  );
+  const availableRooms = operationalRooms.filter((r) => r.status === 'AVAILABLE');
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -87,7 +102,7 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
             <span>Available Rooms</span>
             <DoorOpen className="w-4 h-4 text-emerald-400" />
           </div>
-          <p className="text-2xl font-black text-white mt-1">{availableRooms.length} / {rooms.length}</p>
+          <p className="text-2xl font-black text-white mt-1">{availableRooms.length} / {operationalRooms.length}</p>
           <span className="text-[10px] text-emerald-400 font-semibold">Ready for allocation</span>
         </div>
 
@@ -276,7 +291,7 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
           </div>
 
           <div className="space-y-2.5">
-            {rooms.map((room) => {
+            {operationalRooms.map((room) => {
               const isAvail = room.status === 'AVAILABLE';
               const isAssigned = room.status === 'ASSIGNED';
               const isOccupied = room.status === 'OCCUPIED';
@@ -313,6 +328,25 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
               );
             })}
           </div>
+
+          {onOpenChat && (
+            <button
+              type="button"
+              onClick={onOpenChat}
+              className="w-full p-3.5 bg-gradient-to-r from-slate-900 to-slate-800 hover:from-slate-800 hover:to-slate-700 border border-slate-700 hover:border-amber-500/50 rounded-2xl flex items-center justify-between text-xs text-white font-semibold transition shadow-md group cursor-pointer"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 group-hover:scale-105 transition">
+                  <MessageSquare className="w-4 h-4" />
+                </div>
+                <div className="text-left">
+                  <div className="text-xs font-bold text-white">Internal Office Chat</div>
+                  <div className="text-[10px] text-slate-400 font-normal">Real-time staff & pantry communication</div>
+                </div>
+              </div>
+              <ArrowRight className="w-4 h-4 text-amber-400 group-hover:translate-x-1 transition" />
+            </button>
+          )}
 
           {/* HR Information Rule Card */}
           <div className="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2 text-xs">

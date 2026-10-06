@@ -16,6 +16,8 @@ import type {
   CandidateChangeRequest,
   PasswordResetRequest,
   DomainEvent,
+  ChatMessage,
+  ChatChannel,
 } from '../types/index.ts';
 import { hashPassword, ROLE_PERMISSIONS } from './auth.ts';
 
@@ -37,6 +39,8 @@ export interface DatabaseSchema {
   changeRequests?: CandidateChangeRequest[];
   passwordResetRequests?: PasswordResetRequest[];
   domainEvents?: DomainEvent[];
+  chatMessages?: ChatMessage[];
+  chatChannels?: ChatChannel[];
 }
 
 const defaultFieldVisibility: Record<string, RoleFieldVisibility> = {
@@ -303,6 +307,7 @@ const defaultRooms: Room[] = [
     roomType: 'CABIN',
     status: 'AVAILABLE',
     isActive: true,
+    isReservedNextRound: true,
     preferredFor: 'CEO & High-Level Strategic Decisions',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -310,12 +315,13 @@ const defaultRooms: Room[] = [
   {
     id: 'room-kimmi-cabin',
     roomId: 'room-kimmi-cabin',
-    name: 'Kimmi Mam Cabin',
-    roomName: 'Kimmi Mam Cabin',
+    name: 'Elegance Suite',
+    roomName: 'Elegance Suite',
     type: 'CABIN',
     roomType: 'CABIN',
     status: 'AVAILABLE',
     isActive: true,
+    isReservedNextRound: true,
     preferredFor: 'Co-Founder & Strategic Advisory',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -410,6 +416,87 @@ const defaultRooms: Room[] = [
     preferredFor: 'Confidential Client & Candidate Discussions',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
+  },
+];
+
+export const defaultChatChannels: ChatChannel[] = [
+  {
+    id: 'general',
+    name: 'general',
+    description: 'All-staff announcements & general office coordination',
+  },
+  {
+    id: 'hr-desk',
+    name: 'hr-desk',
+    description: 'HR recruitment pipeline, interview handoffs & updates',
+    allowedRoles: ['HR', 'SENIOR_HR', 'ADMIN', 'CEO', 'INTERVIEWER'],
+  },
+  {
+    id: 'reception',
+    name: 'reception',
+    description: 'Front desk arrivals, visitor welcomes & escort requests',
+    allowedRoles: ['RECEPTION', 'HR', 'SENIOR_HR', 'ADMIN', 'CEO', 'PANTRY'],
+  },
+  {
+    id: 'pantry',
+    name: 'pantry',
+    description: 'Refreshments, water service & room turnarounds',
+    allowedRoles: ['PANTRY', 'HR', 'SENIOR_HR', 'ADMIN', 'CEO', 'RECEPTION'],
+  },
+  {
+    id: 'leadership',
+    name: 'leadership',
+    description: 'Executive management, strategic approvals & senior rounds',
+    allowedRoles: ['CEO', 'SENIOR_HR', 'ADMIN'],
+  },
+];
+
+export const defaultChatMessages: ChatMessage[] = [
+  {
+    id: 'msg-seed-1',
+    senderId: 'usr-rec-ananya',
+    senderName: 'Ananya Sen',
+    senderRole: 'RECEPTION',
+    senderDepartment: 'Front Desk & Reception',
+    channelId: 'general',
+    content: 'Good morning team! Front desk is set up for today’s interview sessions and business visitors.',
+    timestamp: new Date(Date.now() - 3600000 * 3).toISOString(),
+    readBy: ['usr-rec-ananya', 'usr-hr-nisha'],
+  },
+  {
+    id: 'msg-seed-2',
+    senderId: 'usr-hr-nisha',
+    senderName: 'Nisha',
+    senderRole: 'HR',
+    senderDepartment: 'HR',
+    channelId: 'hr-desk',
+    content: 'Rahul Sharma has checked in for the Sales Manager role. Dossier and verified documents are ready.',
+    timestamp: new Date(Date.now() - 3600000 * 2).toISOString(),
+    readBy: ['usr-hr-nisha', 'usr-hr-shriyanshi'],
+    candidateId: 'cand-1',
+    candidateName: 'Rahul Sharma',
+  },
+  {
+    id: 'msg-seed-3',
+    senderId: 'usr-pan-ramesh',
+    senderName: 'Ramesh Kumar',
+    senderRole: 'PANTRY',
+    senderDepartment: 'Pantry & Hospitality',
+    channelId: 'pantry',
+    content: 'Water bottles and refreshments replenished across all interview rooms and lobby.',
+    timestamp: new Date(Date.now() - 3600000).toISOString(),
+    readBy: ['usr-pan-ramesh'],
+  },
+  {
+    id: 'msg-seed-4',
+    senderId: 'usr-cofounder-kimmi',
+    senderName: 'Kimmi Mam',
+    senderRole: 'SENIOR_HR',
+    senderDepartment: 'HR & Senior Leadership',
+    channelId: 'leadership',
+    content: 'Elegance Suite is prepared for next round senior evaluations today. Let me know when candidate is ready.',
+    timestamp: new Date(Date.now() - 1800000).toISOString(),
+    readBy: ['usr-cofounder-kimmi', 'usr-ceo-lalit'],
   },
 ];
 
@@ -746,6 +833,28 @@ class DatabaseService {
           },
         };
 
+        // Ensure Elegance Suite and isReservedNextRound flags on rooms
+        if (parsed.rooms && Array.isArray(parsed.rooms)) {
+          parsed.rooms.forEach((r: Room) => {
+            if (r.id === 'room-kimmi-cabin' || r.roomId === 'room-kimmi-cabin') {
+              r.name = 'Elegance Suite';
+              r.roomName = 'Elegance Suite';
+              r.isReservedNextRound = true;
+            }
+            if (r.id === 'room-lalit-cabin' || r.roomId === 'room-lalit-cabin') {
+              r.isReservedNextRound = true;
+            }
+          });
+        }
+
+        // Ensure chat channels and chat messages
+        if (!parsed.chatChannels || !Array.isArray(parsed.chatChannels) || parsed.chatChannels.length === 0) {
+          parsed.chatChannels = defaultChatChannels;
+        }
+        if (!parsed.chatMessages || !Array.isArray(parsed.chatMessages)) {
+          parsed.chatMessages = defaultChatMessages;
+        }
+
         this.persist(parsed);
         return parsed;
       } catch (err) {
@@ -758,6 +867,8 @@ class DatabaseService {
       candidates: defaultCandidates,
       interviews: defaultInterviews,
       rooms: defaultRooms,
+      chatChannels: defaultChatChannels,
+      chatMessages: defaultChatMessages,
       notifications: [
         {
           id: 'notif-welcome',

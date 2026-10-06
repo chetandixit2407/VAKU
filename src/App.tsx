@@ -23,6 +23,7 @@ import { WalkInModal } from './components/WalkInModal.tsx';
 import { SecureDocumentViewerModal } from './components/SecureDocumentViewerModal.tsx';
 import { ForgotPasswordModal } from './components/ForgotPasswordModal.tsx';
 import { ResetPasswordView } from './components/ResetPasswordView.tsx';
+import { InternalChatModal } from './components/InternalChatModal.tsx';
 import {
   authenticatedFetch,
   setStoredStaffToken,
@@ -98,6 +99,25 @@ export default function App() {
   const [loginPassword, setLoginPassword] = useState<string>('wcr123');
   const [loginError, setLoginError] = useState<string | null>(null);
   const [loginSuccess, setLoginSuccess] = useState<string | null>(null);
+
+  // Internal Office Chat State
+  const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
+  const [unreadChatCount, setUnreadChatCount] = useState<number>(0);
+  const [chatRecipientId, setChatRecipientId] = useState<string>('');
+  const [chatChannelId, setChatChannelId] = useState<string>('general');
+
+  useEffect(() => {
+    if (currentUser?.id) {
+      authenticatedFetch(`/api/chat/unread?userId=${currentUser.id}`)
+        .then((r) => r.json())
+        .then((d) => {
+          if (d.success && typeof d.total === 'number') {
+            setUnreadChatCount(d.total);
+          }
+        })
+        .catch((err) => console.warn('Failed unread count fetch', err));
+    }
+  }, [currentUser?.id]);
 
   // Initialize Authenticated Staff Session from backend on mount
   useEffect(() => {
@@ -314,6 +334,17 @@ export default function App() {
         setTimeout(() => {
           setRealtimeToast((prev) => (prev?.candidateId === candId ? null : prev));
         }, 9000);
+      }
+
+      // Internal Office Chat real-time event dispatch
+      if (event.type === 'INTERNAL_CHAT_MESSAGE') {
+        const chatMsg = event.payload?.metadata || event.payload;
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('wcr:chat-message', { detail: chatMsg }));
+        }
+        if (!isChatOpen) {
+          setUnreadChatCount((prev) => prev + 1);
+        }
       }
 
       // Seamless zero-refresh authoritative state update on any backend event
@@ -761,9 +792,14 @@ export default function App() {
         currentRole={currentRole}
         onSelectRole={handleSelectRole}
         unreadCount={unreadCount}
+        unreadChatCount={unreadChatCount}
         currentUser={currentUser}
         onLogout={handleStaffLogout}
         onOpenNotifications={() => setNotificationDrawerOpen(true)}
+        onOpenChat={() => {
+          setIsChatOpen(true);
+          setUnreadChatCount(0);
+        }}
         onOpenQRPasses={() => setActiveModal('QR_PASS')}
         onOpenCheckIn={() => {
           setCheckInToken('WCR-APPT-901');
@@ -911,6 +947,10 @@ export default function App() {
               setSelectedInterview(intvId ? interviews.find((i) => i.id === intvId) || null : null);
               setActiveModal('ASSIGN_ROOM');
             }}
+            onOpenChat={() => {
+              setIsChatOpen(true);
+              setUnreadChatCount(0);
+            }}
             onRefresh={fetchAllData}
           />
         )}
@@ -969,6 +1009,10 @@ export default function App() {
             rooms={rooms}
             candidates={candidates}
             onCompleteTask={handleCompletePantryTask}
+            onOpenChat={() => {
+              setIsChatOpen(true);
+              setUnreadChatCount(0);
+            }}
             onRefresh={fetchAllData}
           />
         )}
@@ -985,6 +1029,18 @@ export default function App() {
         role={currentRole}
         onActionClick={handleNotificationAction}
         onMarkRead={handleMarkNotificationRead}
+      />
+
+      {/* Real-time Internal Office Communication Modal */}
+      <InternalChatModal
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
+        currentUser={currentUser}
+        currentRole={currentRole}
+        candidates={candidates}
+        defaultRecipientId={chatRecipientId}
+        defaultChannelId={chatChannelId}
+        onNewMessageSent={() => {}}
       />
 
       {/* MODALS */}

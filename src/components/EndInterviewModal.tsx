@@ -9,8 +9,9 @@ import {
   RefreshCw,
   Sparkles,
   Award,
+  DoorOpen,
 } from 'lucide-react';
-import type { User, InterviewOutcome } from '../types/index.ts';
+import type { User, InterviewOutcome, Room } from '../types/index.ts';
 
 interface EndInterviewModalProps {
   interviewId: string;
@@ -33,18 +34,23 @@ export const EndInterviewModal: React.FC<EndInterviewModalProps> = ({
   const [notes, setNotes] = useState<string>('Strong commercial acumen, domain knowledge of luxury residential market.');
   const [nextInterviewerId, setNextInterviewerId] = useState<string>('usr-int-2');
   const [nextRoundName, setNextRoundName] = useState<string>('Round 2 - HR & Culture Fit');
+  const [nextRoomId, setNextRoomId] = useState<string>('');
+  const [rooms, setRooms] = useState<Room[]>([]);
   const [staffUsers, setStaffUsers] = useState<User[]>([]);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchUsers();
+    fetchData();
   }, []);
 
-  const fetchUsers = async () => {
+  const fetchData = async () => {
     try {
-      const res = await fetch('/api/bootstrap');
-      const data = await res.json();
+      const [bootRes, roomsRes] = await Promise.all([
+        fetch('/api/bootstrap'),
+        fetch('/api/rooms'),
+      ]);
+      const data = await bootRes.json();
       if (data.success) {
         // Find other interviewers & HR & CO_FOUNDER (Kimmi Mam)
         const potential = data.users.filter(
@@ -58,8 +64,25 @@ export const EndInterviewModal: React.FC<EndInterviewModalProps> = ({
         });
         setStaffUsers(potential);
       }
+
+      const roomsData = await roomsRes.json();
+      if (roomsData.success && Array.isArray(roomsData.rooms)) {
+        setRooms(roomsData.rooms);
+      }
     } catch (err) {
-      console.error('Failed to load users', err);
+      console.error('Failed to load data for Next Round setup', err);
+    }
+  };
+
+  const handleInterviewerChange = (userId: string) => {
+    setNextInterviewerId(userId);
+    const user = staffUsers.find((u) => u.id === userId);
+    if (userId === 'usr-cofounder-kimmi' || user?.name?.includes('Kimmi')) {
+      setNextRoundName('Senior HR Interview');
+      setNextRoomId('room-kimmi-cabin'); // Elegance Suite
+    } else if (userId === 'usr-ceo-lalit' || user?.name?.includes('Lalit')) {
+      setNextRoundName('CEO Leadership Round');
+      setNextRoomId('room-lalit-cabin'); // Lalit Sir Cabin
     }
   };
 
@@ -77,6 +100,7 @@ export const EndInterviewModal: React.FC<EndInterviewModalProps> = ({
           notes,
           nextInterviewerId: outcome === 'NEXT_INTERVIEW' ? nextInterviewerId : undefined,
           nextRoundName: outcome === 'NEXT_INTERVIEW' ? nextRoundName : undefined,
+          nextRoomId: outcome === 'NEXT_INTERVIEW' && nextRoomId ? nextRoomId : undefined,
         }),
       });
 
@@ -208,7 +232,7 @@ export const EndInterviewModal: React.FC<EndInterviewModalProps> = ({
                   </label>
                   <select
                     value={nextInterviewerId}
-                    onChange={(e) => setNextInterviewerId(e.target.value)}
+                    onChange={(e) => handleInterviewerChange(e.target.value)}
                     className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-hidden focus:border-amber-400"
                   >
                     {staffUsers.map((u) => (
@@ -230,6 +254,57 @@ export const EndInterviewModal: React.FC<EndInterviewModalProps> = ({
                     placeholder="e.g. Round 2 - Leadership"
                     className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-hidden focus:border-amber-400"
                   />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-[11px] font-semibold text-slate-300">
+                      Next Round Room (Optional / Direct Allocation):
+                    </label>
+                    <span className="text-[10px] text-amber-400 font-semibold flex items-center gap-1">
+                      <Sparkles className="w-3 h-3" />
+                      Next Round Reserved Cabins Available
+                    </span>
+                  </div>
+                  <select
+                    value={nextRoomId}
+                    onChange={(e) => setNextRoomId(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-hidden focus:border-amber-400"
+                  >
+                    <option value="">— Assign later from Lobby (Default) —</option>
+                    <optgroup label="👑 Reserved Senior Leadership Cabins">
+                      {rooms
+                        .filter(
+                          (r) =>
+                            r.id === 'room-kimmi-cabin' ||
+                            r.id === 'room-lalit-cabin' ||
+                            r.name === 'Elegance Suite' ||
+                            r.name === 'Lalit Sir Cabin' ||
+                            r.isReservedNextRound
+                        )
+                        .map((r) => (
+                          <option key={r.id} value={r.id}>
+                            ★ {r.name} ({r.status === 'AVAILABLE' ? 'Available' : r.status}) — {r.preferredFor || 'Senior Round'}
+                          </option>
+                        ))}
+                    </optgroup>
+                    <optgroup label="🏢 Standard Operational Rooms">
+                      {rooms
+                        .filter(
+                          (r) =>
+                            r.id !== 'room-kimmi-cabin' &&
+                            r.id !== 'room-lalit-cabin' &&
+                            r.name !== 'Elegance Suite' &&
+                            r.name !== 'Lalit Sir Cabin' &&
+                            !r.isReservedNextRound
+                        )
+                        .map((r) => (
+                          <option key={r.id} value={r.id}>
+                            {r.name} ({r.status === 'AVAILABLE' ? 'Available' : r.status})
+                          </option>
+                        ))}
+                    </optgroup>
+                  </select>
                 </div>
               </div>
             </div>

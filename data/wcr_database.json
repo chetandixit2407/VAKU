@@ -222,6 +222,129 @@
   ],
   "candidates": [
     {
+      "id": "cand-1791286556145-plv9",
+      "fullName": "Pooja Kashyap",
+      "phone": "9877788899",
+      "email": "pooja.kashyap@gmail.com",
+      "address": "",
+      "city": "Gurugram",
+      "state": "Haryana",
+      "pincode": "122002",
+      "position": "Business Development Executive",
+      "department": "Sales & Business Development",
+      "totalExperience": "3-5 Years",
+      "relevantExperience": "",
+      "currentCompany": "",
+      "qualification": "Graduate",
+      "skills": "",
+      "noticePeriod": "Immediate",
+      "expectedSalary": "",
+      "referralSource": "General Reception QR Scan",
+      "purpose": "Interview / Candidate",
+      "departmentToMeet": "HR",
+      "personToMeet": "Nisha",
+      "governmentId": {
+        "id": "govid-1791286556145",
+        "candidateId": "cand-1791286556145-plv9",
+        "idType": "AADHAAR",
+        "idTypeName": "Aadhaar Card",
+        "idNumberMasked": "XXXX-XXXX-9012",
+        "rawIdNumber": "123456789012",
+        "verified": true,
+        "uploadedAt": "2026-10-06T11:35:56.143Z",
+        "originalFileName": "Pooja_Kashyap_AADHAAR.pdf",
+        "mimeType": "application/pdf",
+        "fileSize": "0 KB",
+        "storageKey": "/app/applet/data/gov_ids/cand-1791286556145-plv9-govid.bin"
+      },
+      "hasGovernmentId": true,
+      "governmentIdFileName": "Pooja_Kashyap_AADHAAR.pdf",
+      "validationResult": {
+        "id": "val-1791286556145-zhgn",
+        "candidateId": "cand-1791286556145-plv9",
+        "overallStatus": "NEEDS_REVIEW",
+        "validationTimestamp": "2026-10-06T11:35:56.144Z",
+        "checksPerformed": 6,
+        "checksPassed": 5,
+        "checksFlagged": 1,
+        "systemActor": "WCR Automated Validation Engine v2.5",
+        "summary": "Information requires reception/HR review.",
+        "checks": [
+          {
+            "id": "chk-name",
+            "name": "Full Legal Name Verification",
+            "category": "PERSONAL",
+            "status": "PASSED",
+            "details": "Valid candidate/visitor name verified (Pooja Kashyap). Supports Hindi & English names, initials, hyphens.",
+            "expected": "Genuine name (letters, initials, hyphens)",
+            "actual": "Pooja Kashyap"
+          },
+          {
+            "id": "chk-phone",
+            "name": "Mobile Number Active Verification",
+            "category": "PERSONAL",
+            "status": "PASSED",
+            "details": "Active 10-digit mobile number format verified (+91 9877788899).",
+            "expected": "Valid 10-digit mobile starting with 6-9",
+            "actual": "9877788899"
+          },
+          {
+            "id": "chk-email",
+            "name": "Email Format & MX Check",
+            "category": "PERSONAL",
+            "status": "PASSED",
+            "details": "Corporate/Personal inbox format verified (pooja.kashyap@gmail.com).",
+            "expected": "Valid RFC 5322 email",
+            "actual": "pooja.kashyap@gmail.com"
+          },
+          {
+            "id": "chk-role",
+            "name": "Role & Hierarchy Alignment",
+            "category": "PROFESSIONAL",
+            "status": "PASSED",
+            "details": "Role mapped to Business Development Executive in Sales & Operations.",
+            "expected": "Recognized WCR Role",
+            "actual": "Business Development Executive"
+          },
+          {
+            "id": "chk-resume",
+            "name": "Curriculum Vitae Integrity",
+            "category": "RESUME",
+            "status": "NEEDS_REVIEW",
+            "details": "Candidate flagged: CV not uploaded digitally (Hard copy brought / Reception assistance requested).",
+            "expected": "Digital CV or hard copy verification",
+            "actual": "Physical / Missing"
+          },
+          {
+            "id": "chk-gov-id",
+            "name": "Government ID Document Status",
+            "category": "GOV_ID",
+            "status": "PASSED",
+            "details": "Aadhaar Card verified (XXXX-XXXX-9012). Document attached.",
+            "expected": "Valid Government Photo ID",
+            "actual": "Aadhaar Card"
+          }
+        ],
+        "resumeExtractedData": {
+          "name": "Pooja Kashyap",
+          "nameMatch": "MATCH",
+          "email": "pooja.kashyap@gmail.com",
+          "emailMatch": "MATCH",
+          "phone": "9877788899",
+          "phoneMatch": "MATCH",
+          "totalExperience": "3-5 Years",
+          "company": "",
+          "designation": "Business Development Executive"
+        }
+      },
+      "status": "ARRIVED",
+      "currentLocation": "Reception / Waiting Lounge",
+      "arrivalTime": "2026-10-06T11:35:56.143Z",
+      "createdAt": "2026-10-06T11:35:56.143Z",
+      "updatedAt": "2026-10-06T11:35:56.143Z",
+      "currentInterviewId": "intv-1791286556145-kvyv"
+    },
+    {
       "id": "cand-1791284585341-e3lh",
       "fullName": "Harsh Vardhan",
       "phone": "9876501234",
@@ -919,10 +1042,10 @@
       "noticePeriod": "15 Days",
       "expectedSalary": "₹18,00,000 p.a.",
       "referralSource": "LinkedIn Job Portal",
-      "status": "ARRIVED",
-      "currentLocation": "Reception / Waiting Lounge",
+      "status": "ROOM_ASSIGNED",
+      "currentLocation": "Elegance Suite",
       "appointmentId": "appt-1",
-      "currentInterviewId": "intv-1",
+      "currentInterviewId": "intv-1791292941093",
       "createdAt": "2026-10-06T08:05:37.535Z",
       "updatedAt": "2026-10-06T10:29:49.347Z",
       "purpose": "Interview",
@@ -996,7 +1119,9 @@
           "designation": "Senior Property Consultant"
         }
       },
-      "arrivalTime": "2026-10-06T10:29:49.347Z"
+      "arrivalTime": "2026-10-06T10:29:49.347Z",
+      "assignedRoomId": "room-kimmi-cabin",
+      "assignedRoomName": "Elegance Suite"
     },
     {
       "id": "cand-2",
@@ -1025,6 +1150,19 @@
     }
   ],
   "interviews": [
+    {
+      "id": "intv-1791286556145-kvyv",
+      "candidateId": "cand-1791286556145-plv9",
+      "candidateName": "Pooja Kashyap",
+      "position": "Business Development Executive",
+      "roundName": "Round 1 - Technical Assessment",
+      "interviewerId": "usr-hr-shriyanshi",
+      "interviewerName": "Shriyanshi",
+      "scheduledTime": "Walk-in / Immediate",
+      "status": "CANDIDATE_ARRIVED",
+      "createdAt": "2026-10-06T11:35:56.143Z",
+      "updatedAt": "2026-10-06T11:35:56.143Z"
+    },
     {
       "id": "intv-1791284585342-bfac",
       "candidateId": "cand-1791284585341-e3lh",
@@ -1138,9 +1276,12 @@
       "interviewerId": "usr-int-1",
       "interviewerName": "Nisha Verma",
       "scheduledTime": "11:00 AM",
-      "status": "CANDIDATE_ARRIVED",
+      "status": "INTERVIEW_COMPLETED",
       "createdAt": "2026-10-06T08:05:37.535Z",
-      "updatedAt": "2026-10-06T08:05:37.535Z"
+      "updatedAt": "2026-10-06T08:05:37.535Z",
+      "completedAt": "2026-10-06T13:22:21.093Z",
+      "outcome": "NEXT_INTERVIEW",
+      "interviewerFeedback": "Excellent sales acumen, advancing to Senior HR Round with Kimmi Mam in Elegance Suite."
     },
     {
       "id": "intv-2",
@@ -1154,6 +1295,21 @@
       "status": "SCHEDULED",
       "createdAt": "2026-10-06T06:05:37.535Z",
       "updatedAt": "2026-10-06T06:05:37.535Z"
+    },
+    {
+      "id": "intv-1791292941093",
+      "candidateId": "cand-1",
+      "candidateName": "Rahul Sharma",
+      "position": "Senior Property Consultant",
+      "roundName": "Senior HR Interview",
+      "interviewerId": "usr-cofounder-kimmi",
+      "interviewerName": "Kimmi Mam – Senior HR Interview",
+      "scheduledTime": "Immediate / Today",
+      "status": "ROOM_ASSIGNED",
+      "createdAt": "2026-10-06T13:22:21.093Z",
+      "updatedAt": "2026-10-06T13:22:21.093Z",
+      "roomId": "room-kimmi-cabin",
+      "roomName": "Elegance Suite"
     }
   ],
   "rooms": [
@@ -1166,6 +1322,7 @@
       "roomType": "CABIN",
       "status": "AVAILABLE",
       "isActive": true,
+      "isReservedNextRound": true,
       "preferredFor": "CEO & High-Level Strategic Decisions",
       "createdAt": "2026-10-06T10:05:37.535Z",
       "updatedAt": "2026-10-06T10:05:37.535Z"
@@ -1173,15 +1330,20 @@
     {
       "id": "room-kimmi-cabin",
       "roomId": "room-kimmi-cabin",
-      "name": "Kimmi Mam Cabin",
-      "roomName": "Kimmi Mam Cabin",
+      "name": "Elegance Suite",
+      "roomName": "Elegance Suite",
       "type": "CABIN",
       "roomType": "CABIN",
-      "status": "AVAILABLE",
+      "status": "ASSIGNED",
       "isActive": true,
+      "isReservedNextRound": true,
       "preferredFor": "Co-Founder & Strategic Advisory",
       "createdAt": "2026-10-06T10:05:37.535Z",
-      "updatedAt": "2026-10-06T10:05:37.535Z"
+      "updatedAt": "2026-10-06T10:05:37.535Z",
+      "currentCandidateId": "cand-1",
+      "currentCandidateName": "Rahul Sharma",
+      "currentInterviewId": "intv-1791292941093",
+      "assignedInterviewerName": "Kimmi Mam – Senior HR Interview"
     },
     {
       "id": "room-prestige-loft",
@@ -1276,6 +1438,292 @@
     }
   ],
   "notifications": [
+    {
+      "id": "notif-1791292941093-hr-next",
+      "recipientRole": "HR",
+      "title": "Stage Cleared: Rahul Sharma",
+      "message": "Rahul Sharma advanced to Senior HR Interview with Kimmi Mam – Senior HR Interview. Room assignment required.",
+      "priority": "HIGH",
+      "eventType": "NEXT_INTERVIEW_CREATED",
+      "entityId": "cand-1",
+      "entityType": "CANDIDATE",
+      "read": false,
+      "createdAt": "2026-10-06T13:22:21.093Z",
+      "actionButtons": [
+        {
+          "label": "Assign Room",
+          "actionKey": "ASSIGN_ROOM",
+          "payload": {
+            "candidateId": "cand-1",
+            "interviewId": "intv-1791292941093"
+          }
+        }
+      ]
+    },
+    {
+      "id": "notif-1791292941093-next-intv",
+      "recipientRole": "INTERVIEWER",
+      "recipientUserId": "usr-cofounder-kimmi",
+      "title": "Candidate Ready for Next Round",
+      "message": "Rahul Sharma has cleared Round 1 - Technical Assessment and is waiting for Senior HR Interview with you.",
+      "priority": "HIGH",
+      "eventType": "NEXT_INTERVIEW_CREATED",
+      "entityId": "intv-1791292941093",
+      "entityType": "INTERVIEW",
+      "read": false,
+      "createdAt": "2026-10-06T13:22:21.093Z",
+      "actionButtons": [
+        {
+          "label": "View Profile",
+          "actionKey": "VIEW_CANDIDATE",
+          "payload": {
+            "candidateId": "cand-1"
+          }
+        }
+      ]
+    },
+    {
+      "id": "notif-1791286556157-hr",
+      "recipientRole": "HR",
+      "title": "New Candidate Checked In",
+      "message": "Pooja Kashyap has arrived for Business Development Executive (Round 1 - Technical Assessment). Scheduled: Walk-in / Immediate.",
+      "priority": "HIGH",
+      "eventType": "CANDIDATE_ARRIVED",
+      "entityId": "cand-1791286556145-plv9",
+      "entityType": "CANDIDATE",
+      "read": false,
+      "createdAt": "2026-10-06T11:35:56.156Z",
+      "actionButtons": [
+        {
+          "label": "Assign Room",
+          "actionKey": "ASSIGN_ROOM",
+          "payload": {
+            "candidateId": "cand-1791286556145-plv9",
+            "interviewId": "intv-1791286556145-kvyv"
+          }
+        },
+        {
+          "label": "View Profile",
+          "actionKey": "VIEW_CANDIDATE",
+          "payload": {
+            "candidateId": "cand-1791286556145-plv9"
+          }
+        }
+      ],
+      "payload": {
+        "candidateName": "Pooja Kashyap",
+        "position": "Business Development Executive",
+        "stage": "Round 1 - Technical Assessment",
+        "interviewer": "Shriyanshi",
+        "scheduled": "Walk-in / Immediate",
+        "arrived": "11:35 AM",
+        "phone": "9877788899",
+        "email": "pooja.kashyap@gmail.com",
+        "experience": "3-5 Years",
+        "currentLocation": "Reception / Waiting Lounge",
+        "hasPhoto": false,
+        "hasResume": false
+      }
+    },
+    {
+      "id": "notif-1791286556157-admin",
+      "recipientRole": "ADMIN",
+      "title": "Candidate Checked In",
+      "message": "Pooja Kashyap checked in for Business Development Executive. Status: Waiting in Reception.",
+      "priority": "HIGH",
+      "eventType": "CANDIDATE_ARRIVED",
+      "entityId": "cand-1791286556145-plv9",
+      "entityType": "CANDIDATE",
+      "read": false,
+      "createdAt": "2026-10-06T11:35:56.156Z",
+      "actionButtons": [
+        {
+          "label": "View Record",
+          "actionKey": "VIEW_CANDIDATE",
+          "payload": {
+            "candidateId": "cand-1791286556145-plv9"
+          }
+        }
+      ],
+      "payload": {
+        "candidateName": "Pooja Kashyap",
+        "position": "Business Development Executive",
+        "interviewer": "Shriyanshi",
+        "arrived": "11:35 AM",
+        "currentLocation": "Reception / Waiting Lounge",
+        "room": "Not Assigned",
+        "photoAvailable": false,
+        "resumeAvailable": false
+      }
+    },
+    {
+      "id": "notif-1791286556157-ceo",
+      "recipientRole": "CEO",
+      "title": "Candidate Arrived for Interview",
+      "message": "Pooja Kashyap (Business Development Executive) is in reception for Round 1 - Technical Assessment.",
+      "priority": "NORMAL",
+      "eventType": "CANDIDATE_ARRIVED",
+      "entityId": "cand-1791286556145-plv9",
+      "entityType": "CANDIDATE",
+      "read": false,
+      "createdAt": "2026-10-06T11:35:56.156Z",
+      "actionButtons": [
+        {
+          "label": "Executive Profile",
+          "actionKey": "VIEW_CANDIDATE",
+          "payload": {
+            "candidateId": "cand-1791286556145-plv9"
+          }
+        }
+      ],
+      "payload": {
+        "candidateName": "Pooja Kashyap",
+        "position": "Business Development Executive",
+        "stage": "Round 1 - Technical Assessment",
+        "interviewer": "Shriyanshi",
+        "scheduled": "Walk-in / Immediate",
+        "arrived": "11:35 AM",
+        "currentStatus": "Waiting in Reception"
+      }
+    },
+    {
+      "id": "notif-1791286556157-cofounder",
+      "recipientRole": "CO_FOUNDER",
+      "title": "Candidate Arrived for Interview",
+      "message": "Pooja Kashyap (Business Development Executive) checked in at Reception.",
+      "priority": "NORMAL",
+      "eventType": "CANDIDATE_ARRIVED",
+      "entityId": "cand-1791286556145-plv9",
+      "entityType": "CANDIDATE",
+      "read": false,
+      "createdAt": "2026-10-06T11:35:56.156Z",
+      "actionButtons": [
+        {
+          "label": "View Profile",
+          "actionKey": "VIEW_CANDIDATE",
+          "payload": {
+            "candidateId": "cand-1791286556145-plv9"
+          }
+        }
+      ],
+      "payload": {
+        "candidateName": "Pooja Kashyap",
+        "position": "Business Development Executive",
+        "stage": "Round 1 - Technical Assessment",
+        "interviewer": "Shriyanshi",
+        "arrived": "11:35 AM"
+      }
+    },
+    {
+      "id": "notif-1791286556157-intv",
+      "recipientRole": "INTERVIEWER",
+      "recipientUserId": "usr-hr-shriyanshi",
+      "title": "Your Candidate Has Arrived",
+      "message": "Pooja Kashyap has arrived for Round 1 - Technical Assessment. Waiting in Reception area.",
+      "priority": "HIGH",
+      "eventType": "CANDIDATE_WAITING",
+      "entityId": "cand-1791286556145-plv9",
+      "entityType": "INTERVIEW",
+      "read": false,
+      "createdAt": "2026-10-06T11:35:56.156Z",
+      "actionButtons": [
+        {
+          "label": "View Candidate",
+          "actionKey": "VIEW_CANDIDATE",
+          "payload": {
+            "candidateId": "cand-1791286556145-plv9"
+          }
+        },
+        {
+          "label": "Start Interview",
+          "actionKey": "START_INTERVIEW",
+          "payload": {
+            "interviewId": "intv-1791286556145-kvyv"
+          }
+        }
+      ],
+      "payload": {
+        "candidateName": "Pooja Kashyap",
+        "position": "Business Development Executive",
+        "stage": "Round 1 - Technical Assessment",
+        "arrived": "11:35 AM",
+        "currentLocation": "Waiting Area",
+        "room": "Awaiting HR Room Assignment",
+        "experience": "3-5 Years",
+        "relevantExperience": ""
+      }
+    },
+    {
+      "id": "notif-1791286556157-rec",
+      "recipientRole": "RECEPTION",
+      "title": "Candidate Arrived at Front Desk",
+      "message": "Pooja Kashyap checked in for Business Development Executive. Direct to Waiting Lounge.",
+      "priority": "HIGH",
+      "eventType": "CANDIDATE_ARRIVED",
+      "entityId": "cand-1791286556145-plv9",
+      "entityType": "CANDIDATE",
+      "read": false,
+      "createdAt": "2026-10-06T11:35:56.156Z",
+      "actionButtons": [
+        {
+          "label": "Assist Candidate",
+          "actionKey": "VIEW_CANDIDATE",
+          "payload": {
+            "candidateId": "cand-1791286556145-plv9"
+          }
+        }
+      ],
+      "payload": {
+        "candidateName": "Pooja Kashyap",
+        "position": "Business Development Executive",
+        "interviewer": "Shriyanshi",
+        "status": "Waiting in Lounge",
+        "action": "Guide candidate to waiting area lounge and offer comfort",
+        "arrived": "11:35 AM"
+      }
+    },
+    {
+      "id": "notif-1791286556121-host",
+      "recipientRole": "MANAGER",
+      "recipientUserId": "usr-sales-vikram",
+      "title": "Client Arrived: Vikram Rajput",
+      "message": "Vikram Rajput (Visitor) has arrived to meet you for \"Client Consultation: Commercial Leasing / Retail Space\". Waiting in Reception.",
+      "priority": "HIGH",
+      "eventType": "VISITOR_CHECKED_IN",
+      "entityId": "vis-1791286556064-q9jf",
+      "entityType": "VISITOR",
+      "read": false,
+      "createdAt": "2026-10-06T11:35:56.067Z",
+      "payload": {
+        "visitorName": "Vikram Rajput",
+        "company": "",
+        "purpose": "Client Consultation: Commercial Leasing / Retail Space",
+        "hostName": "Vikram Malhotra",
+        "hostDepartment": "Sales & Real Estate",
+        "phone": "9811122233",
+        "email": "",
+        "arrived": "11:35 AM"
+      }
+    },
+    {
+      "id": "notif-1791286556121-rec-vis",
+      "recipientRole": "RECEPTION",
+      "title": "Client Checked In at Front Desk",
+      "message": "Vikram Rajput arrived to meet Vikram Malhotra (Sales & Real Estate). Direct to Lounge.",
+      "priority": "HIGH",
+      "eventType": "VISITOR_CHECKED_IN",
+      "entityId": "vis-1791286556064-q9jf",
+      "entityType": "VISITOR",
+      "read": false,
+      "createdAt": "2026-10-06T11:35:56.067Z",
+      "payload": {
+        "visitorName": "Vikram Rajput",
+        "company": "",
+        "purpose": "Client Consultation: Commercial Leasing / Retail Space",
+        "hostName": "Vikram Malhotra",
+        "arrived": "11:35 AM"
+      }
+    },
     {
       "id": "notif-1791284585442-host",
       "recipientRole": "RECEPTION",
@@ -3984,6 +4432,56 @@
   "pantryTasks": [],
   "timelineEvents": [
     {
+      "id": "tl-1791292941093-next",
+      "candidateId": "cand-1",
+      "timestamp": "2026-10-06T13:22:21.093Z",
+      "actorType": "USER",
+      "actorName": "Nisha Verma",
+      "eventType": "ADVANCED_TO_NEXT_STAGE",
+      "description": "Candidate advanced to Senior HR Interview with Kimmi Mam – Senior HR Interview. Candidate moved back to Waiting Lounge."
+    },
+    {
+      "id": "tl-1791286556157-submit",
+      "candidateId": "cand-1791286556145-plv9",
+      "timestamp": "2026-10-06T11:35:56.156Z",
+      "actorType": "USER",
+      "actorName": "Pooja Kashyap",
+      "eventType": "CANDIDATE_FORM_SUBMITTED",
+      "description": "Candidate completed self-check-in with live photo and resume verification."
+    },
+    {
+      "id": "tl-1791286556157-alerts",
+      "candidateId": "cand-1791286556145-plv9",
+      "timestamp": "2026-10-06T11:35:56.156Z",
+      "actorType": "SYSTEM",
+      "actorName": "Workflow Engine",
+      "eventType": "ROLE_BASED_ALERTS_DISPATCHED",
+      "description": "Dispatched automated arrival alerts to HR, Interviewer (Shriyanshi), Admin, CEO, and Reception."
+    },
+    {
+      "id": "tl-1791286556145-val",
+      "candidateId": "cand-1791286556145-plv9",
+      "timestamp": "2026-10-06T11:35:56.143Z",
+      "actorType": "SYSTEM",
+      "actorName": "WCR Automated Validation Engine",
+      "eventType": "CANDIDATE_VALIDATION_COMPLETED",
+      "description": "Automated validation completed: NEEDS_REVIEW. Government ID format & resume checked.",
+      "metadata": {
+        "validationStatus": "NEEDS_REVIEW",
+        "checksPerformed": 6,
+        "checksPassed": 5
+      }
+    },
+    {
+      "id": "tl-1791286556145-reg",
+      "candidateId": "cand-1791286556145-plv9",
+      "timestamp": "2026-10-06T11:35:56.143Z",
+      "actorType": "USER",
+      "actorName": "Pooja Kashyap",
+      "eventType": "CANDIDATE_SELF_REGISTRATION",
+      "description": "Candidate self-registered via General Reception QR code. Status set to Arrived."
+    },
+    {
       "id": "tl-1791284585354-submit",
       "candidateId": "cand-1791284585341-e3lh",
       "timestamp": "2026-10-06T11:03:05.348Z",
@@ -4363,6 +4861,139 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "aud-1791292941093",
+      "timestamp": "2026-10-06T13:22:21.093Z",
+      "actorType": "USER",
+      "actorName": "Nisha Verma",
+      "actorRole": "INTERVIEWER",
+      "action": "COMPLETE_INTERVIEW",
+      "details": "Concluded interview intv-1 for Rahul Sharma with outcome NEXT_INTERVIEW.",
+      "entityId": "intv-1",
+      "entityType": "INTERVIEW"
+    },
+    {
+      "id": "aud-1791286660509-created",
+      "timestamp": "2026-10-06T11:37:40.508Z",
+      "actorType": "SYSTEM",
+      "actorName": "WCR QR Gateway",
+      "action": "SESSION_CREATED",
+      "details": "Created fresh isolated registration session reg-sess-1791286660508-d169c438a21f (Token: WCR-GEN-1791286660508-9495A0F6A6B70CCDF8BF011F, Expires in 30m)."
+    },
+    {
+      "id": "aud-1791286659028-qr",
+      "timestamp": "2026-10-06T11:37:39.028Z",
+      "actorType": "SYSTEM",
+      "actorName": "QR Scanner",
+      "action": "FORM_OPENED",
+      "details": "Scheduled QR pass opened with token WCR-APPT-902."
+    },
+    {
+      "id": "aud-1791286614630-created",
+      "timestamp": "2026-10-06T11:36:54.629Z",
+      "actorType": "SYSTEM",
+      "actorName": "WCR QR Gateway",
+      "action": "SESSION_CREATED",
+      "details": "Created fresh isolated registration session reg-sess-1791286614630-42e39731e05a (Token: WCR-GEN-1791286614630-5D8A302BE992DF3C5990185E, Expires in 30m)."
+    },
+    {
+      "id": "aud-1791286613347-qr",
+      "timestamp": "2026-10-06T11:36:53.347Z",
+      "actorType": "SYSTEM",
+      "actorName": "QR Scanner",
+      "action": "FORM_OPENED",
+      "details": "Scheduled QR pass opened with token WCR-APPT-902."
+    },
+    {
+      "id": "aud-1791286556157",
+      "timestamp": "2026-10-06T11:35:56.156Z",
+      "actorType": "SYSTEM",
+      "actorName": "Self-CheckIn Engine",
+      "action": "CANDIDATE_CHECKED_IN",
+      "details": "Candidate Pooja Kashyap (cand-1791286556145-plv9) arrived via QR token WCR-GEN-1791286556135-9D0D0218C152119A3E4028CC. Persisted to DB.",
+      "entityId": "cand-1791286556145-plv9",
+      "entityType": "CANDIDATE"
+    },
+    {
+      "id": "aud-1791286556145-sub",
+      "timestamp": "2026-10-06T11:35:56.143Z",
+      "actorType": "USER",
+      "actorName": "Pooja Kashyap",
+      "action": "FORM_SUBMITTED",
+      "details": "Candidate self-registration form submitted for Pooja Kashyap (Business Development Executive) with Government ID (AADHAAR).",
+      "entityId": "cand-1791286556145-plv9",
+      "entityType": "CANDIDATE"
+    },
+    {
+      "id": "aud-1791286556145-comp",
+      "timestamp": "2026-10-06T11:35:56.143Z",
+      "actorType": "SYSTEM",
+      "actorName": "Session Manager",
+      "action": "REGISTRATION_SESSION_COMPLETED",
+      "details": "Registration session reg-sess-1791286556135-a5af0c2a9ee8 permanently marked COMPLETED and locked after successful submission.",
+      "entityId": "reg-sess-1791286556135-a5af0c2a9ee8",
+      "entityType": "CHECK_IN_SESSION"
+    },
+    {
+      "id": "aud-1791286556135-created",
+      "timestamp": "2026-10-06T11:35:56.135Z",
+      "actorType": "SYSTEM",
+      "actorName": "WCR QR Gateway",
+      "action": "SESSION_CREATED",
+      "details": "Created fresh isolated registration session reg-sess-1791286556135-a5af0c2a9ee8 (Token: WCR-GEN-1791286556135-9D0D0218C152119A3E4028CC, Expires in 30m)."
+    },
+    {
+      "id": "aud-1791286556121-vis-arr",
+      "timestamp": "2026-10-06T11:35:56.067Z",
+      "actorType": "USER",
+      "actorName": "Vikram Rajput",
+      "action": "VISITOR_CHECKED_IN",
+      "details": "Client Vikram Rajput (Direct) checked in to meet Vikram Malhotra.",
+      "entityId": "vis-1791286556064-q9jf",
+      "entityType": "VISITOR"
+    },
+    {
+      "id": "aud-1791286556064-vis-reg",
+      "timestamp": "2026-10-06T11:35:56.064Z",
+      "actorType": "USER",
+      "actorName": "Vikram Rajput",
+      "action": "VISITOR_CHECKED_IN",
+      "details": "Visitor Vikram Rajput (CLIENT) checked in to meet Vikram Malhotra.",
+      "entityId": "vis-1791286556064-q9jf",
+      "entityType": "VISITOR"
+    },
+    {
+      "id": "aud-1791286556025-created",
+      "timestamp": "2026-10-06T11:35:56.024Z",
+      "actorType": "SYSTEM",
+      "actorName": "WCR QR Gateway",
+      "action": "SESSION_CREATED",
+      "details": "Created fresh isolated registration session reg-sess-1791286556025-b32731aceb6c (Token: WCR-GEN-1791286556025-82F5E9B638943926C5FCB145, Expires in 30m)."
+    },
+    {
+      "id": "aud-1791285987986-created",
+      "timestamp": "2026-10-06T11:26:27.985Z",
+      "actorType": "SYSTEM",
+      "actorName": "WCR QR Gateway",
+      "action": "SESSION_CREATED",
+      "details": "Created fresh isolated registration session reg-sess-1791285987986-32a0ed481450 (Token: WCR-GEN-1791285987986-2320AE4C4E87E6ADE3B6BF07, Expires in 30m)."
+    },
+    {
+      "id": "aud-1791285985060-qr",
+      "timestamp": "2026-10-06T11:26:25.060Z",
+      "actorType": "SYSTEM",
+      "actorName": "QR Scanner",
+      "action": "FORM_OPENED",
+      "details": "Scheduled QR pass opened with token WCR-APPT-902."
+    },
+    {
+      "id": "aud-1791285820425-created",
+      "timestamp": "2026-10-06T11:23:40.424Z",
+      "actorType": "SYSTEM",
+      "actorName": "WCR QR Gateway",
+      "action": "SESSION_CREATED",
+      "details": "Created fresh isolated registration session reg-sess-1791285820425-bad43b40e05f (Token: WCR-GEN-1791285820425-B35FAC68A1869020D4E10E61, Expires in 30m)."
+    },
     {
       "id": "aud-1791284585442-vis-arr",
       "timestamp": "2026-10-06T11:03:05.441Z",
@@ -5376,6 +6007,72 @@
   ],
   "checkInSessions": [
     {
+      "id": "reg-sess-1791286660508-d169c438a21f",
+      "token": "WCR-GEN-1791286660508-9495A0F6A6B70CCDF8BF011F",
+      "qrType": "NEW_CANDIDATE_REGISTRATION",
+      "source": "GENERAL_WCR_QR",
+      "status": "ACTIVE",
+      "createdAt": "2026-10-06T11:37:40.508Z",
+      "expiresAt": "2026-10-06T12:07:40.508Z"
+    },
+    {
+      "id": "reg-sess-1791286614630-42e39731e05a",
+      "token": "WCR-GEN-1791286614630-5D8A302BE992DF3C5990185E",
+      "qrType": "NEW_CANDIDATE_REGISTRATION",
+      "source": "GENERAL_WCR_QR",
+      "status": "ACTIVE",
+      "createdAt": "2026-10-06T11:36:54.629Z",
+      "expiresAt": "2026-10-06T12:06:54.629Z"
+    },
+    {
+      "id": "reg-sess-1791286556135-a5af0c2a9ee8",
+      "token": "WCR-GEN-1791286556135-9D0D0218C152119A3E4028CC",
+      "qrType": "NEW_CANDIDATE_REGISTRATION",
+      "source": "GENERAL_WCR_QR",
+      "status": "COMPLETED",
+      "createdAt": "2026-10-06T11:35:56.135Z",
+      "expiresAt": "2026-10-06T12:05:56.135Z",
+      "completedAt": "2026-10-06T11:35:56.143Z",
+      "submittedAt": "2026-10-06T11:35:56.143Z",
+      "lockedAt": "2026-10-06T11:35:56.143Z",
+      "candidateId": "cand-1791286556145-plv9",
+      "candidateName": "Pooja Kashyap",
+      "position": "Business Development Executive"
+    },
+    {
+      "id": "reg-sess-1791286556025-b32731aceb6c",
+      "token": "WCR-GEN-1791286556025-82F5E9B638943926C5FCB145",
+      "qrType": "NEW_CANDIDATE_REGISTRATION",
+      "source": "GENERAL_WCR_QR",
+      "status": "COMPLETED",
+      "createdAt": "2026-10-06T11:35:56.024Z",
+      "expiresAt": "2026-10-06T12:05:56.024Z",
+      "completedAt": "2026-10-06T11:35:56.064Z",
+      "submittedAt": "2026-10-06T11:35:56.064Z",
+      "lockedAt": "2026-10-06T11:35:56.064Z",
+      "candidateId": "vis-1791286556064-q9jf",
+      "candidateName": "Vikram Rajput",
+      "position": "Client Consultation: Commercial Leasing / Retail Space"
+    },
+    {
+      "id": "reg-sess-1791285987986-32a0ed481450",
+      "token": "WCR-GEN-1791285987986-2320AE4C4E87E6ADE3B6BF07",
+      "qrType": "NEW_CANDIDATE_REGISTRATION",
+      "source": "GENERAL_WCR_QR",
+      "status": "ACTIVE",
+      "createdAt": "2026-10-06T11:26:27.985Z",
+      "expiresAt": "2026-10-06T11:56:27.985Z"
+    },
+    {
+      "id": "reg-sess-1791285820425-bad43b40e05f",
+      "token": "WCR-GEN-1791285820425-B35FAC68A1869020D4E10E61",
+      "qrType": "NEW_CANDIDATE_REGISTRATION",
+      "source": "GENERAL_WCR_QR",
+      "status": "ACTIVE",
+      "createdAt": "2026-10-06T11:23:40.424Z",
+      "expiresAt": "2026-10-06T11:53:40.424Z"
+    },
+    {
       "id": "reg-sess-1791284585434-7e38ed7428f3",
       "token": "WCR-GEN-1791284585434-71D51E53D4903B1F573B8272",
       "qrType": "NEW_CANDIDATE_REGISTRATION",
@@ -5925,7 +6622,7 @@
       "status": "ACTIVE",
       "expiresAt": "2026-10-07T10:05:37.535Z",
       "createdAt": "2026-10-06T10:05:37.535Z",
-      "openedAt": "2026-10-06T10:31:05.217Z"
+      "openedAt": "2026-10-06T11:37:39.028Z"
     },
     {
       "id": "session-walkin",
@@ -5937,6 +6634,20 @@
     }
   ],
   "visitors": [
+    {
+      "id": "vis-1791286556064-q9jf",
+      "fullName": "Vikram Rajput",
+      "phone": "9811122233",
+      "email": "",
+      "company": "",
+      "visitorType": "CLIENT",
+      "hostName": "Vikram Malhotra",
+      "hostDepartment": "Sales & Real Estate",
+      "hostId": "usr-sales-vikram",
+      "purpose": "Client Consultation: Commercial Leasing / Retail Space",
+      "status": "CHECKED_IN",
+      "checkInTime": "2026-10-06T11:35:56.064Z"
+    },
     {
       "id": "vis-1791284585439-1q2p",
       "fullName": "Sanjay Dutt",
@@ -6372,6 +7083,131 @@
   "changeRequests": [],
   "passwordResetRequests": [],
   "domainEvents": [
+    {
+      "eventId": "evt-1791292941097-007bcex",
+      "eventType": "INTERVIEW_COMPLETED",
+      "candidateId": "cand-1",
+      "visitId": "cand-1",
+      "applicationId": "cand-1",
+      "interviewId": "intv-1",
+      "timestamp": "2026-10-06T13:22:21.097Z",
+      "actorType": "STAFF",
+      "source": "STAFF_ACTION",
+      "metadata": {
+        "interviewId": "intv-1",
+        "candidateId": "cand-1",
+        "candidateName": "Rahul Sharma",
+        "outcome": "NEXT_INTERVIEW",
+        "previousRoomName": "",
+        "nextInterviewId": "intv-1791292941093"
+      }
+    },
+    {
+      "eventId": "evt-1791292886723-791nbc3",
+      "eventType": "INTERNAL_CHAT_MESSAGE",
+      "timestamp": "2026-10-06T13:21:26.723Z",
+      "actorType": "STAFF",
+      "source": "STAFF_ACTION",
+      "metadata": {
+        "id": "msg-1791292886720-22atb",
+        "senderId": "usr-ceo-lalit",
+        "senderName": "Lalit Sir",
+        "senderRole": "CEO",
+        "senderDepartment": "Executive Leadership",
+        "channelId": "general",
+        "content": "Welcome team! Please ensure executive meetings in Elegance Suite and Lalit Sir Cabin run smoothly today.",
+        "timestamp": "2026-10-06T13:21:26.720Z",
+        "readBy": [
+          "usr-ceo-lalit",
+          "usr-hr-nisha"
+        ],
+        "isPriority": false
+      }
+    },
+    {
+      "eventId": "evt-1791286556160-0bw9wro",
+      "eventType": "CANDIDATE_ARRIVED",
+      "candidateId": "cand-1791286556145-plv9",
+      "visitId": "cand-1791286556145-plv9",
+      "applicationId": "cand-1791286556145-plv9",
+      "interviewId": "intv-1791286556145-kvyv",
+      "registrationSessionId": "WCR-GEN-1791286556135-9D0D0218C152119A3E4028CC",
+      "timestamp": "2026-10-06T11:35:56.160Z",
+      "actorType": "CANDIDATE",
+      "source": "CANDIDATE_REGISTRATION",
+      "targetRoles": [
+        "HR",
+        "SENIOR_HR",
+        "ADMIN",
+        "CEO",
+        "CO_FOUNDER",
+        "INTERVIEWER",
+        "RECEPTION"
+      ],
+      "metadata": {
+        "candidateName": "Pooja Kashyap",
+        "position": "Business Development Executive",
+        "department": "Sales & Business Development",
+        "status": "ARRIVED",
+        "currentLocation": "Reception / Waiting Lounge",
+        "arrivalTime": "2026-10-06T11:35:56.156Z"
+      }
+    },
+    {
+      "eventId": "evt-1791286556149-1qmql4q",
+      "eventType": "CANDIDATE_FORM_SUBMITTED",
+      "candidateId": "cand-1791286556145-plv9",
+      "visitId": "cand-1791286556145-plv9",
+      "applicationId": "cand-1791286556145-plv9",
+      "interviewId": "intv-1791286556145-kvyv",
+      "registrationSessionId": "WCR-GEN-1791286556135-9D0D0218C152119A3E4028CC",
+      "timestamp": "2026-10-06T11:35:56.149Z",
+      "actorType": "CANDIDATE",
+      "source": "CANDIDATE_REGISTRATION",
+      "targetRoles": [
+        "HR",
+        "SENIOR_HR",
+        "ADMIN",
+        "CEO",
+        "CO_FOUNDER",
+        "INTERVIEWER",
+        "RECEPTION"
+      ],
+      "metadata": {
+        "candidateName": "Pooja Kashyap",
+        "position": "Business Development Executive",
+        "department": "Sales & Business Development",
+        "status": "ARRIVED",
+        "currentLocation": "Reception / Waiting Lounge",
+        "arrivalTime": "2026-10-06T11:35:56.143Z",
+        "interviewRound": "Round 1 - Technical Assessment"
+      }
+    },
+    {
+      "eventId": "evt-1791286556125-dro8wqo",
+      "eventType": "VISITOR_CHECKED_IN",
+      "visitId": "vis-1791286556064-q9jf",
+      "registrationSessionId": "WCR-GEN-1791286556025-82F5E9B638943926C5FCB145",
+      "timestamp": "2026-10-06T11:35:56.125Z",
+      "actorType": "USER",
+      "source": "CANDIDATE_REGISTRATION",
+      "targetRoles": [
+        "RECEPTION",
+        "ADMIN",
+        "MANAGER"
+      ],
+      "targetUserId": "usr-sales-vikram",
+      "metadata": {
+        "visitorId": "vis-1791286556064-q9jf",
+        "visitorName": "Vikram Rajput",
+        "visitorType": "CLIENT",
+        "company": "",
+        "purpose": "Client Consultation: Commercial Leasing / Retail Space",
+        "hostName": "Vikram Malhotra",
+        "hostDepartment": "Sales & Real Estate",
+        "arrivalTime": "2026-10-06T11:35:56.067Z"
+      }
+    },
     {
       "eventId": "evt-1791284585445-2frkjl0",
       "eventType": "VISITOR_CHECKED_IN",
@@ -7424,6 +8260,135 @@
         "arrivalTime": "2026-10-06T10:29:06.829Z",
         "interviewRound": "Round 1 - Technical Assessment"
       }
+    }
+  ],
+  "chatChannels": [
+    {
+      "id": "general",
+      "name": "general",
+      "description": "All-staff announcements & general office coordination"
+    },
+    {
+      "id": "hr-desk",
+      "name": "hr-desk",
+      "description": "HR recruitment pipeline, interview handoffs & updates",
+      "allowedRoles": [
+        "HR",
+        "SENIOR_HR",
+        "ADMIN",
+        "CEO",
+        "INTERVIEWER"
+      ]
+    },
+    {
+      "id": "reception",
+      "name": "reception",
+      "description": "Front desk arrivals, visitor welcomes & escort requests",
+      "allowedRoles": [
+        "RECEPTION",
+        "HR",
+        "SENIOR_HR",
+        "ADMIN",
+        "CEO",
+        "PANTRY"
+      ]
+    },
+    {
+      "id": "pantry",
+      "name": "pantry",
+      "description": "Refreshments, water service & room turnarounds",
+      "allowedRoles": [
+        "PANTRY",
+        "HR",
+        "SENIOR_HR",
+        "ADMIN",
+        "CEO",
+        "RECEPTION"
+      ]
+    },
+    {
+      "id": "leadership",
+      "name": "leadership",
+      "description": "Executive management, strategic approvals & senior rounds",
+      "allowedRoles": [
+        "CEO",
+        "SENIOR_HR",
+        "ADMIN"
+      ]
+    }
+  ],
+  "chatMessages": [
+    {
+      "id": "msg-seed-1",
+      "senderId": "usr-rec-ananya",
+      "senderName": "Ananya Sen",
+      "senderRole": "RECEPTION",
+      "senderDepartment": "Front Desk & Reception",
+      "channelId": "general",
+      "content": "Good morning team! Front desk is set up for today’s interview sessions and business visitors.",
+      "timestamp": "2026-10-06T10:20:48.893Z",
+      "readBy": [
+        "usr-rec-ananya",
+        "usr-hr-nisha"
+      ]
+    },
+    {
+      "id": "msg-seed-2",
+      "senderId": "usr-hr-nisha",
+      "senderName": "Nisha",
+      "senderRole": "HR",
+      "senderDepartment": "HR",
+      "channelId": "hr-desk",
+      "content": "Rahul Sharma has checked in for the Sales Manager role. Dossier and verified documents are ready.",
+      "timestamp": "2026-10-06T11:20:48.893Z",
+      "readBy": [
+        "usr-hr-nisha",
+        "usr-hr-shriyanshi"
+      ],
+      "candidateId": "cand-1",
+      "candidateName": "Rahul Sharma"
+    },
+    {
+      "id": "msg-seed-3",
+      "senderId": "usr-pan-ramesh",
+      "senderName": "Ramesh Kumar",
+      "senderRole": "PANTRY",
+      "senderDepartment": "Pantry & Hospitality",
+      "channelId": "pantry",
+      "content": "Water bottles and refreshments replenished across all interview rooms and lobby.",
+      "timestamp": "2026-10-06T12:20:48.893Z",
+      "readBy": [
+        "usr-pan-ramesh"
+      ]
+    },
+    {
+      "id": "msg-seed-4",
+      "senderId": "usr-cofounder-kimmi",
+      "senderName": "Kimmi Mam",
+      "senderRole": "SENIOR_HR",
+      "senderDepartment": "HR & Senior Leadership",
+      "channelId": "leadership",
+      "content": "Elegance Suite is prepared for next round senior evaluations today. Let me know when candidate is ready.",
+      "timestamp": "2026-10-06T12:50:48.893Z",
+      "readBy": [
+        "usr-cofounder-kimmi",
+        "usr-ceo-lalit"
+      ]
+    },
+    {
+      "id": "msg-1791292886720-22atb",
+      "senderId": "usr-ceo-lalit",
+      "senderName": "Lalit Sir",
+      "senderRole": "CEO",
+      "senderDepartment": "Executive Leadership",
+      "channelId": "general",
+      "content": "Welcome team! Please ensure executive meetings in Elegance Suite and Lalit Sir Cabin run smoothly today.",
+      "timestamp": "2026-10-06T13:21:26.720Z",
+      "readBy": [
+        "usr-ceo-lalit",
+        "usr-hr-nisha"
+      ],
+      "isPriority": false
     }
   ]
 }

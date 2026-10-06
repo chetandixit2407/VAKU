@@ -20,6 +20,67 @@ export interface PurposeOption {
   isInterview: boolean;
 }
 
+export type VisitTypeCategory =
+  | 'Interview / Candidate'
+  | 'Visitor'
+  | 'Client'
+  | 'Vendor'
+  | 'Business'
+  | 'Other';
+
+export interface VisitTypeOption {
+  key: VisitTypeCategory;
+  label: string;
+  tagline: string;
+  iconName: string;
+  isInterview: boolean;
+}
+
+export const VISIT_TYPE_OPTIONS: VisitTypeOption[] = [
+  {
+    key: 'Interview / Candidate',
+    label: 'Interview / Candidate',
+    tagline: 'Candidate assessment, job interviews & hiring',
+    iconName: 'Briefcase',
+    isInterview: true,
+  },
+  {
+    key: 'Visitor',
+    label: 'Visitor',
+    tagline: 'General office visit, inquiries & guest check-in',
+    iconName: 'HelpCircle',
+    isInterview: false,
+  },
+  {
+    key: 'Client',
+    label: 'Client',
+    tagline: 'Commercial leasing, property consultation & investment',
+    iconName: 'Building2',
+    isInterview: false,
+  },
+  {
+    key: 'Vendor',
+    label: 'Vendor',
+    tagline: 'Supplies, couriers, technical maintenance & contractors',
+    iconName: 'Truck',
+    isInterview: false,
+  },
+  {
+    key: 'Business',
+    label: 'Business',
+    tagline: 'Strategic partners, corporate leadership & executive discussions',
+    iconName: 'Users',
+    isInterview: false,
+  },
+  {
+    key: 'Other',
+    label: 'Other',
+    tagline: 'Custom visit purpose or specialized reception requirement',
+    iconName: 'FileText',
+    isInterview: false,
+  },
+];
+
 export const VISIT_PURPOSE_OPTIONS: PurposeOption[] = [
   {
     key: 'Interview / Candidate',

@@ -33,6 +33,7 @@ export const AssignRoomModal: React.FC<AssignRoomModalProps> = ({
   const [selectedRoomId, setSelectedRoomId] = useState<string>('');
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [roomCategory, setRoomCategory] = useState<'operational' | 'next_round'>('operational');
 
   useEffect(() => {
     fetchRooms();
@@ -45,8 +46,16 @@ export const AssignRoomModal: React.FC<AssignRoomModalProps> = ({
       const data = await res.json();
       if (data.success) {
         setRooms(data.rooms);
-        // Pre-select first available room
-        const firstAvail = data.rooms.find((r: Room) => r.status === 'AVAILABLE');
+        // Pre-select first available operational room
+        const firstAvail = data.rooms.find(
+          (r: Room) =>
+            r.status === 'AVAILABLE' &&
+            r.id !== 'room-lalit-cabin' &&
+            r.id !== 'room-kimmi-cabin' &&
+            r.name !== 'Lalit Sir Cabin' &&
+            r.name !== 'Elegance Suite' &&
+            !r.isReservedNextRound
+        ) || data.rooms.find((r: Room) => r.status === 'AVAILABLE');
         if (firstAvail) setSelectedRoomId(firstAvail.id);
       }
     } catch (err) {
@@ -120,16 +129,64 @@ export const AssignRoomModal: React.FC<AssignRoomModalProps> = ({
             </div>
           )}
 
-          <div className="space-y-2">
-            <label className="block text-xs font-semibold text-slate-300">
-              Select Office Room or Interview Pod:
-            </label>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-semibold text-slate-300">
+                Select Room for Candidate Allocation:
+              </label>
+              <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setRoomCategory('operational')}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition cursor-pointer ${
+                    roomCategory === 'operational'
+                      ? 'bg-amber-500 text-slate-950 shadow-xs'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Operational Rooms
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRoomCategory('next_round')}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition cursor-pointer flex items-center gap-1 ${
+                    roomCategory === 'next_round'
+                      ? 'bg-amber-500 text-slate-950 shadow-xs'
+                      : 'text-amber-400 hover:text-amber-300'
+                  }`}
+                >
+                  <Sparkles className="w-3 h-3" />
+                  <span>Next Round Cabins</span>
+                </button>
+              </div>
+            </div>
+
+            {roomCategory === 'next_round' && (
+              <div className="p-2.5 bg-amber-500/10 border border-amber-500/30 rounded-xl text-[11px] text-amber-300 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 shrink-0 text-amber-400" />
+                <span>
+                  <strong>Reserved for Senior & Next Round Interviews:</strong> Lalit Sir Cabin and Elegance Suite.
+                </span>
+              </div>
+            )}
 
             {loadingRooms ? (
               <div className="p-8 text-center text-xs text-slate-400">Loading room availability...</div>
             ) : (
               <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-                {rooms.map((room) => {
+                {rooms
+                  .filter((room) => {
+                    const isReserved =
+                      room.id === 'room-lalit-cabin' ||
+                      room.id === 'room-kimmi-cabin' ||
+                      room.roomId === 'room-lalit-cabin' ||
+                      room.roomId === 'room-kimmi-cabin' ||
+                      room.name === 'Lalit Sir Cabin' ||
+                      room.name === 'Elegance Suite' ||
+                      room.isReservedNextRound;
+                    return roomCategory === 'next_round' ? isReserved : !isReserved;
+                  })
+                  .map((room) => {
                   const isAvail = room.status === 'AVAILABLE';
                   const isSelected = selectedRoomId === room.id;
 
@@ -158,6 +215,11 @@ export const AssignRoomModal: React.FC<AssignRoomModalProps> = ({
                         <div>
                           <div className="flex items-center gap-2">
                             <h4 className="text-xs font-bold text-white">{room.name}</h4>
+                            {(room.id === 'room-lalit-cabin' || room.id === 'room-kimmi-cabin' || room.name === 'Elegance Suite' || room.name === 'Lalit Sir Cabin') && (
+                              <span className="px-1.5 py-0.2 bg-amber-500/15 border border-amber-500/30 text-amber-300 rounded-sm text-[9px] font-bold">
+                                Next Round Reserved
+                              </span>
+                            )}
                           </div>
                           <div className="flex items-center gap-3 text-[10px] text-slate-400 mt-0.5">
                             <span>Type: {room.type?.replace('_', ' ') || 'Meeting Room'}</span>

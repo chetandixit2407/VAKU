@@ -37,6 +37,8 @@ import type {
   DomainEventType,
   Visitor,
   VisitorType,
+  ChatMessage,
+  ChatChannel,
 } from './src/types/index.ts';
 import { validatePersonName } from './src/utils/registrationConfig.ts';
 
@@ -2976,7 +2978,7 @@ async function startServer() {
 
   app.post('/api/interviews/:id/end', (req: Request, res: Response) => {
     const { id } = req.params;
-    const { interviewerName, outcome, notes, nextInterviewerId, nextRoundName } = req.body;
+    const { interviewerName, outcome, notes, nextInterviewerId, nextRoundName, nextRoomId } = req.body;
 
     if (!outcome) {
       return res.status(400).json({ success: false, error: 'Interview outcome decision is required.' });
@@ -2993,7 +2995,8 @@ async function startServer() {
         outcome,
         notes || '',
         nextInterviewerId,
-        nextRoundName
+        nextRoundName,
+        nextRoomId
       );
       res.json({ success: true, message: 'Interview concluded and outcome processed.' });
     } catch (err: any) {
@@ -3087,6 +3090,189 @@ async function startServer() {
     res.json({
       success: true,
       visitors: db.visitors || [],
+    });
+  });
+
+  // ==========================================
+  // REAL-TIME INTERNAL OFFICE CHAT SYSTEM
+  // ==========================================
+
+  // 1. GET CHAT CHANNELS
+  app.get('/api/chat/channels', (req: Request, res: Response) => {
+    const db = dbService.get();
+    const channels = db.chatChannels || [];
+    const auth = authenticateStaffRequest(req, db.users);
+    const userRole = auth.user?.role || (req.headers['x-user-role'] as UserRole) || 'HR';
+
+    // Filter channels based on role access
+    const accessible = channels.filter((c) => {
+      if (!c.allowedRoles || c.allowedRoles.length === 0) return true;
+      return c.allowedRoles.includes(userRole);
+    });
+
+    res.json({ success: true, channels: accessible });
+  });
+
+  // 2. GET CHAT MESSAGES
+  app.get('/api/chat/messages', (req: Request, res: Response) => {
+    const db = dbService.get();
+    const { channelId, recipientId, userId } = req.query as {
+      channelId?: string;
+      recipientId?: string;
+      userId?: string;
+    };
+
+    let messages = db.chatMessages || [];
+
+    if (channelId) {
+      messages = messages.filter((m) => m.channelId === channelId);
+    } else if (recipientId && userId) {
+      // 1-on-1 direct message conversation
+      messages = messages.filter(
+        (m) =>
+          (m.senderId === userId && m.recipientId === recipientId) ||
+          (m.senderId === recipientId && m.recipientId === userId)
+      );
+    }
+
+    // Limit to latest 300 messages sorted chronologically
+    const sorted = [...messages].sort(
+      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    );
+
+    res.json({ success: true, messages: sorted });
+  });
+
+  // 3. SEND CHAT MESSAGE
+  app.post('/api/chat/messages', (req: Request, res: Response) => {
+    const {
+      channelId,
+      recipientId,
+      recipientName,
+      content,
+      candidateId,
+      candidateName,
+      isPriority,
+    } = req.body;
+
+    if (!content || !content.trim()) {
+      return res.status(400).json({ success: false, error: 'Message content is required.' });
+    }
+
+    if (!channelId && !recipientId) {
+      return res.status(400).json({ success: false, error: 'Target channel or recipient is required.' });
+    }
+
+    const db = dbService.get();
+    const auth = authenticateStaffRequest(req, db.users);
+
+    const senderId =
+      auth.user?.id ||
+      (req.headers['x-user-id'] as string) ||
+      req.body.senderId ||
+      'usr-hr-nisha';
+    const sender = db.users.find((u) => u.id === senderId);
+    const senderName =
+      sender?.name ||
+      (req.headers['x-user-name'] as string) ||
+      req.body.senderName ||
+      'Staff Member';
+    const senderRole =
+      (sender?.role || (req.headers['x-user-role'] as UserRole) || req.body.senderRole || 'HR') as UserRole;
+    const senderDepartment = sender?.department || 'Operations';
+
+    const timestamp = new Date().toISOString();
+    const newMessage: ChatMessage = {
+      id: `msg-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      senderId,
+      senderName,
+      senderRole,
+      senderDepartment,
+      channelId: channelId || undefined,
+      recipientId: recipientId || undefined,
+      recipientName: recipientName || undefined,
+      content: content.trim(),
+      timestamp,
+      readBy: [senderId],
+      candidateId: candidateId || undefined,
+      candidateName: candidateName || undefined,
+      isPriority: Boolean(isPriority),
+    };
+
+    dbService.update((draft) => {
+      draft.chatMessages = draft.chatMessages || [];
+      draft.chatMessages.push(newMessage);
+      if (draft.chatMessages.length > 2000) {
+        draft.chatMessages = draft.chatMessages.slice(-2000);
+      }
+    });
+
+    // Real-time broadcast to all connected staff SSE clients
+    eventWorkflowEngine.broadcast({
+      type: 'INTERNAL_CHAT_MESSAGE',
+      payload: newMessage,
+      targetUserId: recipientId || undefined,
+    });
+
+    res.json({ success: true, message: newMessage });
+  });
+
+  // 4. MARK MESSAGES AS READ
+  app.post('/api/chat/read', (req: Request, res: Response) => {
+    const { userId, channelId, recipientId } = req.body;
+    if (!userId) {
+      return res.status(400).json({ success: false, error: 'userId is required' });
+    }
+
+    dbService.update((draft) => {
+      draft.chatMessages = draft.chatMessages || [];
+      draft.chatMessages.forEach((m) => {
+        if (channelId && m.channelId === channelId) {
+          if (!m.readBy) m.readBy = [];
+          if (!m.readBy.includes(userId)) m.readBy.push(userId);
+        } else if (recipientId && m.senderId === recipientId && m.recipientId === userId) {
+          if (!m.readBy) m.readBy = [];
+          if (!m.readBy.includes(userId)) m.readBy.push(userId);
+        }
+      });
+    });
+
+    res.json({ success: true });
+  });
+
+  // 5. GET UNREAD MESSAGE COUNTS
+  app.get('/api/chat/unread', (req: Request, res: Response) => {
+    const db = dbService.get();
+    const auth = authenticateStaffRequest(req, db.users);
+    const userId = (req.query.userId as string) || auth.user?.id || '';
+
+    if (!userId) {
+      return res.json({ success: true, total: 0, channels: {}, direct: {} });
+    }
+
+    const messages = db.chatMessages || [];
+    const channelsMap: Record<string, number> = {};
+    const directMap: Record<string, number> = {};
+    let total = 0;
+
+    messages.forEach((m) => {
+      const isRead = m.readBy && m.readBy.includes(userId);
+      if (isRead) return;
+
+      if (m.channelId) {
+        channelsMap[m.channelId] = (channelsMap[m.channelId] || 0) + 1;
+        total++;
+      } else if (m.recipientId === userId) {
+        directMap[m.senderId] = (directMap[m.senderId] || 0) + 1;
+        total++;
+      }
+    });
+
+    res.json({
+      success: true,
+      total,
+      channels: channelsMap,
+      direct: directMap,
     });
   });
 

@@ -15,6 +15,7 @@ import {
   AlertCircle,
   CupSoda,
   CheckSquare,
+  MessageSquare,
 } from 'lucide-react';
 import type { PantryTask, Room, Candidate, PantryTaskType, NotificationPriority } from '../../types/index.ts';
 
@@ -23,6 +24,7 @@ interface PantryDashboardProps {
   rooms: Room[];
   candidates?: Candidate[];
   onCompleteTask: (taskId: string) => void;
+  onOpenChat?: () => void;
   onRefresh: () => void;
 }
 
@@ -31,6 +33,7 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
   rooms,
   candidates = [],
   onCompleteTask,
+  onOpenChat,
   onRefresh,
 }) => {
   const pendingTasks = tasks.filter((t) => t.status === 'PENDING' || t.status === 'IN_PROGRESS');
@@ -53,6 +56,18 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
 
   // Filter active rooms from Room Management (Single Source of Truth)
   const activeRooms = rooms.filter((r) => r.isActive !== false);
+
+  // Operational rooms strictly exclude reserved Next Round cabins (Lalit Sir Cabin & Elegance Suite)
+  const operationalRooms = activeRooms.filter(
+    (r) =>
+      r.id !== 'room-lalit-cabin' &&
+      r.id !== 'room-kimmi-cabin' &&
+      r.roomId !== 'room-lalit-cabin' &&
+      r.roomId !== 'room-kimmi-cabin' &&
+      r.name !== 'Lalit Sir Cabin' &&
+      r.name !== 'Elegance Suite' &&
+      !r.isReservedNextRound
+  );
 
   // Single authoritative source of truth for resolving current room names from Room records
   const resolveRoomName = (roomId?: string, fallbackName?: string, candidateId?: string): string => {
@@ -427,7 +442,7 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
           </h2>
 
           <div className="space-y-2">
-            {rooms.map((room) => {
+            {operationalRooms.map((room) => {
               const isAvailable = room.status === 'AVAILABLE';
               const isAssigned = room.status === 'ASSIGNED';
               const isOccupied = room.status === 'OCCUPIED';

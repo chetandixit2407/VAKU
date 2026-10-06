@@ -22,6 +22,8 @@ export type DomainEventType =
   | 'CANDIDATE_ASSIGNED_TO_KIMMI'
   | 'VISITOR_CHECKED_IN'
   | 'WALKIN_REGISTERED'
+  | 'INTERNAL_CHAT_MESSAGE'
+  | 'ROOM_REQUEST_ACTION'
   | 'HEARTBEAT';
 
 export interface DomainEvent {
@@ -284,6 +286,7 @@ export interface Candidate {
   deletionReason?: string;
   status: CandidateStatus;
   assignedRoomId?: string;
+  assignedRoomName?: string;
   currentLocation: string;
   arrivalTime?: string;
   checkOutTime?: string;
@@ -330,6 +333,7 @@ export interface Room {
   status: RoomStatus;
   isActive: boolean;
   preferredFor?: string;
+  isReservedNextRound?: boolean;
   currentCandidateId?: string;
   currentCandidateName?: string;
   currentInterviewId?: string;
@@ -502,4 +506,30 @@ export interface OfficeSettings {
   allowedUploadFormats: string[];
   qrSessionExpiryMinutes?: number;
   fieldVisibility: Record<UserRole, RoleFieldVisibility>;
+}
+
+export interface ChatMessage {
+  id: string;
+  senderId: string;
+  senderName: string;
+  senderRole: UserRole;
+  senderDepartment?: string;
+  channelId?: string; // e.g. 'general', 'hr-desk', 'reception', 'pantry', 'leadership'
+  recipientId?: string; // for direct 1-on-1 staff messages
+  recipientName?: string;
+  recipientRole?: UserRole;
+  content: string;
+  timestamp: string;
+  readBy: string[]; // user IDs who have read
+  candidateId?: string;
+  candidateName?: string;
+  isPriority?: boolean;
+}
+
+export interface ChatChannel {
+  id: string;
+  name: string;
+  description: string;
+  icon?: string;
+  allowedRoles?: UserRole[];
 }

@@ -1117,7 +1117,8 @@ class EventWorkflowEngine {
     outcome: 'NEXT_INTERVIEW' | 'HOLD' | 'REJECTED' | 'SELECTED',
     notes: string,
     nextInterviewerId?: string,
-    nextRoundName?: string
+    nextRoundName?: string,
+    nextRoomId?: string
   ) {
     const timestamp = new Date().toISOString();
     let candId = '';
@@ -1193,6 +1194,27 @@ class EventWorkflowEngine {
           cand.status = 'WAITING';
           cand.currentLocation = isSenior ? 'With Kimmi Mam – Senior HR Interview' : 'Waiting Area / Lounge';
           cand.currentInterviewId = newIntv.id;
+        }
+
+        // Optional Immediate Room Allocation for Next Round
+        if (nextRoomId) {
+          const roomToAssign = draft.rooms.find((r) => r.id === nextRoomId || r.roomId === nextRoomId);
+          if (roomToAssign) {
+            roomToAssign.status = 'ASSIGNED';
+            roomToAssign.currentCandidateId = candId;
+            roomToAssign.currentCandidateName = candName;
+            roomToAssign.currentInterviewId = newInterviewId;
+            roomToAssign.assignedInterviewerName = nextInterviewerName;
+            newIntv.roomId = roomToAssign.id;
+            newIntv.roomName = roomToAssign.name;
+            newIntv.status = 'ROOM_ASSIGNED';
+            if (cand) {
+              cand.assignedRoomId = roomToAssign.id;
+              cand.assignedRoomName = roomToAssign.name;
+              cand.status = 'ROOM_ASSIGNED';
+              cand.currentLocation = roomToAssign.name;
+            }
+          }
         }
 
         if (nextInterviewerId) {

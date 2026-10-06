@@ -14,6 +14,7 @@ import {
   WifiOff,
   LogOut,
   User as UserIcon,
+  MessageSquare,
 } from 'lucide-react';
 import type { UserRole, User } from '../types/index.ts';
 import { PWAInstallButton } from './PWAInstallButton.tsx';
@@ -22,7 +23,9 @@ interface NavbarProps {
   currentRole: UserRole;
   onSelectRole: (role: UserRole) => void;
   unreadCount: number;
+  unreadChatCount?: number;
   onOpenNotifications: () => void;
+  onOpenChat: () => void;
   onOpenQRPasses: () => void;
   onOpenCheckIn: () => void;
   onOpenWalkIn: () => void;
@@ -35,7 +38,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   currentRole,
   onSelectRole,
   unreadCount,
+  unreadChatCount = 0,
   onOpenNotifications,
+  onOpenChat,
   onOpenQRPasses,
   onOpenCheckIn,
   onOpenWalkIn,
@@ -149,6 +154,21 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <QrCode className="w-3.5 h-3.5 text-amber-400" />
             <span className="hidden sm:inline">QR Station</span>
+          </button>
+
+          {/* Internal Office Chat */}
+          <button
+            onClick={onOpenChat}
+            className="relative p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-amber-300 hover:bg-slate-800 transition cursor-pointer flex items-center gap-1.5"
+            title="Internal Office Chat"
+          >
+            <MessageSquare className="w-4 h-4 text-amber-400" />
+            <span className="hidden lg:inline text-xs font-semibold">Office Chat</span>
+            {unreadChatCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black flex items-center justify-center animate-bounce shadow-md">
+                {unreadChatCount > 9 ? '9+' : unreadChatCount}
+              </span>
+            )}
           </button>
 
           {/* Notification Bell */}
