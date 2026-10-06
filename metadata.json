@@ -1,0 +1,10 @@
+{
+  "name": "WCR Office Operations PWA",
+  "description": "Fully automated White Collar Realty office operations, candidate self check-in, real-time role-based alerts, room & pantry management.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
