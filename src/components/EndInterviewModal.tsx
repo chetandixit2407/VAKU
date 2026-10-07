@@ -323,18 +323,6 @@ export const EndInterviewModal: React.FC<EndInterviewModalProps> = ({
               className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white text-xs focus:outline-hidden focus:border-amber-400"
             />
           </div>
-
-          {/* Automated System Guarantees */}
-          <div className="p-3 bg-slate-950/80 border border-slate-800 rounded-xl flex items-start gap-2 text-[10px] text-slate-400">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
-            <span>
-              <strong>Automated Next Steps:</strong> Current room will be released immediately,
-              pantry room reset task will be created, and{' '}
-              {outcome === 'NEXT_INTERVIEW'
-                ? 'next interviewer will receive an automated high-priority alert.'
-                : 'reception will be instructed to prepare physical visitor checkout.'}
-            </span>
-          </div>
         </div>
 
         {/* Footer */}

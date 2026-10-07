@@ -17,13 +17,17 @@ import {
   CheckSquare,
   MessageSquare,
 } from 'lucide-react';
-import type { PantryTask, Room, Candidate, PantryTaskType, NotificationPriority } from '../../types/index.ts';
+import type { PantryTask, Room, Candidate, PantryTaskType, NotificationPriority, ActionTask } from '../../types/index.ts';
 
 interface PantryDashboardProps {
   tasks: PantryTask[];
   rooms: Room[];
   candidates?: Candidate[];
+  actionTasks?: ActionTask[];
+  onAcknowledgeTask?: (taskId: string) => void;
   onCompleteTask: (taskId: string) => void;
+  onCompleteActionTask?: (taskId: string) => void;
+  onMarkRoomCleaned?: (roomId: string) => void;
   onOpenChat?: () => void;
   onRefresh: () => void;
 }
@@ -32,12 +36,22 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
   tasks,
   rooms,
   candidates = [],
+  actionTasks = [],
+  onAcknowledgeTask,
   onCompleteTask,
+  onCompleteActionTask,
+  onMarkRoomCleaned,
   onOpenChat,
   onRefresh,
 }) => {
   const pendingTasks = tasks.filter((t) => t.status === 'PENDING' || t.status === 'IN_PROGRESS');
   const completedTasks = tasks.filter((t) => t.status === 'COMPLETED');
+  const [markingRoomId, setMarkingRoomId] = useState<string | null>(null);
+
+  // Filter real-time operational action alerts for Pantry
+  const pantryActionTasks = actionTasks.filter(
+    (t) => (t.targetRole === 'PANTRY' || t.taskType === 'PREPARE_ROOM' || t.taskType === 'CLEAN_ROOM') && t.status !== 'DISMISSED'
+  );
 
   // Assign Task Modal State
   const [showAssignModal, setShowAssignModal] = useState(false);
@@ -207,6 +221,26 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
     }
   };
 
+  const handleMarkCleaned = async (roomId: string) => {
+    setMarkingRoomId(roomId);
+    try {
+      if (onMarkRoomCleaned) {
+        await onMarkRoomCleaned(roomId);
+      } else {
+        await fetch(`/api/pantry/rooms/${roomId}/cleaned`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ stewardName: 'Suresh Kumar (Pantry)' }),
+        });
+        onRefresh();
+      }
+    } catch (err) {
+      console.error('Failed to mark room cleaned', err);
+    } finally {
+      setMarkingRoomId(null);
+    }
+  };
+
   // Get active candidates currently assigned to rooms for hospitality
   const roomAssignedCandidates = candidates.filter(
     (c) =>
@@ -265,6 +299,162 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
           </span>
         </div>
       </div>
+
+      {/* 🚨 PROMINENT REAL-TIME ACTION ALERTS & ROOM SERVICE TASKS */}
+      {pantryActionTasks.length > 0 && (
+        <div className="p-5 bg-gradient-to-r from-amber-500/10 via-slate-900 to-amber-500/5 border-2 border-amber-500/60 rounded-3xl space-y-3 shadow-2xl shadow-amber-500/10 animate-in fade-in duration-300">
+          <div className="flex items-center justify-between gap-2 flex-wrap pb-2 border-b border-amber-500/30">
+            <div className="flex items-center gap-2.5">
+              <span className="relative flex h-3.5 w-3.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-amber-500"></span>
+              </span>
+              <div>
+                <h2 className="text-sm font-black text-amber-300 tracking-wide uppercase flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                  <span>Immediate Pantry Action Alerts ({pantryActionTasks.length})</span>
+                </h2>
+                <p className="text-[11px] text-slate-300">
+                  Room preparation, beverage service & cleaning requests synchronized in real time from Staff Chat.
+                </p>
+              </div>
+            </div>
+
+            {onOpenChat && (
+              <button
+                onClick={onOpenChat}
+                className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-[11px] font-bold transition flex items-center gap-1 cursor-pointer"
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+                <span>Open Pantry Chat</span>
+              </button>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5 pt-1">
+            {pantryActionTasks.map((task) => {
+              const isPending = task.status === 'PENDING';
+              const isAcknowledged = task.status === 'ACKNOWLEDGED' || task.status === 'IN_PROGRESS';
+              const isCompleted = task.status === 'COMPLETED';
+              const resolvedRoom = task.destinationRoomName || task.roomName || 'Meeting Room';
+
+              return (
+                <div
+                  key={task.id}
+                  className={`p-4 rounded-2xl border transition shadow-lg relative flex flex-col justify-between ${
+                    isPending
+                      ? 'bg-slate-900/95 border-amber-400 ring-2 ring-amber-500/30'
+                      : isAcknowledged
+                      ? 'bg-slate-900/95 border-sky-400/80 ring-1 ring-sky-500/30'
+                      : 'bg-slate-900/80 border-emerald-500/40 opacity-80'
+                  }`}
+                >
+                  {/* Top Header: Sender, Time & Status */}
+                  <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-slate-800">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 flex items-center justify-center font-black text-xs border border-amber-500/30 shrink-0">
+                        <Coffee className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-xs font-bold text-white truncate flex items-center gap-1.5">
+                          <span>Requested by: {task.senderName}</span>
+                          <span className="px-1.5 py-0.2 rounded text-[9px] font-semibold bg-slate-800 text-amber-400 border border-slate-700">
+                            {task.senderRole}
+                          </span>
+                        </div>
+                        <div className="text-[10px] text-slate-400 flex items-center gap-1">
+                          <Clock className="w-3 h-3 text-slate-500" />
+                          <span>{new Date(task.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      {isPending && (
+                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/50 flex items-center gap-1 animate-pulse">
+                          <AlertCircle className="w-3 h-3" />
+                          ACTION REQUIRED
+                        </span>
+                      )}
+                      {isAcknowledged && (
+                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/50 flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3 text-sky-400" />
+                          IN PROGRESS
+                        </span>
+                      )}
+                      {isCompleted && (
+                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                          COMPLETED
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Body Content */}
+                  <div className="py-3 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <DoorOpen className="w-4 h-4 text-cyan-400 shrink-0" />
+                      <span className="text-xs sm:text-sm font-bold text-white">
+                        Room: <strong className="text-cyan-300 font-mono">{resolvedRoom}</strong>
+                      </span>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                        Required Action
+                      </span>
+                      <p className="text-xs text-amber-300 font-semibold leading-relaxed">
+                        {task.instruction || task.title || 'Prepare room for meeting'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Actions Footer */}
+                  <div className="pt-2.5 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      {isPending && (
+                        <button
+                          onClick={() => onAcknowledgeTask && onAcknowledgeTask(task.id)}
+                          className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-md shadow-amber-500/20"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>ACKNOWLEDGE</span>
+                        </button>
+                      )}
+
+                      {!isCompleted && (
+                        <button
+                          onClick={() => {
+                            if (onCompleteActionTask) {
+                              onCompleteActionTask(task.id);
+                            } else if (onAcknowledgeTask) {
+                              onAcknowledgeTask(task.id);
+                            }
+                            if (task.roomId && onMarkRoomCleaned) {
+                              onMarkRoomCleaned(task.roomId);
+                            }
+                          }}
+                          className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-md shadow-emerald-500/20"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>MARK COMPLETED</span>
+                        </button>
+                      )}
+
+                      {isCompleted && (
+                        <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5" /> Serviced at {task.completedAt ? new Date(task.completedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'recently'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -380,7 +570,11 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
                           className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-black text-xs rounded-xl shadow-lg transition cursor-pointer flex items-center justify-center gap-2"
                         >
                           <CheckCircle2 className="w-4 h-4" />
-                          <span>Confirm Ready & Mark Completed</span>
+                          <span>
+                            {task.taskType === 'ROOM_RESET'
+                              ? 'Mark Cleaned & Ready (Make Available)'
+                              : 'Confirm Ready & Mark Completed'}
+                          </span>
                         </button>
                       </div>
                     </div>
@@ -446,6 +640,7 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
               const isAvailable = room.status === 'AVAILABLE';
               const isAssigned = room.status === 'ASSIGNED';
               const isOccupied = room.status === 'OCCUPIED';
+              const isCleaning = room.status === 'CLEANING' || room.status === 'NEEDS_CLEANING';
 
               return (
                 <div
@@ -463,20 +658,40 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
                         {room.type?.replace('_', ' ') || 'Room'}
                       </p>
                     )}
+                    {room.lastCleanedAt && !isCleaning && (
+                      <p className="text-[9px] text-slate-500">
+                        Cleaned: {new Date(room.lastCleanedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    )}
                   </div>
-                  <span
-                    className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                      isAvailable
-                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
-                        : isAssigned
-                        ? 'bg-amber-500/10 text-amber-300 border border-amber-500/30'
-                        : isOccupied
-                        ? 'bg-blue-500/10 text-blue-400 border border-blue-500/30'
-                        : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
-                    }`}
-                  >
-                    {room.status}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                        isAvailable
+                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+                          : isAssigned
+                          ? 'bg-amber-500/10 text-amber-300 border border-amber-500/30'
+                          : isCleaning
+                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse'
+                          : isOccupied
+                          ? 'bg-blue-500/10 text-blue-400 border border-blue-500/30'
+                          : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
+                      }`}
+                    >
+                      {isCleaning ? 'Cleaning / Reset' : room.status}
+                    </span>
+                    {isCleaning && (
+                      <button
+                        onClick={() => handleMarkCleaned(room.id)}
+                        disabled={markingRoomId === room.id}
+                        className="px-2.5 py-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-[10px] rounded-lg shadow-sm transition flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                        title="Mark room cleaned and make it available"
+                      >
+                        <CheckCircle2 className="w-3 h-3" />
+                        <span>{markingRoomId === room.id ? 'Marking...' : 'Ready'}</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
               );
             })}

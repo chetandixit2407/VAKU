@@ -14,13 +14,15 @@ import {
   Shield,
   Award,
   CheckCircle2,
+  CheckCheck,
   Tag,
+  DoorOpen,
   MessageSquare,
   ChevronDown,
   Bell,
   RefreshCw,
 } from 'lucide-react';
-import type { ChatMessage, ChatChannel, User, UserRole, Candidate } from '../types/index.ts';
+import type { ChatMessage, ChatChannel, User, UserRole, Candidate, Room } from '../types/index.ts';
 import { authenticatedFetch } from '../utils/apiClient.ts';
 
 interface InternalChatModalProps {
@@ -29,8 +31,14 @@ interface InternalChatModalProps {
   currentUser: User | null;
   currentRole: UserRole;
   candidates?: Candidate[];
+  rooms?: Room[];
   defaultRecipientId?: string;
   defaultChannelId?: string;
+  initialCandidateId?: string;
+  initialRoomId?: string;
+  initialMessage?: string;
+  onOpenCandidateDossier?: (candidateId: string) => void;
+  onOpenRoomContext?: (roomId: string, roomName?: string) => void;
   onNewMessageSent?: () => void;
 }
 
@@ -40,8 +48,14 @@ export const InternalChatModal: React.FC<InternalChatModalProps> = ({
   currentUser,
   currentRole,
   candidates = [],
+  rooms = [],
   defaultRecipientId,
   defaultChannelId = 'general',
+  initialCandidateId,
+  initialRoomId,
+  initialMessage,
+  onOpenCandidateDossier,
+  onOpenRoomContext,
   onNewMessageSent,
 }) => {
   const [channels, setChannels] = useState<ChatChannel[]>([]);
@@ -54,6 +68,7 @@ export const InternalChatModal: React.FC<InternalChatModalProps> = ({
   const [messageInput, setMessageInput] = useState<string>('');
   const [isPriority, setIsPriority] = useState<boolean>(false);
   const [selectedCandidateId, setSelectedCandidateId] = useState<string>('');
+  const [selectedRoomId, setSelectedRoomId] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sending, setSending] = useState<boolean>(false);
   const [unreadMap, setUnreadMap] = useState<{
@@ -67,7 +82,7 @@ export const InternalChatModal: React.FC<InternalChatModalProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Initialize active conversation when opened with default target
+  // Initialize active conversation when opened with default target or initial values
   useEffect(() => {
     if (defaultRecipientId) {
       setActiveChatType('direct');
@@ -76,7 +91,17 @@ export const InternalChatModal: React.FC<InternalChatModalProps> = ({
       setActiveChatType('channel');
       setActiveChannelId(defaultChannelId);
     }
-  }, [defaultRecipientId, defaultChannelId, isOpen]);
+
+    if (initialCandidateId) {
+      setSelectedCandidateId(initialCandidateId);
+    }
+    if (initialRoomId) {
+      setSelectedRoomId(initialRoomId);
+    }
+    if (initialMessage) {
+      setMessageInput(initialMessage);
+    }
+  }, [defaultRecipientId, defaultChannelId, initialCandidateId, initialRoomId, initialMessage, isOpen]);
 
   // Load channels and staff users
   useEffect(() => {
@@ -214,7 +239,10 @@ export const InternalChatModal: React.FC<InternalChatModalProps> = ({
       if (isForActiveChannel || isForActiveDirect) {
         setMessages((prev) => {
           if (prev.some((m) => m.id === newMsg.id)) return prev;
-          return [...prev, newMsg];
+          const next = [...prev, newMsg];
+          return next.sort(
+            (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+          );
         });
         scrollToBottom();
         markAsRead();
@@ -251,6 +279,7 @@ export const InternalChatModal: React.FC<InternalChatModalProps> = ({
     if (!messageInput.trim() || sending) return;
 
     const candidate = candidates.find((c) => c.id === selectedCandidateId);
+    const room = rooms.find((r) => r.id === selectedRoomId || r.roomId === selectedRoomId);
     const recipientUser = staffUsers.find((u) => u.id === activeRecipientId);
 
     const payload = {
@@ -260,6 +289,8 @@ export const InternalChatModal: React.FC<InternalChatModalProps> = ({
       content: messageInput.trim(),
       candidateId: candidate?.id,
       candidateName: candidate?.fullName,
+      roomId: room?.id,
+      roomName: room?.name,
       isPriority,
       senderId: currentUser?.id,
       senderName: currentUser?.name,
@@ -282,12 +313,16 @@ export const InternalChatModal: React.FC<InternalChatModalProps> = ({
       // Add to local message list if not already added by realtime
       setMessages((prev) => {
         if (prev.some((m) => m.id === data.message.id)) return prev;
-        return [...prev, data.message];
+        const next = [...prev, data.message];
+        return next.sort(
+          (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+        );
       });
 
       setMessageInput('');
       setIsPriority(false);
       setSelectedCandidateId('');
+      setSelectedRoomId('');
       scrollToBottom();
 
       if (onNewMessageSent) onNewMessageSent();
@@ -329,6 +364,36 @@ export const InternalChatModal: React.FC<InternalChatModalProps> = ({
       (c) => c.name.toLowerCase().includes(q) || c.description.toLowerCase().includes(q)
     );
   }, [channels, searchQuery]);
+
+  // Contextual template triggers
+  const applyQuickTemplate = (templateType: 'bring' | 'send' | 'ready' | 'prepare' | 'clean' | 'water') => {
+    const cand = candidates.find((c) => c.id === selectedCandidateId) || candidates[0];
+    const room = rooms.find((r) => r.id === selectedRoomId) || rooms[0];
+    const candName = cand?.fullName || 'Rahul Sharma';
+    const roomName = room?.name || 'The Skyline';
+
+    if (templateType === 'bring') {
+      if (!selectedCandidateId && cand) setSelectedCandidateId(cand.id);
+      if (!selectedRoomId && room) setSelectedRoomId(room.id);
+      setMessageInput(`Bring ${candName} to ${roomName}.`);
+    } else if (templateType === 'send') {
+      if (!selectedCandidateId && cand) setSelectedCandidateId(cand.id);
+      if (!selectedRoomId && room) setSelectedRoomId(room.id);
+      setMessageInput(`Send ${candName} to ${roomName}.`);
+    } else if (templateType === 'ready') {
+      if (!selectedCandidateId && cand) setSelectedCandidateId(cand.id);
+      setMessageInput(`Candidate ${candName} is ready in Reception.`);
+    } else if (templateType === 'prepare') {
+      if (!selectedRoomId && room) setSelectedRoomId(room.id);
+      setMessageInput(`Prepare ${roomName} with mineral water and sanitized glassware.`);
+    } else if (templateType === 'clean') {
+      if (!selectedRoomId && room) setSelectedRoomId(room.id);
+      setMessageInput(`Please clean and reset ${roomName} after the interview.`);
+    } else if (templateType === 'water') {
+      if (!selectedRoomId && room) setSelectedRoomId(room.id);
+      setMessageInput(`Please serve water & refreshments in ${roomName}.`);
+    }
+  };
 
   // Quick message snippets
   const quickSnippets = [
@@ -578,7 +643,7 @@ export const InternalChatModal: React.FC<InternalChatModalProps> = ({
 
                       {/* Bubble */}
                       <div
-                        className={`max-w-md sm:max-w-lg p-3 rounded-2xl text-xs space-y-1.5 ${
+                        className={`max-w-md sm:max-w-lg p-3 rounded-2xl text-xs space-y-2 ${
                           isMine
                             ? 'bg-amber-500 text-slate-950 font-medium rounded-tr-xs shadow-md shadow-amber-500/10'
                             : msg.isPriority
@@ -586,21 +651,89 @@ export const InternalChatModal: React.FC<InternalChatModalProps> = ({
                             : 'bg-slate-800/90 border border-slate-700/80 text-slate-100 rounded-tl-xs'
                         }`}
                       >
-                        {/* Tagged Candidate */}
-                        {msg.candidateName && (
-                          <div
-                            className={`p-1.5 rounded-lg text-[10px] flex items-center gap-1.5 font-semibold ${
-                              isMine
-                                ? 'bg-amber-600/30 text-slate-950 border border-amber-600/40'
-                                : 'bg-slate-900 border border-slate-700 text-amber-300'
-                            }`}
-                          >
-                            <Tag className="w-3 h-3" />
-                            <span>Candidate: <strong>{msg.candidateName}</strong></span>
+                        {/* Context Pills (Candidate / Room) */}
+                        {(msg.candidateName || msg.roomName) && (
+                          <div className="flex flex-wrap items-center gap-1.5 pb-1 border-b border-black/10 dark:border-white/10">
+                            {msg.candidateName && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (msg.candidateId && onOpenCandidateDossier) {
+                                    onOpenCandidateDossier(msg.candidateId);
+                                  }
+                                }}
+                                className={`px-2 py-0.5 rounded-lg text-[10px] flex items-center gap-1 font-bold transition cursor-pointer ${
+                                  isMine
+                                    ? 'bg-amber-600/30 text-slate-950 border border-amber-700/40 hover:bg-amber-600/50'
+                                    : 'bg-slate-900/90 border border-slate-700 text-amber-300 hover:bg-slate-800 hover:border-amber-400'
+                                }`}
+                                title="Click to open candidate dossier"
+                              >
+                                <UserIcon className="w-3 h-3 text-amber-400" />
+                                <span>Candidate: <u>{msg.candidateName}</u></span>
+                              </button>
+                            )}
+
+                            {msg.roomName && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (onOpenRoomContext) {
+                                    onOpenRoomContext(msg.roomId || '', msg.roomName);
+                                  }
+                                }}
+                                className={`px-2 py-0.5 rounded-lg text-[10px] flex items-center gap-1 font-bold transition cursor-pointer ${
+                                  isMine
+                                    ? 'bg-amber-600/30 text-slate-950 border border-amber-700/40 hover:bg-amber-600/50'
+                                    : 'bg-slate-900/90 border border-slate-700 text-sky-300 hover:bg-slate-800 hover:border-sky-400'
+                                }`}
+                                title="Click to view room context"
+                              >
+                                <DoorOpen className="w-3 h-3 text-sky-400" />
+                                <span>Room: <u>{msg.roomName}</u></span>
+                              </button>
+                            )}
                           </div>
                         )}
 
                         <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+
+                        {/* Action Task Synchronized Badge */}
+                        {/\b(bring|send|escort|ready|prepare|clean|water|refreshments)\b/i.test(msg.content) && (
+                          <div className={`text-[9px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1 ${
+                            isMine
+                              ? 'bg-amber-600/30 text-slate-950 border border-amber-700/30'
+                              : 'bg-slate-950/60 text-amber-300 border border-amber-500/30'
+                          }`}>
+                            <Sparkles className="w-2.5 h-2.5 text-amber-400" />
+                            <span>⚡ Dashboard Action Alert created & synchronized</span>
+                          </div>
+                        )}
+
+                        {/* Delivery / Read confirmation status */}
+                        <div className="flex items-center justify-between text-[9px] opacity-75 pt-1 border-t border-black/10 dark:border-white/10">
+                          <span>
+                            {new Date(msg.timestamp).toLocaleTimeString([], {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </span>
+                          {isMine && (
+                            <span className="flex items-center gap-0.5">
+                              {msg.readBy && msg.readBy.length > 1 ? (
+                                <span className="flex items-center gap-0.5 text-sky-950 dark:text-sky-300 font-semibold" title="Read by colleagues">
+                                  <CheckCheck className="w-3 h-3 text-sky-900 dark:text-sky-300" /> Read
+                                </span>
+                              ) : (
+                                <span className="flex items-center gap-0.5 text-slate-800 dark:text-slate-400 font-medium" title="Delivered to office">
+                                  <CheckCircle2 className="w-3 h-3" /> Delivered
+                                </span>
+                              )}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );
@@ -609,39 +742,99 @@ export const InternalChatModal: React.FC<InternalChatModalProps> = ({
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Quick Action Snippets Bar */}
-            <div className="px-4 py-2 border-t border-slate-800/60 bg-slate-950/40 flex items-center gap-1.5 overflow-x-auto text-[11px]">
-              <span className="text-slate-500 text-[10px] font-bold shrink-0">Quick:</span>
-              {quickSnippets.map((snippet, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => setMessageInput((prev) => (prev ? `${prev} ${snippet}` : snippet))}
-                  className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 text-[10px] whitespace-nowrap transition cursor-pointer"
-                >
-                  {snippet}
-                </button>
-              ))}
+            {/* Quick Context Templates Bar */}
+            <div className="px-4 py-2 border-t border-slate-800/60 bg-slate-950/60 flex items-center gap-2 overflow-x-auto text-[11px]">
+              <span className="text-slate-400 text-[10px] font-bold shrink-0 flex items-center gap-1">
+                <Sparkles className="w-3 h-3 text-amber-400" />
+                Quick Actions:
+              </span>
+              <button
+                type="button"
+                onClick={() => applyQuickTemplate('bring')}
+                className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-amber-500/20 text-slate-300 hover:text-amber-300 border border-slate-800 hover:border-amber-500/40 text-[10px] font-medium whitespace-nowrap transition cursor-pointer flex items-center gap-1"
+                title="Send escort request to Reception Dashboard"
+              >
+                <span>🚶 “Bring [Candidate] to [Room]”</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => applyQuickTemplate('send')}
+                className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-[10px] font-medium whitespace-nowrap transition cursor-pointer"
+                title="Send candidate escort instruction"
+              >
+                <span>🚀 “Send [Candidate] to [Room]”</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => applyQuickTemplate('ready')}
+                className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-[10px] font-medium whitespace-nowrap transition cursor-pointer"
+                title="Candidate is ready alert"
+              >
+                <span>🛎️ “Candidate is ready”</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => applyQuickTemplate('prepare')}
+                className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-[10px] font-medium whitespace-nowrap transition cursor-pointer"
+                title="Pantry room prep alert"
+              >
+                <span>🚪 “Prepare [Room]”</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => applyQuickTemplate('clean')}
+                className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-[10px] font-medium whitespace-nowrap transition cursor-pointer"
+                title="Pantry clean & reset request"
+              >
+                <span>🧹 Clean Room</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => applyQuickTemplate('water')}
+                className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-[10px] font-medium whitespace-nowrap transition cursor-pointer"
+              >
+                <span>☕ Serve Refreshments</span>
+              </button>
             </div>
 
             {/* Input & Form Area */}
             <form onSubmit={handleSendMessage} className="p-3 sm:p-4 border-t border-slate-800 bg-slate-950/80 space-y-2">
               <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-                {/* Candidate Tag Option */}
-                <div className="flex items-center gap-2">
-                  <Tag className="w-3.5 h-3.5 text-slate-400" />
-                  <select
-                    value={selectedCandidateId}
-                    onChange={(e) => setSelectedCandidateId(e.target.value)}
-                    className="px-2.5 py-1 bg-slate-900 border border-slate-800 rounded-lg text-[11px] text-slate-300 focus:outline-hidden focus:border-amber-400"
-                  >
-                    <option value="">Tag candidate (optional)</option>
-                    {candidates.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.fullName} ({c.position})
-                      </option>
-                    ))}
-                  </select>
+                {/* Candidate & Room Tags Selector Row */}
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* Candidate Tag Option */}
+                  <div className="flex items-center gap-1.5">
+                    <Tag className="w-3.5 h-3.5 text-amber-400" />
+                    <select
+                      value={selectedCandidateId}
+                      onChange={(e) => setSelectedCandidateId(e.target.value)}
+                      className="px-2 py-1 bg-slate-900 border border-slate-800 rounded-lg text-[11px] text-slate-200 focus:outline-hidden focus:border-amber-400 max-w-[170px] truncate"
+                    >
+                      <option value="">Attach candidate (optional)</option>
+                      {candidates.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.fullName} ({c.position})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Room Tag Option */}
+                  <div className="flex items-center gap-1.5">
+                    <DoorOpen className="w-3.5 h-3.5 text-sky-400" />
+                    <select
+                      value={selectedRoomId}
+                      onChange={(e) => setSelectedRoomId(e.target.value)}
+                      className="px-2 py-1 bg-slate-900 border border-slate-800 rounded-lg text-[11px] text-slate-200 focus:outline-hidden focus:border-sky-400 max-w-[170px] truncate"
+                    >
+                      <option value="">Attach room (optional)</option>
+                      {rooms.map((r) => (
+                        <option key={r.id} value={r.id}>
+                          {r.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
                 {/* Priority Toggle */}
@@ -667,7 +860,7 @@ export const InternalChatModal: React.FC<InternalChatModalProps> = ({
                   value={messageInput}
                   onChange={(e) => setMessageInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder={`Message ${activeChatType === 'channel' ? `#${activeChannel?.name || activeChannelId}` : activeRecipient?.name || 'staff member'}... (Press Enter to send)`}
+                  placeholder={`Message ${activeChatType === 'channel' ? `#${activeChannel?.name || activeChannelId}` : activeRecipient?.name || 'staff member'}... (Enter = send, Shift+Enter = new line)`}
                   className="flex-1 px-3.5 py-2.5 bg-slate-900 border border-slate-800 rounded-2xl text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-amber-400 resize-none"
                 />
 

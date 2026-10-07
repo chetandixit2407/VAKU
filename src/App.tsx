@@ -8,6 +8,8 @@ import type {
   PantryTask,
   Visitor,
   User,
+  ChatMessage,
+  ActionTask,
 } from './types/index.ts';
 import { useRealtimeEvents } from './hooks/useRealtimeEvents.ts';
 import { Navbar } from './components/Navbar.tsx';
@@ -50,6 +52,8 @@ import {
   Key,
   X,
   CheckCircle2,
+  MessageSquare,
+  ArrowRight,
 } from 'lucide-react';
 
 export default function App() {
@@ -74,6 +78,7 @@ export default function App() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [pantryTasks, setPantryTasks] = useState<PantryTask[]>([]);
+  const [actionTasks, setActionTasks] = useState<ActionTask[]>([]);
   const [visitors, setVisitors] = useState<Visitor[]>([]);
 
   // Modals & Drawers
@@ -105,6 +110,42 @@ export default function App() {
   const [unreadChatCount, setUnreadChatCount] = useState<number>(0);
   const [chatRecipientId, setChatRecipientId] = useState<string>('');
   const [chatChannelId, setChatChannelId] = useState<string>('general');
+  const [chatPrefillCandidateId, setChatPrefillCandidateId] = useState<string>('');
+  const [chatPrefillRoomId, setChatPrefillRoomId] = useState<string>('');
+  const [chatPrefillMessage, setChatPrefillMessage] = useState<string>('');
+  const [chatToast, setChatToast] = useState<{
+    id: string;
+    senderName: string;
+    senderRole: string;
+    content: string;
+    candidateId?: string;
+    candidateName?: string;
+    roomId?: string;
+    roomName?: string;
+    isPriority?: boolean;
+    channelId?: string;
+    recipientId?: string;
+    timestamp: string;
+  } | null>(null);
+
+  const openChatWithContext = useCallback(
+    (options?: {
+      candidateId?: string;
+      roomId?: string;
+      channelId?: string;
+      recipientId?: string;
+      initialMessage?: string;
+    }) => {
+      if (options?.candidateId) setChatPrefillCandidateId(options.candidateId);
+      if (options?.roomId) setChatPrefillRoomId(options.roomId);
+      if (options?.initialMessage) setChatPrefillMessage(options.initialMessage);
+      if (options?.channelId) setChatChannelId(options.channelId);
+      if (options?.recipientId) setChatRecipientId(options.recipientId);
+      setIsChatOpen(true);
+      setUnreadChatCount(0);
+    },
+    []
+  );
 
   useEffect(() => {
     if (currentUser?.id) {
@@ -233,22 +274,24 @@ export default function App() {
   // Fetch all live data from server with authenticated credentials
   const fetchAllData = useCallback(async () => {
     try {
-      const [cRes, iRes, rRes, nRes, pRes, vRes] = await Promise.all([
+      const [cRes, iRes, rRes, nRes, pRes, vRes, aRes] = await Promise.all([
         authenticatedFetch(`/api/candidates?role=${currentRole}`),
         authenticatedFetch('/api/interviews'),
         authenticatedFetch('/api/rooms'),
         authenticatedFetch(`/api/notifications?role=${currentRole}&userId=${currentUserId}`),
         authenticatedFetch('/api/pantry/tasks'),
         authenticatedFetch('/api/visitors'),
+        authenticatedFetch('/api/action-tasks'),
       ]);
 
-      const [cData, iData, rData, nData, pData, vData] = await Promise.all([
+      const [cData, iData, rData, nData, pData, vData, aData] = await Promise.all([
         cRes.json(),
         iRes.json(),
         rRes.json(),
         nRes.json(),
         pRes.json(),
         vRes.json(),
+        aRes.json(),
       ]);
 
       if (cData.success && Array.isArray(cData.candidates)) setCandidates(cData.candidates);
@@ -257,10 +300,46 @@ export default function App() {
       if (nData.success && Array.isArray(nData.notifications)) setNotifications(nData.notifications);
       if (pData.success && Array.isArray(pData.tasks)) setPantryTasks(pData.tasks);
       if (vData.success && Array.isArray(vData.visitors)) setVisitors(vData.visitors);
+      if (aData.success && Array.isArray(aData.tasks)) setActionTasks(aData.tasks);
     } catch (err) {
       console.error('Failed fetching data snapshot', err);
     }
   }, [currentRole, currentUserId]);
+
+  // Handlers for real-time Action Tasks
+  const handleAcknowledgeActionTask = async (taskId: string) => {
+    try {
+      const res = await authenticatedFetch(`/api/action-tasks/${encodeURIComponent(taskId)}/acknowledge`, {
+        method: 'POST',
+      });
+      const data = await res.json();
+      if (data.success && data.task) {
+        setActionTasks((prev) =>
+          prev.map((t) => (t.id === taskId ? { ...t, ...data.task } : t))
+        );
+      }
+      fetchAllData();
+    } catch (err) {
+      console.error('Failed to acknowledge action task', err);
+    }
+  };
+
+  const handleCompleteActionTask = async (taskId: string) => {
+    try {
+      const res = await authenticatedFetch(`/api/action-tasks/${encodeURIComponent(taskId)}/complete`, {
+        method: 'POST',
+      });
+      const data = await res.json();
+      if (data.success && data.task) {
+        setActionTasks((prev) =>
+          prev.map((t) => (t.id === taskId ? { ...t, ...data.task } : t))
+        );
+      }
+      fetchAllData();
+    } catch (err) {
+      console.error('Failed to complete action task', err);
+    }
+  };
 
   // Hook into Realtime Server-Sent Events (SSE)
   const { connected: isRealtimeConnected } = useRealtimeEvents({
@@ -295,6 +374,25 @@ export default function App() {
                 }
               : c
           )
+        );
+      }
+
+      // Real-time Action Task synchronization (Instant alert on Dashboard outside chat)
+      if (event.type === 'ACTION_TASK_CREATED' && event.payload?.task) {
+        const incomingTask: ActionTask = event.payload.task;
+        setActionTasks((prev) => {
+          const existingIdx = prev.findIndex((t) => t.id === incomingTask.id);
+          if (existingIdx !== -1) {
+            const next = [...prev];
+            next[existingIdx] = incomingTask;
+            return next;
+          }
+          return [incomingTask, ...prev];
+        });
+      } else if (event.type === 'ACTION_TASK_UPDATED' && event.payload?.task) {
+        const updatedTask: ActionTask = event.payload.task;
+        setActionTasks((prev) =>
+          prev.map((t) => (t.id === updatedTask.id ? { ...t, ...updatedTask } : t))
         );
       }
 
@@ -338,12 +436,35 @@ export default function App() {
 
       // Internal Office Chat real-time event dispatch
       if (event.type === 'INTERNAL_CHAT_MESSAGE') {
-        const chatMsg = event.payload?.metadata || event.payload;
+        const chatMsg: ChatMessage = event.payload?.metadata || event.payload;
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('wcr:chat-message', { detail: chatMsg }));
         }
         if (!isChatOpen) {
           setUnreadChatCount((prev) => prev + 1);
+
+          // If the message is from another staff member, show real-time in-app notification toast
+          if (chatMsg && chatMsg.senderId !== currentUserId) {
+            setChatToast({
+              id: chatMsg.id || `toast-${Date.now()}`,
+              senderName: chatMsg.senderName,
+              senderRole: chatMsg.senderRole,
+              content: chatMsg.content,
+              candidateId: chatMsg.candidateId,
+              candidateName: chatMsg.candidateName,
+              roomId: chatMsg.roomId,
+              roomName: chatMsg.roomName,
+              isPriority: chatMsg.isPriority,
+              channelId: chatMsg.channelId,
+              recipientId: chatMsg.recipientId,
+              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            });
+
+            // Auto dismiss toast after 8 seconds
+            setTimeout(() => {
+              setChatToast((prev) => (prev?.id === chatMsg.id ? null : prev));
+            }, 8000);
+          }
         }
       }
 
@@ -489,6 +610,12 @@ export default function App() {
       if (payload?.candidateId) {
         handleCheckout(payload.candidateId);
       }
+    } else if (actionKey === 'OPEN_CHAT') {
+      setNotificationDrawerOpen(false);
+      openChatWithContext({
+        candidateId: payload?.candidateId,
+        roomId: payload?.roomId,
+      });
     }
   };
 
@@ -524,6 +651,20 @@ export default function App() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ stewardName: 'Suresh Kumar (Pantry)' }),
+      });
+      fetchAllData();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Pantry / Admin mark room cleaned & ready
+  const handleMarkRoomCleaned = async (roomId: string) => {
+    try {
+      await fetch(`/api/pantry/rooms/${roomId}/cleaned`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stewardName: currentRole === 'ADMIN' ? 'Sameer Sir (Admin)' : 'Suresh Kumar (Pantry)' }),
       });
       fetchAllData();
     } catch (err) {
@@ -938,6 +1079,7 @@ export default function App() {
             candidates={candidates}
             interviews={interviews}
             rooms={rooms}
+            actionTasks={actionTasks}
             onOpenDossier={(candId) => {
               setSelectedCandidateId(candId);
               setActiveModal('DOSSIER');
@@ -951,11 +1093,34 @@ export default function App() {
               setIsChatOpen(true);
               setUnreadChatCount(0);
             }}
+            onOpenChatWithContext={openChatWithContext}
             onRefresh={fetchAllData}
           />
         )}
 
-        {currentRole === 'ADMIN' && <AdminDashboard onRefresh={fetchAllData} />}
+        {currentRole === 'ADMIN' && (
+          <AdminDashboard
+            candidates={candidates}
+            interviews={interviews}
+            rooms={rooms}
+            pantryTasks={pantryTasks}
+            actionTasks={actionTasks}
+            onOpenDossier={(candId) => {
+              setSelectedCandidateId(candId);
+              setActiveModal('DOSSIER');
+            }}
+            onAssignRoom={(candId, intvId) => {
+              setSelectedCandidateId(candId);
+              setSelectedInterview(intvId ? interviews.find((i) => i.id === intvId) || null : null);
+              setActiveModal('ASSIGN_ROOM');
+            }}
+            onOpenChatWithContext={openChatWithContext}
+            onMarkRoomCleaned={handleMarkRoomCleaned}
+            onAcknowledgeActionTask={handleAcknowledgeActionTask}
+            onCompleteActionTask={handleCompleteActionTask}
+            onRefresh={fetchAllData}
+          />
+        )}
 
         {currentRole === 'CEO' && (
           <CEODashboard
@@ -992,6 +1157,9 @@ export default function App() {
             candidates={candidates}
             rooms={rooms}
             visitors={visitors}
+            actionTasks={actionTasks}
+            onAcknowledgeTask={handleAcknowledgeActionTask}
+            onCompleteTask={handleCompleteActionTask}
             onCheckout={handleCheckout}
             onOpenCheckIn={() => {
               setCheckInToken('WCR-APPT-901');
@@ -999,6 +1167,11 @@ export default function App() {
             }}
             onOpenWalkIn={() => setActiveModal('WALK_IN')}
             onOpenQR={() => setActiveModal('QR_PASS')}
+            onOpenChat={() => {
+              setIsChatOpen(true);
+              setUnreadChatCount(0);
+            }}
+            onOpenChatWithContext={openChatWithContext}
             onRefresh={fetchAllData}
           />
         )}
@@ -1008,7 +1181,11 @@ export default function App() {
             tasks={pantryTasks}
             rooms={rooms}
             candidates={candidates}
+            actionTasks={actionTasks}
+            onAcknowledgeTask={handleAcknowledgeActionTask}
             onCompleteTask={handleCompletePantryTask}
+            onCompleteActionTask={handleCompleteActionTask}
+            onMarkRoomCleaned={handleMarkRoomCleaned}
             onOpenChat={() => {
               setIsChatOpen(true);
               setUnreadChatCount(0);
@@ -1020,6 +1197,69 @@ export default function App() {
 
       {/* Floating Offline Indicator */}
       <OfflineIndicator />
+
+      {/* Real-time In-App Internal Office Chat Toast Notification */}
+      {chatToast && (
+        <div className="fixed bottom-5 right-5 z-50 max-w-sm w-full bg-slate-900 border border-amber-500/50 rounded-2xl shadow-2xl p-4 animate-in slide-in-from-bottom-5 duration-300">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center font-black shrink-0 mt-0.5">
+                <MessageSquare className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h4 className="text-xs font-bold text-white truncate">{chatToast.senderName}</h4>
+                  <span className="px-1.5 py-0.2 rounded-sm bg-slate-800 text-[9px] font-bold text-amber-400 border border-slate-700">
+                    {chatToast.senderRole}
+                  </span>
+                  <span className="text-[10px] text-slate-500">{chatToast.timestamp}</span>
+                </div>
+                <p className="text-xs text-slate-300 mt-1 line-clamp-2 leading-relaxed">
+                  {chatToast.content}
+                </p>
+                {(chatToast.candidateName || chatToast.roomName) && (
+                  <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                    {chatToast.candidateName && (
+                      <span className="px-2 py-0.5 bg-amber-500/10 border border-amber-500/30 rounded-md text-[10px] font-semibold text-amber-300">
+                        Candidate: {chatToast.candidateName}
+                      </span>
+                    )}
+                    {chatToast.roomName && (
+                      <span className="px-2 py-0.5 bg-sky-500/10 border border-sky-500/30 rounded-md text-[10px] font-semibold text-sky-300">
+                        Room: {chatToast.roomName}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+            <button
+              onClick={() => setChatToast(null)}
+              className="text-slate-500 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition cursor-pointer shrink-0"
+              title="Dismiss alert"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="flex items-center justify-end gap-2 mt-3 pt-2 border-t border-slate-800/80">
+            <button
+              onClick={() => {
+                setChatToast(null);
+                openChatWithContext({
+                  candidateId: chatToast.candidateId,
+                  roomId: chatToast.roomId,
+                  channelId: chatToast.channelId,
+                  recipientId: chatToast.recipientId,
+                });
+              }}
+              className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl transition shadow-md flex items-center gap-1 cursor-pointer"
+            >
+              <span>Open Chat</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Slide-over Notification Feed Drawer */}
       <NotificationDrawer
@@ -1034,13 +1274,48 @@ export default function App() {
       {/* Real-time Internal Office Communication Modal */}
       <InternalChatModal
         isOpen={isChatOpen}
-        onClose={() => setIsChatOpen(false)}
+        onClose={() => {
+          setIsChatOpen(false);
+          setChatPrefillCandidateId('');
+          setChatPrefillRoomId('');
+          setChatPrefillMessage('');
+        }}
         currentUser={currentUser}
         currentRole={currentRole}
         candidates={candidates}
+        rooms={rooms}
         defaultRecipientId={chatRecipientId}
         defaultChannelId={chatChannelId}
-        onNewMessageSent={() => {}}
+        initialCandidateId={chatPrefillCandidateId}
+        initialRoomId={chatPrefillRoomId}
+        initialMessage={chatPrefillMessage}
+        onOpenCandidateDossier={(candId) => {
+          setSelectedCandidateId(candId);
+          setActiveModal('DOSSIER');
+        }}
+        onOpenRoomContext={(roomId, roomName) => {
+          const candInRoom = candidates.find(
+            (c) => c.assignedRoomId === roomId || c.assignedRoomName === roomName
+          );
+          if (candInRoom) {
+            setSelectedCandidateId(candInRoom.id);
+            setActiveModal('DOSSIER');
+          } else {
+            setActiveModal('ASSIGN_ROOM');
+          }
+        }}
+        onNewMessageSent={() => {
+          if (currentUser?.id) {
+            authenticatedFetch(`/api/chat/unread?userId=${currentUser.id}`)
+              .then((r) => r.json())
+              .then((d) => {
+                if (d.success && typeof d.total === 'number') {
+                  setUnreadChatCount(d.total);
+                }
+              })
+              .catch(() => {});
+          }
+        }}
       />
 
       {/* MODALS */}

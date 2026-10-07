@@ -1439,6 +1439,27 @@
   ],
   "notifications": [
     {
+      "id": "notif-escort-1791349756419",
+      "recipientRole": "RECEPTION",
+      "title": "🚶 Candidate Escort Request from Nisha",
+      "message": "Please bring Rahul Sharma to Elegance Suite.",
+      "priority": "HIGH",
+      "timestamp": "2026-10-07T05:09:16.418Z",
+      "read": false,
+      "actions": [
+        {
+          "label": "Open Chat",
+          "actionKey": "OPEN_CHAT"
+        }
+      ],
+      "metadata": {
+        "candidateId": "cand-1",
+        "roomId": "room-kimmi-cabin",
+        "roomName": "Elegance Suite",
+        "chatMessageId": "msg-1791349756419-5nv16"
+      }
+    },
+    {
       "id": "notif-1791292941093-hr-next",
       "recipientRole": "HR",
       "title": "Stage Cleared: Rahul Sharma",
@@ -1491,7 +1512,7 @@
       "eventType": "CANDIDATE_ARRIVED",
       "entityId": "cand-1791286556145-plv9",
       "entityType": "CANDIDATE",
-      "read": false,
+      "read": true,
       "createdAt": "2026-10-06T11:35:56.156Z",
       "actionButtons": [
         {
@@ -4862,6 +4883,46 @@
   ],
   "auditLogs": [
     {
+      "id": "aud-1791349538378-created",
+      "timestamp": "2026-10-07T05:05:38.377Z",
+      "actorType": "SYSTEM",
+      "actorName": "WCR QR Gateway",
+      "action": "SESSION_CREATED",
+      "details": "Created fresh isolated registration session reg-sess-1791349538378-33548c5e8ff6 (Token: WCR-GEN-1791349538378-F9DC6ADA088088DC2D1D1078, Expires in 30m)."
+    },
+    {
+      "id": "aud-1791349499321-created",
+      "timestamp": "2026-10-07T05:04:59.321Z",
+      "actorType": "SYSTEM",
+      "actorName": "WCR QR Gateway",
+      "action": "SESSION_CREATED",
+      "details": "Created fresh isolated registration session reg-sess-1791349499321-9e6b391b5e8a (Token: WCR-GEN-1791349499321-85E3C02CAC44117CCB13B05B, Expires in 30m)."
+    },
+    {
+      "id": "aud-1791349486513-qr",
+      "timestamp": "2026-10-07T05:04:46.513Z",
+      "actorType": "SYSTEM",
+      "actorName": "QR Scanner",
+      "action": "FORM_OPENED",
+      "details": "Scheduled QR pass opened with token WCR-APPT-902."
+    },
+    {
+      "id": "aud-1791349133466-created",
+      "timestamp": "2026-10-07T04:58:53.466Z",
+      "actorType": "SYSTEM",
+      "actorName": "WCR QR Gateway",
+      "action": "SESSION_CREATED",
+      "details": "Created fresh isolated registration session reg-sess-1791349133466-91966361ce3e (Token: WCR-GEN-1791349133466-C30D9D63F7CE84EB0DC69E8C, Expires in 30m)."
+    },
+    {
+      "id": "aud-1791349116425-qr",
+      "timestamp": "2026-10-07T04:58:36.425Z",
+      "actorType": "SYSTEM",
+      "actorName": "QR Scanner",
+      "action": "FORM_OPENED",
+      "details": "Scheduled QR pass opened with token WCR-APPT-902."
+    },
+    {
       "id": "aud-1791292941093",
       "timestamp": "2026-10-06T13:22:21.093Z",
       "actorType": "USER",
@@ -6007,6 +6068,33 @@
   ],
   "checkInSessions": [
     {
+      "id": "reg-sess-1791349538378-33548c5e8ff6",
+      "token": "WCR-GEN-1791349538378-F9DC6ADA088088DC2D1D1078",
+      "qrType": "NEW_CANDIDATE_REGISTRATION",
+      "source": "GENERAL_WCR_QR",
+      "status": "ACTIVE",
+      "createdAt": "2026-10-07T05:05:38.377Z",
+      "expiresAt": "2026-10-07T05:35:38.377Z"
+    },
+    {
+      "id": "reg-sess-1791349499321-9e6b391b5e8a",
+      "token": "WCR-GEN-1791349499321-85E3C02CAC44117CCB13B05B",
+      "qrType": "NEW_CANDIDATE_REGISTRATION",
+      "source": "GENERAL_WCR_QR",
+      "status": "ACTIVE",
+      "createdAt": "2026-10-07T05:04:59.321Z",
+      "expiresAt": "2026-10-07T05:34:59.321Z"
+    },
+    {
+      "id": "reg-sess-1791349133466-91966361ce3e",
+      "token": "WCR-GEN-1791349133466-C30D9D63F7CE84EB0DC69E8C",
+      "qrType": "NEW_CANDIDATE_REGISTRATION",
+      "source": "GENERAL_WCR_QR",
+      "status": "ACTIVE",
+      "createdAt": "2026-10-07T04:58:53.466Z",
+      "expiresAt": "2026-10-07T05:28:53.466Z"
+    },
+    {
       "id": "reg-sess-1791286660508-d169c438a21f",
       "token": "WCR-GEN-1791286660508-9495A0F6A6B70CCDF8BF011F",
       "qrType": "NEW_CANDIDATE_REGISTRATION",
@@ -6622,7 +6710,7 @@
       "status": "ACTIVE",
       "expiresAt": "2026-10-07T10:05:37.535Z",
       "createdAt": "2026-10-06T10:05:37.535Z",
-      "openedAt": "2026-10-06T11:37:39.028Z"
+      "openedAt": "2026-10-07T05:04:46.513Z"
     },
     {
       "id": "session-walkin",
@@ -7083,6 +7171,36 @@
   "changeRequests": [],
   "passwordResetRequests": [],
   "domainEvents": [
+    {
+      "eventId": "evt-1791349756422-2uy8l51",
+      "eventType": "INTERNAL_CHAT_MESSAGE",
+      "candidateId": "cand-1",
+      "visitId": "cand-1",
+      "applicationId": "cand-1",
+      "roomId": "room-kimmi-cabin",
+      "timestamp": "2026-10-07T05:09:16.422Z",
+      "actorType": "STAFF",
+      "source": "STAFF_ACTION",
+      "metadata": {
+        "id": "msg-1791349756419-5nv16",
+        "senderId": "usr-hr-nisha",
+        "senderName": "Nisha",
+        "senderRole": "HR",
+        "senderDepartment": "HR",
+        "channelId": "reception",
+        "content": "Please bring Rahul Sharma to Elegance Suite.",
+        "timestamp": "2026-10-07T05:09:16.418Z",
+        "readBy": [
+          "usr-hr-nisha",
+          "usr-rec-ananya"
+        ],
+        "candidateId": "cand-1",
+        "candidateName": "Kavita Singh",
+        "roomId": "room-kimmi-cabin",
+        "roomName": "Elegance Suite",
+        "isPriority": false
+      }
+    },
     {
       "eventId": "evt-1791292941097-007bcex",
       "eventType": "INTERVIEW_COMPLETED",
@@ -8388,6 +8506,25 @@
         "usr-ceo-lalit",
         "usr-hr-nisha"
       ],
+      "isPriority": false
+    },
+    {
+      "id": "msg-1791349756419-5nv16",
+      "senderId": "usr-hr-nisha",
+      "senderName": "Nisha",
+      "senderRole": "HR",
+      "senderDepartment": "HR",
+      "channelId": "reception",
+      "content": "Please bring Rahul Sharma to Elegance Suite.",
+      "timestamp": "2026-10-07T05:09:16.418Z",
+      "readBy": [
+        "usr-hr-nisha",
+        "usr-rec-ananya"
+      ],
+      "candidateId": "cand-1",
+      "candidateName": "Kavita Singh",
+      "roomId": "room-kimmi-cabin",
+      "roomName": "Elegance Suite",
       "isPriority": false
     }
   ]

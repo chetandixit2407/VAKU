@@ -15,6 +15,7 @@ import type {
   CandidateResumeMetadata,
   OfficeSettings,
   Visitor,
+  Room,
 } from '../types/index.ts';
 
 // SSE client subscriber interface with verified staff session
@@ -679,7 +680,15 @@ class EventWorkflowEngine {
     dbService.update((draft) => {
       const room = draft.rooms.find((r) => r.id === roomId);
       const cand = draft.candidates.find((c) => c.id === candidateId);
-      const intv = draft.interviews.find((i) => i.id === interviewId);
+      let intv = draft.interviews.find((i) => i.id === interviewId);
+      if (!intv && candidateId) {
+        intv = draft.interviews.find(
+          (i) =>
+            i.candidateId === candidateId &&
+            i.status !== 'INTERVIEW_COMPLETED' &&
+            i.status !== 'CANCELLED'
+        );
+      }
 
       if (!room || !cand) {
         throw new Error('Room or Candidate not found');
@@ -687,6 +696,13 @@ class EventWorkflowEngine {
 
       if (room.isActive === false) {
         throw new Error(`Cannot assign: "${room.name}" is currently deactivated.`);
+      }
+
+      // Room unavailable while cleaning
+      if (room.status === 'CLEANING' || room.status === 'NEEDS_CLEANING') {
+        throw new Error(
+          `Cannot assign: "${room.name}" is currently undergoing cleaning & sanitization by Pantry. Please wait until cleaning is completed or select another room.`
+        );
       }
 
       // Backend Double-Booking Protection:
@@ -702,7 +718,7 @@ class EventWorkflowEngine {
 
       // Vacate candidate's previously assigned room if any
       const previousRoom = draft.rooms.find(
-        (r) => r.id !== roomId && r.currentCandidateId === candidateId
+        (r) => r.id !== roomId && (r.currentCandidateId === candidateId || r.id === cand.assignedRoomId)
       );
       if (previousRoom) {
         previousRoom.status = 'AVAILABLE';
@@ -1010,6 +1026,13 @@ class EventWorkflowEngine {
 
       // Update timeline
       const room = draft.rooms.find((r) => r.id === roomId);
+      if (room && (task.taskType === 'ROOM_RESET' || room.status === 'CLEANING' || room.status === 'NEEDS_CLEANING')) {
+        room.status = 'AVAILABLE';
+        room.lastCleanedAt = timestamp;
+        room.lastCleanedBy = stewardName;
+        room.updatedAt = timestamp;
+      }
+
       if (room?.currentCandidateId) {
         draft.timelineEvents.unshift({
           id: `tl-${Date.now()}-pantry-done`,
@@ -1042,6 +1065,59 @@ class EventWorkflowEngine {
       actorType: 'STAFF',
       source: 'STAFF_ACTION',
       metadata: { taskId, roomId, roomName, candidateName, stewardName },
+    });
+    this.broadcast({
+      type: 'ROOMS_UPDATED',
+      payload: { roomId },
+    });
+  }
+
+  // 3B. PANTRY MARKS ROOM CLEANING -> CLEANED / READY DIRECTLY
+  public handleRoomMarkedCleaned(roomId: string, stewardName: string = 'Suresh Kumar (Pantry)') {
+    const timestamp = new Date().toISOString();
+    let roomName = '';
+    let updatedRoom: Room | null = null;
+
+    dbService.update((draft) => {
+      const room = draft.rooms.find((r) => r.id === roomId || r.roomId === roomId);
+      if (!room) throw new Error('Room not found');
+
+      room.status = 'AVAILABLE';
+      room.lastCleanedAt = timestamp;
+      room.lastCleanedBy = stewardName;
+      room.updatedAt = timestamp;
+      roomName = room.name;
+      updatedRoom = { ...room };
+
+      // Mark all pending cleaning/reset tasks for this room as COMPLETED
+      draft.pantryTasks.forEach((t) => {
+        if ((t.roomId === roomId || t.roomId === room.id) && t.status !== 'COMPLETED') {
+          t.status = 'COMPLETED';
+          t.completedAt = timestamp;
+          t.completedBy = stewardName;
+        }
+      });
+
+      draft.auditLogs.unshift({
+        id: `aud-${Date.now()}-clean`,
+        timestamp,
+        actorType: 'USER',
+        actorName: stewardName,
+        actorRole: 'PANTRY',
+        action: 'ROOM_CLEANED_READY',
+        details: `Room "${room.name}" marked CLEANED / READY by ${stewardName}. Room is now available.`,
+        entityId: room.id,
+        entityType: 'ROOM',
+      });
+    });
+
+    this.broadcast({
+      type: 'ROOM_CLEANED_READY',
+      payload: { roomId, roomName, stewardName, timestamp, room: updatedRoom },
+    });
+    this.broadcast({
+      type: 'ROOMS_UPDATED',
+      payload: { room: updatedRoom },
     });
   }
 
@@ -1145,21 +1221,25 @@ class EventWorkflowEngine {
 
       if (room) {
         previousRoomName = room.name;
-        room.status = 'AVAILABLE';
+        // Room remains unavailable until cleaning is completed by Pantry
+        room.status = 'CLEANING';
+        room.cleaningRequestedAt = timestamp;
         room.currentCandidateId = undefined;
         room.currentCandidateName = undefined;
         room.currentInterviewId = undefined;
         room.assignedInterviewerName = undefined;
+        room.updatedAt = timestamp;
 
+        // Pantry sees ONLY the required cleaning task (no candidate resume, ID, or sensitive details)
         draft.pantryTasks.unshift({
-          id: `pantry-reset-${Date.now()}`,
+          id: `pantry-clean-${Date.now()}`,
           roomId: room.id,
           roomName: room.name,
-          candidateName: candName,
+          candidateName: '', // Redacted for pantry confidentiality
           taskType: 'ROOM_RESET',
-          description: `Reset & sanitize ${room.name} following interview with ${candName}.`,
-          requiredItems: ['Clear used water bottles', 'Sanitize table', 'Reset chairs'],
-          priority: 'NORMAL',
+          description: `Clean ${room.name} after candidate interview.`,
+          requiredItems: ['Sanitize conference table & chairs', 'Clear used glasses / bottles', 'Restock fresh mineral water'],
+          priority: 'HIGH',
           status: 'PENDING',
           createdAt: timestamp,
         });

@@ -18,8 +18,9 @@ import {
   AlertTriangle,
   User,
   Search,
+  MessageSquare,
 } from 'lucide-react';
-import type { Candidate, Room, Visitor } from '../../types/index.ts';
+import type { Candidate, Room, Visitor, ActionTask } from '../../types/index.ts';
 import { ReceptionPhotoModal } from '../ReceptionPhotoModal.tsx';
 import { CandidateDossierModal } from '../CandidateDossierModal.tsx';
 
@@ -27,10 +28,21 @@ interface ReceptionDashboardProps {
   candidates: Candidate[];
   rooms: Room[];
   visitors: Visitor[];
+  actionTasks?: ActionTask[];
+  onAcknowledgeTask?: (taskId: string) => void;
+  onCompleteTask?: (taskId: string) => void;
   onCheckout: (candidateId: string) => void;
   onOpenCheckIn: () => void;
   onOpenWalkIn: () => void;
   onOpenQR: () => void;
+  onOpenChat?: () => void;
+  onOpenChatWithContext?: (options: {
+    candidateId?: string;
+    roomId?: string;
+    channelId?: string;
+    recipientId?: string;
+    initialMessage?: string;
+  }) => void;
   onRefresh?: () => void;
 }
 
@@ -38,16 +50,26 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
   candidates,
   rooms,
   visitors,
+  actionTasks = [],
+  onAcknowledgeTask,
+  onCompleteTask,
   onCheckout,
   onOpenCheckIn,
   onOpenWalkIn,
   onOpenQR,
+  onOpenChat,
+  onOpenChatWithContext,
   onRefresh,
 }) => {
   const [selectedPhotoCandidate, setSelectedPhotoCandidate] = useState<Candidate | null>(null);
   const [selectedProfileCandidateId, setSelectedProfileCandidateId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeFilter, setActiveFilter] = useState<'ALL' | 'WAITING' | 'IN_MEETING' | 'CHECKOUT'>('ALL');
+
+  // Filter reception-targeted actionable alert tasks
+  const receptionTasks = actionTasks.filter(
+    (t) => (t.targetRole === 'RECEPTION' || t.taskType === 'ESCORT_CANDIDATE') && t.status !== 'DISMISSED'
+  );
 
   // Real-time EventSource listener for instant reception updates on new QR registrations
   useEffect(() => {
@@ -132,15 +154,237 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
             <QrCode className="w-3.5 h-3.5 text-amber-400" />
             <span>Reception QR Standees</span>
           </button>
+          {onOpenChat && (
+            <button
+              onClick={onOpenChat}
+              className="px-3.5 py-2 bg-gradient-to-r from-amber-500/20 to-amber-600/20 hover:from-amber-500/30 hover:to-amber-600/30 text-amber-300 font-semibold text-xs rounded-xl border border-amber-500/40 transition flex items-center gap-1.5 cursor-pointer"
+              title="Open Internal Office Chat"
+            >
+              <MessageSquare className="w-3.5 h-3.5 text-amber-400" />
+              <span>Office Chat</span>
+            </button>
+          )}
         </div>
       </div>
+
+      {/* 🚨 PROMINENT REAL-TIME ACTION ALERTS & ESCORT TASK CARDS */}
+      {receptionTasks.length > 0 && (
+        <div className="p-5 bg-gradient-to-r from-amber-500/10 via-slate-900 to-amber-500/5 border-2 border-amber-500/60 rounded-3xl space-y-3 shadow-2xl shadow-amber-500/10 animate-in fade-in duration-300">
+          <div className="flex items-center justify-between gap-2 flex-wrap pb-2 border-b border-amber-500/30">
+            <div className="flex items-center gap-2.5">
+              <span className="relative flex h-3.5 w-3.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-amber-500"></span>
+              </span>
+              <div>
+                <h2 className="text-sm font-black text-amber-300 tracking-wide uppercase flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                  <span>Immediate Action Tasks & Escort Alerts ({receptionTasks.length})</span>
+                </h2>
+                <p className="text-[11px] text-slate-300">
+                  Real-time operational candidate escort instructions synchronized directly from HR & Office Chat.
+                </p>
+              </div>
+            </div>
+
+            {onOpenChatWithContext && (
+              <button
+                onClick={() =>
+                  onOpenChatWithContext({
+                    channelId: 'reception',
+                    initialMessage: 'Reception acknowledged: Escorting candidate now.',
+                  })
+                }
+                className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-[11px] font-bold transition flex items-center gap-1 cursor-pointer"
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+                <span>Open Reception Chat</span>
+              </button>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5 pt-1">
+            {receptionTasks.map((task) => {
+              const isPending = task.status === 'PENDING';
+              const isAcknowledged = task.status === 'ACKNOWLEDGED' || task.status === 'IN_PROGRESS';
+              const isCompleted = task.status === 'COMPLETED';
+
+              return (
+                <div
+                  key={task.id}
+                  className={`p-4 rounded-2xl border transition shadow-lg relative flex flex-col justify-between ${
+                    isPending
+                      ? 'bg-slate-900/95 border-amber-400 ring-2 ring-amber-500/30'
+                      : isAcknowledged
+                      ? 'bg-slate-900/95 border-sky-400/80 ring-1 ring-sky-500/30'
+                      : 'bg-slate-900/80 border-emerald-500/40 opacity-80'
+                  }`}
+                >
+                  {/* Top Header: Sender, Time & Status */}
+                  <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-slate-800">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 flex items-center justify-center font-black text-xs border border-amber-500/30 shrink-0">
+                        {task.senderName ? task.senderName.substring(0, 2).toUpperCase() : 'HR'}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-xs font-bold text-white truncate flex items-center gap-1.5">
+                          <span>{task.senderName}</span>
+                          <span className="px-1.5 py-0.2 rounded text-[9px] font-semibold bg-slate-800 text-amber-400 border border-slate-700">
+                            {task.senderRole}
+                          </span>
+                        </div>
+                        <div className="text-[10px] text-slate-400 flex items-center gap-1">
+                          <Clock className="w-3 h-3 text-slate-500" />
+                          <span>{new Date(task.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      {isPending && (
+                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/50 flex items-center gap-1 animate-pulse">
+                          <AlertCircle className="w-3 h-3" />
+                          PENDING ACTION
+                        </span>
+                      )}
+                      {isAcknowledged && (
+                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/50 flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3 text-sky-400" />
+                          ACKNOWLEDGED
+                        </span>
+                      )}
+                      {isCompleted && (
+                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                          COMPLETED
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Body Content */}
+                  <div className="py-3 space-y-2">
+                    <div className="text-xs sm:text-sm font-bold text-white tracking-tight leading-snug">
+                      {task.title || `Bring ${task.candidateName || 'Candidate'} to ${task.destinationRoomName || 'Room'}`}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      {/* Candidate Box */}
+                      <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                          Candidate
+                        </span>
+                        <span className="text-xs font-bold text-amber-300 truncate block mt-0.5">
+                          {task.candidateName || 'Candidate'}
+                        </span>
+                        <span className="text-[10px] text-slate-400 block truncate mt-0.5">
+                          📍 {task.candidateLocation || 'Waiting Lounge / Reception'}
+                        </span>
+                      </div>
+
+                      {/* Destination Box */}
+                      <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                          Destination Room
+                        </span>
+                        <span className="text-xs font-bold text-cyan-300 truncate block mt-0.5">
+                          {task.destinationRoomName || 'Designated Cabin'}
+                        </span>
+                        <span className="text-[10px] text-slate-400 block truncate mt-0.5">
+                          🏢 Escort Destination
+                        </span>
+                      </div>
+                    </div>
+
+                    {task.instruction && task.instruction !== task.title && (
+                      <div className="text-[11px] text-slate-300 italic bg-slate-950/50 p-2 rounded-lg border border-slate-800/80">
+                        "{task.instruction}"
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Actions Footer */}
+                  <div className="pt-2.5 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      {isPending && (
+                        <button
+                          onClick={() => onAcknowledgeTask && onAcknowledgeTask(task.id)}
+                          className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-md shadow-amber-500/20"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>ACKNOWLEDGE</span>
+                        </button>
+                      )}
+
+                      {isAcknowledged && (
+                        <button
+                          onClick={() => onCompleteTask && onCompleteTask(task.id)}
+                          className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-md shadow-emerald-500/20"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>MARK AS ESCORTED</span>
+                        </button>
+                      )}
+
+                      {task.candidateId && (
+                        <button
+                          onClick={() => setSelectedProfileCandidateId(task.candidateId!)}
+                          className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-xs transition cursor-pointer flex items-center gap-1.5"
+                        >
+                          <Eye className="w-3.5 h-3.5 text-cyan-400" />
+                          <span>OPEN CANDIDATE</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {onOpenChatWithContext && (
+                      <button
+                        onClick={() =>
+                          onOpenChatWithContext({
+                            candidateId: task.candidateId,
+                            roomId: task.destinationRoomId,
+                            channelId: 'reception',
+                            recipientId: task.senderId,
+                            initialMessage: `Acknowledged: Escorting ${task.candidateName || 'candidate'} to ${task.destinationRoomName || 'cabin'} now.`,
+                          })
+                        }
+                        className="text-[11px] font-semibold text-slate-400 hover:text-amber-300 transition flex items-center gap-1 cursor-pointer"
+                        title="Reply directly in chat"
+                      >
+                        <MessageSquare className="w-3 h-3 text-amber-400" />
+                        <span>Reply in Chat</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Real-time Escort Guidance Notice */}
       {roomAssignedCandidates.length > 0 && (
         <div className="p-4 bg-amber-500/10 border-2 border-amber-500/50 rounded-2xl space-y-2 animate-pulse">
-          <div className="flex items-center gap-2 text-amber-400 font-bold text-xs uppercase tracking-wider">
-            <Sparkles className="w-4 h-4" />
-            <span>Immediate Reception Action: Escort Candidates to Designated Rooms</span>
+          <div className="flex items-center justify-between text-amber-400 font-bold text-xs uppercase tracking-wider">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4" />
+              <span>Immediate Reception Action: Escort Candidates to Designated Rooms</span>
+            </div>
+            {onOpenChatWithContext && (
+              <button
+                onClick={() =>
+                  onOpenChatWithContext({
+                    channelId: 'reception',
+                    initialMessage: 'Escorting candidate to room now.',
+                  })
+                }
+                className="text-[10px] font-bold text-amber-300 hover:underline flex items-center gap-1 cursor-pointer lowercase"
+              >
+                <MessageSquare className="w-3 h-3" />
+                <span>reply in chat &rarr;</span>
+              </button>
+            )}
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
             {roomAssignedCandidates.map((cand) => (
@@ -168,6 +412,24 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
                     <Camera className="w-3 h-3" />
                     <span>Photo</span>
                   </button>
+                  {onOpenChatWithContext && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onOpenChatWithContext({
+                          candidateId: cand.id,
+                          roomId: cand.assignedRoomId,
+                          channelId: 'reception',
+                          initialMessage: `Escorting ${cand.fullName} to ${cand.currentLocation || 'Elegance Suite'}.`,
+                        });
+                      }}
+                      className="px-2 py-1 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 font-semibold text-[10px] rounded-lg flex items-center gap-1 cursor-pointer"
+                      title="Update staff in chat"
+                    >
+                      <MessageSquare className="w-3 h-3" />
+                      <span>Chat</span>
+                    </button>
+                  )}
                   <div className="text-right">
                     <span className="text-[10px] text-slate-400 block">Direct Candidate to:</span>
                     <span className="font-bold text-amber-400 text-xs flex items-center gap-1 justify-end">

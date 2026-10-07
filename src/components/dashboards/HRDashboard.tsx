@@ -13,16 +13,24 @@ import {
   Award,
   MessageSquare,
 } from 'lucide-react';
-import type { Candidate, Interview, Room } from '../../types/index.ts';
+import type { Candidate, Interview, Room, ActionTask } from '../../types/index.ts';
 import { authenticatedFetch } from '../../utils/apiClient.ts';
 
 interface HRDashboardProps {
   candidates: Candidate[];
   interviews: Interview[];
   rooms: Room[];
+  actionTasks?: ActionTask[];
   onOpenDossier: (candidateId: string) => void;
   onAssignRoom: (candidateId: string, interviewId?: string) => void;
   onOpenChat?: () => void;
+  onOpenChatWithContext?: (options: {
+    candidateId?: string;
+    roomId?: string;
+    channelId?: string;
+    recipientId?: string;
+    initialMessage?: string;
+  }) => void;
   onRefresh: () => void;
 }
 
@@ -30,12 +38,19 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
   candidates,
   interviews,
   rooms,
+  actionTasks = [],
   onOpenDossier,
   onAssignRoom,
   onOpenChat,
+  onOpenChatWithContext,
   onRefresh,
 }) => {
   const [assigningKimmiId, setAssigningKimmiId] = useState<string | null>(null);
+
+  // Active action tasks relevant to HR
+  const activeHRTasks = actionTasks.filter(
+    (t) => t.status === 'PENDING' || t.status === 'ACKNOWLEDGED' || t.status === 'IN_PROGRESS'
+  );
 
   const handleAssignToKimmi = async (candId: string) => {
     setAssigningKimmiId(candId);
@@ -116,6 +131,57 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
         </div>
       </div>
 
+      {/* Live Dispatched Action Alerts & Escort Status */}
+      {activeHRTasks.length > 0 && (
+        <div className="p-4 bg-slate-900/90 border border-amber-500/40 rounded-2xl space-y-2.5">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-bold text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span>Dispatched Action Alerts & Live Status ({activeHRTasks.length})</span>
+            </h3>
+            <span className="text-[10px] text-slate-400">Synchronized live with Reception & Pantry</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+            {activeHRTasks.map((task) => {
+              const isPending = task.status === 'PENDING';
+              const isAcknowledged = task.status === 'ACKNOWLEDGED' || task.status === 'IN_PROGRESS';
+
+              return (
+                <div
+                  key={task.id}
+                  className="p-3 bg-slate-950/70 border border-slate-800 rounded-xl flex items-center justify-between gap-3 text-xs"
+                >
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold text-white truncate">{task.title}</span>
+                    </div>
+                    <div className="text-[10px] text-slate-400 flex items-center gap-2 mt-0.5">
+                      <span>Target: <strong className="text-slate-300">{task.targetRole}</strong></span>
+                      <span>•</span>
+                      <span>{new Date(task.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    {isPending && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 whitespace-nowrap animate-pulse">
+                        Awaiting Ack
+                      </span>
+                    )}
+                    {isAcknowledged && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30 whitespace-nowrap">
+                        Acknowledged
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Main Content Area */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left 2 Cols: Candidate Priority Queue */}
@@ -127,7 +193,7 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
                 Live Candidate Intake & Room Allocation Queue
               </h2>
               <p className="text-xs text-slate-400 mt-0.5">
-                Full authorized visibility for HR. Human room assignment triggers automated operational dispatch.
+                Full authorized candidate management & live room assignment control for HR.
               </p>
             </div>
             <span className="px-2.5 py-1 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-400 font-semibold">
@@ -209,10 +275,28 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
                         <button
                           onClick={() => onAssignRoom(cand.id, cand.currentInterviewId)}
                           className="px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs rounded-xl shadow-lg transition cursor-pointer flex items-center gap-1.5"
+                          title="HR Room Control: Assign or reassign candidate room"
                         >
                           <DoorOpen className="w-3.5 h-3.5" />
-                          <span>Assign Room</span>
+                          <span>{cand.assignedRoomId ? 'Change Room' : 'Assign Room'}</span>
                         </button>
+                        {onOpenChatWithContext && (
+                          <button
+                            onClick={() =>
+                              onOpenChatWithContext({
+                                candidateId: cand.id,
+                                roomId: cand.assignedRoomId,
+                                channelId: 'reception',
+                                initialMessage: `Please bring ${cand.fullName} to ${cand.assignedRoomName || 'Elegance Suite'}.`,
+                              })
+                            }
+                            className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-amber-300 font-semibold text-xs rounded-xl border border-slate-700 hover:border-amber-500/40 transition flex items-center gap-1.5 cursor-pointer"
+                            title="Call reception in chat to escort candidate to room"
+                          >
+                            <MessageSquare className="w-3.5 h-3.5 text-amber-400" />
+                            <span>Escort in Chat</span>
+                          </button>
+                        )}
                         <button
                           onClick={() => onOpenDossier(cand.id)}
                           className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs rounded-xl border border-slate-700 transition"
@@ -262,13 +346,21 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
                         <p className="text-[11px] text-amber-400">{cand.position}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                       <span className="px-2.5 py-1 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-300 text-[11px] font-semibold">
                         Location: {cand.currentLocation}
                       </span>
                       <button
+                        onClick={() => onAssignRoom(cand.id, cand.currentInterviewId)}
+                        className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold text-xs rounded-xl border border-slate-700 hover:border-amber-500/40 transition flex items-center gap-1.5 cursor-pointer"
+                        title="HR Room Control: Reassign candidate room at any time"
+                      >
+                        <DoorOpen className="w-3.5 h-3.5" />
+                        <span>Change Room</span>
+                      </button>
+                      <button
                         onClick={() => onOpenDossier(cand.id)}
-                        className="text-xs text-amber-400 hover:underline"
+                        className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs rounded-xl border border-slate-700 transition"
                       >
                         Details
                       </button>
@@ -295,6 +387,7 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
               const isAvail = room.status === 'AVAILABLE';
               const isAssigned = room.status === 'ASSIGNED';
               const isOccupied = room.status === 'OCCUPIED';
+              const isCleaning = room.status === 'CLEANING' || room.status === 'NEEDS_CLEANING';
 
               return (
                 <div
@@ -309,10 +402,14 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
                           ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
                           : isAssigned
                           ? 'bg-amber-500/10 text-amber-300 border border-amber-500/30'
+                          : isCleaning
+                          ? 'bg-amber-500/15 text-amber-300 border border-amber-500/40 animate-pulse'
+                          : isOccupied
+                          ? 'bg-blue-500/10 text-blue-400 border border-blue-500/30'
                           : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
                       }`}
                     >
-                      {room.status}
+                      {isCleaning ? 'Cleaning (Pantry)' : room.status}
                     </span>
                   </div>
 

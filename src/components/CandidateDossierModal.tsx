@@ -26,6 +26,7 @@ import {
   Trash2,
   Save,
   RefreshCw,
+  DoorOpen,
 } from 'lucide-react';
 import type { Candidate, Interview, TimelineEvent, UserRole } from '../types/index.ts';
 import { formatDateTime } from '../utils/dateFormatter.ts';
@@ -285,7 +286,7 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
 
   if (!candidate && loading) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-xs p-4">
+      <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/85 backdrop-blur-xs p-4">
         <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-sm w-full text-center">
           <div className="w-10 h-10 border-2 border-amber-400 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
           <p className="text-xs text-slate-300 font-medium">Fetching Candidate Dossier...</p>
@@ -296,7 +297,7 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
 
   if (!candidate) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+      <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/85 backdrop-blur-xs p-4 animate-in fade-in duration-200">
         <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full text-center space-y-4 shadow-2xl">
           <div className="w-12 h-12 bg-rose-500/20 text-rose-400 border border-rose-500/40 rounded-full flex items-center justify-center mx-auto">
             <AlertCircle className="w-6 h-6" />
@@ -361,7 +362,7 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
   const canEditOrDelete = currentRole === 'HR' || currentRole === 'ADMIN';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-xs p-3 sm:p-5 overflow-y-auto">
+    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-xs p-3 sm:p-5 overflow-y-auto">
       <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-3xl w-full max-h-[94vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 text-slate-100">
         {/* Sync status warning banner if background fetch failed */}
         {fetchError && (
@@ -1022,15 +1023,17 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
         <div className="p-4 border-t border-slate-800 bg-slate-950/80 flex items-center justify-between">
           <span className="text-xs text-slate-500">Security: Role-based authenticated access</span>
           <div className="flex gap-2">
-            {onAssignRoom && candidate.status === 'ARRIVED' && (
+            {onAssignRoom && (currentRole === 'HR' || currentRole === 'ADMIN') && candidate.status !== 'CHECKED_OUT' && candidate.status !== 'DELETED' && (
               <button
                 onClick={() => {
                   onClose();
                   onAssignRoom(candidate.id, candidate.currentInterviewId);
                 }}
-                className="px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs rounded-xl shadow-md transition cursor-pointer"
+                className="px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs rounded-xl shadow-md transition cursor-pointer flex items-center gap-1.5"
+                title="HR / Admin Room Control: Assign or change room"
               >
-                Assign Room Now
+                <DoorOpen className="w-3.5 h-3.5" />
+                <span>{candidate.assignedRoomId ? 'Change / Reassign Room' : 'Assign Room Now'}</span>
               </button>
             )}
             <button

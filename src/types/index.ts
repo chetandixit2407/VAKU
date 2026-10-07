@@ -23,6 +23,8 @@ export type DomainEventType =
   | 'VISITOR_CHECKED_IN'
   | 'WALKIN_REGISTERED'
   | 'INTERNAL_CHAT_MESSAGE'
+  | 'ACTION_TASK_CREATED'
+  | 'ACTION_TASK_UPDATED'
   | 'ROOM_REQUEST_ACTION'
   | 'HEARTBEAT';
 
@@ -319,7 +321,7 @@ export interface Interview {
   updatedAt: string;
 }
 
-export type RoomStatus = 'AVAILABLE' | 'ASSIGNED' | 'OCCUPIED' | 'MAINTENANCE' | 'NEEDS_CLEANING';
+export type RoomStatus = 'AVAILABLE' | 'ASSIGNED' | 'OCCUPIED' | 'MAINTENANCE' | 'NEEDS_CLEANING' | 'CLEANING';
 
 export type RoomType = 'CABIN' | 'MEETING_ROOM' | 'WAITING_AREA' | 'POD' | 'OTHER' | 'EXECUTIVE_BOARDROOM' | 'STANDARD_MEETING' | 'INTERVIEW_POD';
 
@@ -339,6 +341,9 @@ export interface Room {
   currentInterviewId?: string;
   assignedInterviewerName?: string;
   lastSanitizedAt?: string;
+  cleaningRequestedAt?: string;
+  lastCleanedAt?: string;
+  lastCleanedBy?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -404,6 +409,49 @@ export interface PantryTask {
   completedAt?: string;
   completedBy?: string;
   assignedSteward?: string;
+  sourceChatMessageId?: string;
+}
+
+export type ActionTaskType =
+  | 'ESCORT_CANDIDATE'
+  | 'PREPARE_ROOM'
+  | 'CLEAN_ROOM'
+  | 'CANDIDATE_READY'
+  | 'CUSTOM_INSTRUCTION';
+
+export type ActionTaskStatus =
+  | 'PENDING'
+  | 'ACKNOWLEDGED'
+  | 'IN_PROGRESS'
+  | 'COMPLETED'
+  | 'DISMISSED';
+
+export interface ActionTask {
+  id: string;
+  sourceChatMessageId?: string;
+  taskType: ActionTaskType;
+  title: string;
+  instruction: string;
+  targetRole: UserRole;
+  targetUserId?: string;
+  senderId: string;
+  senderName: string;
+  senderRole: UserRole;
+  candidateId?: string;
+  candidateName?: string;
+  candidateLocation?: string;
+  candidateStatus?: string;
+  roomId?: string;
+  roomName?: string;
+  destinationRoomId?: string;
+  destinationRoomName?: string;
+  priority: NotificationPriority;
+  status: ActionTaskStatus;
+  createdAt: string;
+  acknowledgedAt?: string;
+  acknowledgedBy?: string;
+  completedAt?: string;
+  completedBy?: string;
 }
 
 export type ActorType = 'SYSTEM' | 'USER' | 'STAFF' | 'CANDIDATE';
@@ -523,6 +571,8 @@ export interface ChatMessage {
   readBy: string[]; // user IDs who have read
   candidateId?: string;
   candidateName?: string;
+  roomId?: string;
+  roomName?: string;
   isPriority?: boolean;
 }
 

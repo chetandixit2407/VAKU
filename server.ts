@@ -5,6 +5,7 @@ import path from 'path';
 import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 import { dbService } from './src/server/db.ts';
+import type { DatabaseSchema } from './src/server/db.ts';
 import { eventWorkflowEngine } from './src/server/workflowEngine.ts';
 import { validationEngine } from './src/server/validationEngine.ts';
 import {
@@ -23,6 +24,7 @@ import type {
   CheckInSession,
   Interview,
   UserRole,
+  User,
   Room,
   RoomType,
   CandidateChangeRequest,
@@ -39,6 +41,7 @@ import type {
   VisitorType,
   ChatMessage,
   ChatChannel,
+  ActionTask,
 } from './src/types/index.ts';
 import { validatePersonName } from './src/utils/registrationConfig.ts';
 
@@ -2961,6 +2964,31 @@ async function startServer() {
     }
   });
 
+  // Mark room CLEANING -> CLEANED / READY
+  app.post('/api/pantry/rooms/:id/cleaned', (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { stewardName } = req.body;
+
+    try {
+      eventWorkflowEngine.handleRoomMarkedCleaned(id, stewardName || 'Suresh Kumar (Pantry)');
+      res.json({ success: true, message: 'Room marked CLEANED / READY and is now AVAILABLE.' });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message || 'Failed to mark room cleaned' });
+    }
+  });
+
+  app.post('/api/rooms/:id/cleaned', (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { stewardName } = req.body;
+
+    try {
+      eventWorkflowEngine.handleRoomMarkedCleaned(id, stewardName || 'Suresh Kumar (Pantry)');
+      res.json({ success: true, message: 'Room marked CLEANED / READY and is now AVAILABLE.' });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message || 'Failed to mark room cleaned' });
+    }
+  });
+
   // ==========================================
   // INTERVIEW WORKFLOW ACTIONS (INTERVIEWER)
   // ==========================================
@@ -3100,8 +3128,12 @@ async function startServer() {
   // 1. GET CHAT CHANNELS
   app.get('/api/chat/channels', (req: Request, res: Response) => {
     const db = dbService.get();
-    const channels = db.chatChannels || [];
     const auth = authenticateStaffRequest(req, db.users);
+    if (!auth.authenticated && !auth.user) {
+      return res.status(401).json({ success: false, error: 'Access denied: Staff authentication required.' });
+    }
+
+    const channels = db.chatChannels || [];
     const userRole = auth.user?.role || (req.headers['x-user-role'] as UserRole) || 'HR';
 
     // Filter channels based on role access
@@ -3116,6 +3148,11 @@ async function startServer() {
   // 2. GET CHAT MESSAGES
   app.get('/api/chat/messages', (req: Request, res: Response) => {
     const db = dbService.get();
+    const auth = authenticateStaffRequest(req, db.users);
+    if (!auth.authenticated && !auth.user) {
+      return res.status(401).json({ success: false, error: 'Access denied: Staff authentication required.' });
+    }
+
     const { channelId, recipientId, userId } = req.query as {
       channelId?: string;
       recipientId?: string;
@@ -3135,7 +3172,7 @@ async function startServer() {
       );
     }
 
-    // Limit to latest 300 messages sorted chronologically
+    // Limit to latest 500 messages sorted chronologically
     const sorted = [...messages].sort(
       (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     );
@@ -3143,15 +3180,274 @@ async function startServer() {
     res.json({ success: true, messages: sorted });
   });
 
+  // Helper: Parse operational instructions from chat into real-time Action Tasks
+  function parseOperationalActionTask(
+    msg: ChatMessage,
+    db: { candidates: Candidate[]; rooms: Room[]; users: User[]; actionTasks?: ActionTask[] }
+  ): ActionTask | null {
+    const content = (msg.content || '').trim();
+    const lower = content.toLowerCase();
+
+    // 1. Escort / Bring Candidate to Room instructions (Target: RECEPTION)
+    const hasBringVerb = /\b(bring|send|escort|call in|guide|move|take|dispatch|lead)\b/i.test(content);
+    const hasReadySignal = /\b(candidate is ready|candidate ready|is ready for interview|ready for round)\b/i.test(content);
+    const isReceptionChannel = msg.channelId === 'reception';
+    const hasCandAndRoom = Boolean(msg.candidateId) && Boolean(msg.roomId);
+
+    const isEscortRequest =
+      (hasBringVerb || hasReadySignal || isReceptionChannel || hasCandAndRoom) &&
+      msg.senderRole !== 'RECEPTION';
+
+    if (isEscortRequest) {
+      // A. Match candidate
+      let matchedCand = msg.candidateId
+        ? db.candidates.find((c) => c.id === msg.candidateId)
+        : null;
+
+      if (!matchedCand && msg.candidateName) {
+        matchedCand = db.candidates.find(
+          (c) => c.fullName.toLowerCase() === msg.candidateName?.toLowerCase()
+        );
+      }
+
+      if (!matchedCand) {
+        for (const cand of db.candidates) {
+          if (cand.fullName && lower.includes(cand.fullName.toLowerCase())) {
+            matchedCand = cand;
+            break;
+          }
+        }
+      }
+
+      if (!matchedCand) {
+        for (const cand of db.candidates) {
+          const parts = cand.fullName.split(' ');
+          const firstName = parts[0];
+          if (firstName && firstName.length >= 3 && new RegExp(`\\b${firstName}\\b`, 'i').test(content)) {
+            matchedCand = cand;
+            break;
+          }
+        }
+      }
+
+      if (!matchedCand) {
+        // Fallback: search waiting or arrived candidates
+        matchedCand = db.candidates.find(
+          (c) => c.status === 'ARRIVED' || c.status === 'WAITING' || c.status === 'ROOM_ASSIGNED'
+        );
+      }
+
+      // B. Match destination room
+      let matchedRoom = msg.roomId
+        ? db.rooms.find((r) => r.id === msg.roomId || r.roomId === msg.roomId)
+        : null;
+
+      if (!matchedRoom && msg.roomName) {
+        matchedRoom = db.rooms.find(
+          (r) => r.name.toLowerCase() === msg.roomName?.toLowerCase()
+        );
+      }
+
+      if (!matchedRoom) {
+        for (const room of db.rooms) {
+          if (room.name && lower.includes(room.name.toLowerCase())) {
+            matchedRoom = room;
+            break;
+          }
+        }
+      }
+
+      if (!matchedRoom && matchedCand?.assignedRoomId) {
+        matchedRoom = db.rooms.find(
+          (r) => r.id === matchedCand?.assignedRoomId || r.roomId === matchedCand?.assignedRoomId
+        );
+      }
+
+      const candidateName = matchedCand?.fullName || msg.candidateName || 'Candidate';
+      const candidateId = matchedCand?.id || msg.candidateId;
+      const destRoomName = matchedRoom?.name || msg.roomName || 'Designated Interview Cabin';
+      const destRoomId = matchedRoom?.id || msg.roomId;
+      const candidateLocation = matchedCand?.currentLocation || 'Waiting Lounge / Reception';
+      const candidateStatus = matchedCand?.status || 'WAITING';
+
+      const title = `${msg.senderName} (${msg.senderRole}) requested: Bring ${candidateName} to ${destRoomName}`;
+
+      return {
+        id: `act-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        sourceChatMessageId: msg.id,
+        taskType: 'ESCORT_CANDIDATE',
+        title,
+        instruction: content,
+        targetRole: 'RECEPTION',
+        senderId: msg.senderId,
+        senderName: msg.senderName,
+        senderRole: msg.senderRole,
+        candidateId,
+        candidateName,
+        candidateLocation,
+        candidateStatus,
+        destinationRoomId: destRoomId,
+        destinationRoomName: destRoomName,
+        priority: msg.isPriority ? 'HIGH' : 'NORMAL',
+        status: 'PENDING',
+        createdAt: msg.timestamp || new Date().toISOString(),
+      };
+    }
+
+    // 2. Pantry Room Prep / Clean / Refreshments instructions (Target: PANTRY)
+    const isPantryPattern =
+      /\b(prepare|clean|sanitize|reset|tidy|ready the room|water|tea|coffee|refreshments|beverage|steward)\b/i.test(content) ||
+      msg.channelId === 'pantry';
+
+    if (isPantryPattern && msg.senderRole !== 'PANTRY') {
+      let matchedRoom = msg.roomId
+        ? db.rooms.find((r) => r.id === msg.roomId || r.roomId === msg.roomId)
+        : null;
+
+      if (!matchedRoom && msg.roomName) {
+        matchedRoom = db.rooms.find(
+          (r) => r.name.toLowerCase() === msg.roomName?.toLowerCase()
+        );
+      }
+
+      if (!matchedRoom) {
+        for (const room of db.rooms) {
+          if (room.name && lower.includes(room.name.toLowerCase())) {
+            matchedRoom = room;
+            break;
+          }
+        }
+      }
+
+      const isClean = /\b(clean|sanitize|reset|clear|tidy)\b/i.test(content);
+      const roomName = matchedRoom?.name || msg.roomName || 'Meeting Room';
+      const roomId = matchedRoom?.id || msg.roomId;
+      const taskType = isClean ? 'CLEAN_ROOM' : 'PREPARE_ROOM';
+      const title = `Pantry Request: ${isClean ? 'Clean & Reset' : 'Prepare'} ${roomName}`;
+
+      return {
+        id: `act-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        sourceChatMessageId: msg.id,
+        taskType,
+        title,
+        instruction: content,
+        targetRole: 'PANTRY',
+        senderId: msg.senderId,
+        senderName: msg.senderName,
+        senderRole: msg.senderRole,
+        roomId,
+        roomName,
+        destinationRoomId: roomId,
+        destinationRoomName: roomName,
+        priority: msg.isPriority ? 'HIGH' : 'NORMAL',
+        status: 'PENDING',
+        createdAt: msg.timestamp || new Date().toISOString(),
+      };
+    }
+
+    // 3. Direct Staff Targeted Instruction
+    if (msg.recipientId && msg.senderRole !== 'RECEPTION' && msg.senderRole !== 'PANTRY') {
+      const targetUser = db.users.find((u) => u.id === msg.recipientId);
+      if (targetUser) {
+        return {
+          id: `act-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+          sourceChatMessageId: msg.id,
+          taskType: 'CUSTOM_INSTRUCTION',
+          title: `Direct Action from ${msg.senderName}: ${content.slice(0, 50)}`,
+          instruction: content,
+          targetRole: targetUser.role,
+          targetUserId: targetUser.id,
+          senderId: msg.senderId,
+          senderName: msg.senderName,
+          senderRole: msg.senderRole,
+          candidateId: msg.candidateId,
+          candidateName: msg.candidateName,
+          roomId: msg.roomId,
+          roomName: msg.roomName,
+          destinationRoomId: msg.roomId,
+          destinationRoomName: msg.roomName,
+          priority: msg.isPriority ? 'HIGH' : 'NORMAL',
+          status: 'PENDING',
+          createdAt: msg.timestamp || new Date().toISOString(),
+        };
+      }
+    }
+
+    return null;
+  }
+
+  // Helper: Deduplicate active Action Tasks
+  function saveActionTaskWithDeduplication(
+    draft: DatabaseSchema,
+    newTask: ActionTask
+  ): { task: ActionTask; isNew: boolean } {
+    draft.actionTasks = draft.actionTasks || [];
+
+    // Check for active existing pending task matching role and target entity
+    const existingIdx = draft.actionTasks.findIndex((t: ActionTask) => {
+      if (t.status === 'COMPLETED' || t.status === 'DISMISSED') return false;
+      if (t.targetRole !== newTask.targetRole) return false;
+
+      if (newTask.taskType === 'ESCORT_CANDIDATE' && t.taskType === 'ESCORT_CANDIDATE') {
+        return (
+          (Boolean(newTask.candidateId) && t.candidateId === newTask.candidateId) ||
+          (Boolean(newTask.candidateName) && t.candidateName?.toLowerCase() === newTask.candidateName?.toLowerCase())
+        );
+      }
+
+      if ((newTask.taskType === 'PREPARE_ROOM' || newTask.taskType === 'CLEAN_ROOM') &&
+          (t.taskType === 'PREPARE_ROOM' || t.taskType === 'CLEAN_ROOM')) {
+        return (
+          (Boolean(newTask.roomId) && t.roomId === newTask.roomId) ||
+          (Boolean(newTask.roomName) && t.roomName?.toLowerCase() === newTask.roomName?.toLowerCase())
+        );
+      }
+
+      if (newTask.targetUserId && t.targetUserId === newTask.targetUserId) {
+        return t.sourceChatMessageId === newTask.sourceChatMessageId;
+      }
+
+      return false;
+    });
+
+    if (existingIdx !== -1) {
+      const existing = draft.actionTasks[existingIdx];
+      existing.instruction = newTask.instruction;
+      existing.title = newTask.title;
+      existing.senderId = newTask.senderId;
+      existing.senderName = newTask.senderName;
+      existing.senderRole = newTask.senderRole;
+      existing.sourceChatMessageId = newTask.sourceChatMessageId;
+      if (newTask.destinationRoomName) existing.destinationRoomName = newTask.destinationRoomName;
+      if (newTask.destinationRoomId) existing.destinationRoomId = newTask.destinationRoomId;
+      if (newTask.priority === 'HIGH') existing.priority = 'HIGH';
+      return { task: existing, isNew: false };
+    } else {
+      draft.actionTasks.unshift(newTask);
+      if (draft.actionTasks.length > 500) {
+        draft.actionTasks = draft.actionTasks.slice(0, 500);
+      }
+      return { task: newTask, isNew: true };
+    }
+  }
+
   // 3. SEND CHAT MESSAGE
   app.post('/api/chat/messages', (req: Request, res: Response) => {
+    const db = dbService.get();
+    const auth = authenticateStaffRequest(req, db.users);
+    if (!auth.authenticated && !auth.user) {
+      return res.status(401).json({ success: false, error: 'Access denied: Staff authentication required.' });
+    }
+
     const {
       channelId,
       recipientId,
       recipientName,
       content,
       candidateId,
-      candidateName,
+      candidateName: inputCandidateName,
+      roomId,
+      roomName: inputRoomName,
       isPriority,
     } = req.body;
 
@@ -3162,9 +3458,6 @@ async function startServer() {
     if (!channelId && !recipientId) {
       return res.status(400).json({ success: false, error: 'Target channel or recipient is required.' });
     }
-
-    const db = dbService.get();
-    const auth = authenticateStaffRequest(req, db.users);
 
     const senderId =
       auth.user?.id ||
@@ -3181,6 +3474,20 @@ async function startServer() {
       (sender?.role || (req.headers['x-user-role'] as UserRole) || req.body.senderRole || 'HR') as UserRole;
     const senderDepartment = sender?.department || 'Operations';
 
+    // Resolve Candidate context if provided
+    let candidateName = inputCandidateName;
+    if (candidateId && !candidateName) {
+      const matchedCand = db.candidates.find((c) => c.id === candidateId);
+      if (matchedCand) candidateName = matchedCand.fullName;
+    }
+
+    // Resolve Room context if provided
+    let roomName = inputRoomName;
+    if (roomId && !roomName) {
+      const matchedRoom = db.rooms.find((r) => r.id === roomId || r.roomId === roomId);
+      if (matchedRoom) roomName = matchedRoom.name;
+    }
+
     const timestamp = new Date().toISOString();
     const newMessage: ChatMessage = {
       id: `msg-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
@@ -3196,8 +3503,12 @@ async function startServer() {
       readBy: [senderId],
       candidateId: candidateId || undefined,
       candidateName: candidateName || undefined,
+      roomId: roomId || undefined,
+      roomName: roomName || undefined,
       isPriority: Boolean(isPriority),
     };
+
+    let generatedActionTask: ActionTask | null = null;
 
     dbService.update((draft) => {
       draft.chatMessages = draft.chatMessages || [];
@@ -3205,20 +3516,77 @@ async function startServer() {
       if (draft.chatMessages.length > 2000) {
         draft.chatMessages = draft.chatMessages.slice(-2000);
       }
+
+      // Create contextual in-app notifications
+      const previewMsg = content.trim().length > 90 ? content.trim().slice(0, 87) + '...' : content.trim();
+
+      // Case A: Direct message recipient notification
+      if (recipientId) {
+        const targetUser = draft.users.find((u) => u.id === recipientId);
+        draft.notifications.unshift({
+          id: `notif-chat-${Date.now()}`,
+          recipientUserId: recipientId,
+          recipientRole: targetUser?.role || 'HR',
+          title: `💬 Chat: ${senderName} (${senderRole})`,
+          message: previewMsg,
+          priority: isPriority ? 'HIGH' : 'NORMAL',
+          eventType: 'INTERNAL_CHAT_MESSAGE',
+          entityId: candidateId || roomId || newMessage.id,
+          entityType: candidateId ? 'CANDIDATE' : 'ROOM',
+          read: false,
+          createdAt: timestamp,
+          actionButtons: [{ label: 'Open Chat', actionKey: 'OPEN_CHAT', payload: { candidateId, roomId } }],
+          payload: {
+            chatMessageId: newMessage.id,
+            senderId,
+            candidateId,
+            roomId,
+          },
+        });
+      }
+
+      // Case B: Automatically generate real-time actionable dashboard alert/task
+      const parsedTask = parseOperationalActionTask(newMessage, draft as any);
+      if (parsedTask) {
+        const { task } = saveActionTaskWithDeduplication(draft as any, parsedTask);
+        generatedActionTask = task;
+      }
     });
 
-    // Real-time broadcast to all connected staff SSE clients
+    // Real-time broadcast chat message to all connected staff SSE clients
     eventWorkflowEngine.broadcast({
       type: 'INTERNAL_CHAT_MESSAGE',
       payload: newMessage,
       targetUserId: recipientId || undefined,
     });
 
-    res.json({ success: true, message: newMessage });
+    // Real-time broadcast Action Task alert to target dashboards immediately
+    if (generatedActionTask) {
+      eventWorkflowEngine.broadcast({
+        type: 'ACTION_TASK_CREATED',
+        payload: {
+          task: generatedActionTask,
+          chatMessage: newMessage,
+        },
+        targetRoles: [(generatedActionTask as ActionTask).targetRole, 'ADMIN', 'HR', 'SENIOR_HR'],
+      });
+    }
+
+    res.json({
+      success: true,
+      message: newMessage,
+      actionTask: generatedActionTask,
+    });
   });
 
   // 4. MARK MESSAGES AS READ
   app.post('/api/chat/read', (req: Request, res: Response) => {
+    const db = dbService.get();
+    const auth = authenticateStaffRequest(req, db.users);
+    if (!auth.authenticated && !auth.user) {
+      return res.status(401).json({ success: false, error: 'Access denied: Staff authentication required.' });
+    }
+
     const { userId, channelId, recipientId } = req.body;
     if (!userId) {
       return res.status(400).json({ success: false, error: 'userId is required' });
@@ -3244,6 +3612,10 @@ async function startServer() {
   app.get('/api/chat/unread', (req: Request, res: Response) => {
     const db = dbService.get();
     const auth = authenticateStaffRequest(req, db.users);
+    if (!auth.authenticated && !auth.user) {
+      return res.status(401).json({ success: false, error: 'Access denied: Staff authentication required.' });
+    }
+
     const userId = (req.query.userId as string) || auth.user?.id || '';
 
     if (!userId) {
@@ -3274,6 +3646,223 @@ async function startServer() {
       channels: channelsMap,
       direct: directMap,
     });
+  });
+
+  // ==========================================
+  // REAL-TIME ACTION TASKS / ALERTS API
+  // ==========================================
+
+  // 1. GET ACTION TASKS (Role-filtered & Sanitized)
+  app.get('/api/action-tasks', (req: Request, res: Response) => {
+    const db = dbService.get();
+    const auth = authenticateStaffRequest(req, db.users);
+    if (!auth.authenticated && !auth.user) {
+      return res.status(401).json({ success: false, error: 'Access denied: Staff authentication required.' });
+    }
+
+    const userRole = auth.user?.role || (req.headers['x-user-role'] as UserRole) || 'HR';
+    const userId = auth.user?.id || (req.headers['x-user-id'] as string) || '';
+    const allTasks = db.actionTasks || [];
+
+    // Filter based on role permissions
+    let accessibleTasks = allTasks;
+    if (userRole === 'RECEPTION') {
+      accessibleTasks = allTasks.filter(
+        (t) => t.targetRole === 'RECEPTION' || (t.targetRole as string) === 'ALL'
+      );
+    } else if (userRole === 'PANTRY') {
+      accessibleTasks = allTasks.filter(
+        (t) => t.targetRole === 'PANTRY' || (t.targetRole as string) === 'ALL'
+      );
+    } else if (userRole === 'ADMIN' || userRole === 'CEO' || userRole === 'CO_FOUNDER' || userRole === 'SUPER_ADMIN') {
+      accessibleTasks = allTasks; // Admin sees all tasks across the company
+    } else if (userRole === 'HR' || userRole === 'SENIOR_HR' || userRole === 'INTERVIEWER') {
+      accessibleTasks = allTasks.filter(
+        (t) =>
+          t.senderId === userId ||
+          t.targetUserId === userId ||
+          t.targetRole === userRole ||
+          t.taskType === 'ESCORT_CANDIDATE' ||
+          t.taskType === 'PREPARE_ROOM' ||
+          t.taskType === 'CLEAN_ROOM'
+      );
+    } else {
+      accessibleTasks = allTasks.filter(
+        (t) => t.targetUserId === userId || t.targetRole === userRole
+      );
+    }
+
+    // Security sanitization: Strip any unnecessary candidate documents/PII
+    const sanitizedTasks = accessibleTasks.map((t) => ({
+      id: t.id,
+      sourceChatMessageId: t.sourceChatMessageId,
+      taskType: t.taskType,
+      title: t.title,
+      instruction: t.instruction,
+      targetRole: t.targetRole,
+      targetUserId: t.targetUserId,
+      senderId: t.senderId,
+      senderName: t.senderName,
+      senderRole: t.senderRole,
+      candidateId: t.candidateId,
+      candidateName: t.candidateName,
+      candidateLocation: t.candidateLocation,
+      candidateStatus: t.candidateStatus,
+      roomId: t.roomId,
+      roomName: t.roomName,
+      destinationRoomId: t.destinationRoomId,
+      destinationRoomName: t.destinationRoomName,
+      priority: t.priority,
+      status: t.status,
+      createdAt: t.createdAt,
+      acknowledgedAt: t.acknowledgedAt,
+      acknowledgedBy: t.acknowledgedBy,
+      completedAt: t.completedAt,
+      completedBy: t.completedBy,
+    }));
+
+    res.json({ success: true, tasks: sanitizedTasks });
+  });
+
+  // 2. ACKNOWLEDGE ACTION TASK
+  app.post('/api/action-tasks/:id/acknowledge', (req: Request, res: Response) => {
+    const db = dbService.get();
+    const auth = authenticateStaffRequest(req, db.users);
+    if (!auth.authenticated && !auth.user) {
+      return res.status(401).json({ success: false, error: 'Access denied: Staff authentication required.' });
+    }
+
+    const { id } = req.params;
+    const staffName = auth.user?.name || (req.headers['x-user-name'] as string) || 'Staff Member';
+    const timestamp = new Date().toISOString();
+
+    let updatedTask: ActionTask | null = null;
+    dbService.update((draft) => {
+      draft.actionTasks = draft.actionTasks || [];
+      const task = draft.actionTasks.find((t) => t.id === id);
+      if (task) {
+        task.status = 'ACKNOWLEDGED';
+        task.acknowledgedAt = timestamp;
+        task.acknowledgedBy = staffName;
+        updatedTask = { ...task };
+      }
+    });
+
+    if (!updatedTask) {
+      return res.status(404).json({ success: false, error: 'Task not found' });
+    }
+
+    // Broadcast SSE update
+    eventWorkflowEngine.broadcast({
+      type: 'ACTION_TASK_UPDATED',
+      payload: { task: updatedTask },
+      targetRoles: ['RECEPTION', 'PANTRY', 'ADMIN', 'HR', 'SENIOR_HR'],
+    });
+
+    res.json({ success: true, task: updatedTask });
+  });
+
+  // 3. COMPLETE ACTION TASK
+  app.post('/api/action-tasks/:id/complete', (req: Request, res: Response) => {
+    const db = dbService.get();
+    const auth = authenticateStaffRequest(req, db.users);
+    if (!auth.authenticated && !auth.user) {
+      return res.status(401).json({ success: false, error: 'Access denied: Staff authentication required.' });
+    }
+
+    const { id } = req.params;
+    const staffName = auth.user?.name || (req.headers['x-user-name'] as string) || 'Staff Member';
+    const timestamp = new Date().toISOString();
+
+    let updatedTask: ActionTask | null = null;
+    dbService.update((draft) => {
+      draft.actionTasks = draft.actionTasks || [];
+      const task = draft.actionTasks.find((t) => t.id === id);
+      if (task) {
+        task.status = 'COMPLETED';
+        task.completedAt = timestamp;
+        task.completedBy = staffName;
+        updatedTask = { ...task };
+
+        // Synchronize candidate / room states if applicable
+        if (task.taskType === 'ESCORT_CANDIDATE' && task.candidateId) {
+          const cand = draft.candidates.find((c) => c.id === task.candidateId);
+          if (cand) {
+            if (task.destinationRoomName) {
+              cand.currentLocation = task.destinationRoomName;
+            }
+            if (cand.status === 'ARRIVED' || cand.status === 'WAITING') {
+              cand.status = 'ROOM_ASSIGNED';
+            }
+          }
+        }
+
+        if (task.taskType === 'CLEAN_ROOM' && task.roomId) {
+          const room = draft.rooms.find((r) => r.id === task.roomId || r.roomId === task.roomId);
+          if (room) {
+            room.status = 'AVAILABLE';
+            room.lastCleanedAt = timestamp;
+            room.lastCleanedBy = staffName;
+          }
+        }
+      }
+    });
+
+    if (!updatedTask) {
+      return res.status(404).json({ success: false, error: 'Task not found' });
+    }
+
+    // Broadcast SSE update
+    eventWorkflowEngine.broadcast({
+      type: 'ACTION_TASK_UPDATED',
+      payload: { task: updatedTask },
+      targetRoles: ['RECEPTION', 'PANTRY', 'ADMIN', 'HR', 'SENIOR_HR'],
+    });
+
+    res.json({ success: true, task: updatedTask });
+  });
+
+  // 4. UPDATE ACTION TASK STATUS
+  app.post('/api/action-tasks/:id/status', (req: Request, res: Response) => {
+    const db = dbService.get();
+    const auth = authenticateStaffRequest(req, db.users);
+    if (!auth.authenticated && !auth.user) {
+      return res.status(401).json({ success: false, error: 'Access denied: Staff authentication required.' });
+    }
+
+    const { id } = req.params;
+    const { status } = req.body;
+    const staffName = auth.user?.name || 'Staff Member';
+    const timestamp = new Date().toISOString();
+
+    let updatedTask: ActionTask | null = null;
+    dbService.update((draft) => {
+      draft.actionTasks = draft.actionTasks || [];
+      const task = draft.actionTasks.find((t) => t.id === id);
+      if (task && status) {
+        task.status = status;
+        if (status === 'ACKNOWLEDGED') {
+          task.acknowledgedAt = timestamp;
+          task.acknowledgedBy = staffName;
+        } else if (status === 'COMPLETED') {
+          task.completedAt = timestamp;
+          task.completedBy = staffName;
+        }
+        updatedTask = { ...task };
+      }
+    });
+
+    if (!updatedTask) {
+      return res.status(404).json({ success: false, error: 'Task not found' });
+    }
+
+    eventWorkflowEngine.broadcast({
+      type: 'ACTION_TASK_UPDATED',
+      payload: { task: updatedTask },
+      targetRoles: ['RECEPTION', 'PANTRY', 'ADMIN', 'HR', 'SENIOR_HR'],
+    });
+
+    res.json({ success: true, task: updatedTask });
   });
 
   // ==========================================

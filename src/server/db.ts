@@ -18,6 +18,7 @@ import type {
   DomainEvent,
   ChatMessage,
   ChatChannel,
+  ActionTask,
 } from '../types/index.ts';
 import { hashPassword, ROLE_PERMISSIONS } from './auth.ts';
 
@@ -31,6 +32,7 @@ export interface DatabaseSchema {
   rooms: Room[];
   notifications: Notification[];
   pantryTasks: PantryTask[];
+  actionTasks?: ActionTask[];
   timelineEvents: TimelineEvent[];
   auditLogs: AuditLog[];
   checkInSessions: CheckInSession[];
@@ -854,6 +856,9 @@ class DatabaseService {
         if (!parsed.chatMessages || !Array.isArray(parsed.chatMessages)) {
           parsed.chatMessages = defaultChatMessages;
         }
+        if (!parsed.actionTasks || !Array.isArray(parsed.actionTasks)) {
+          parsed.actionTasks = [];
+        }
 
         this.persist(parsed);
         return parsed;
@@ -869,6 +874,7 @@ class DatabaseService {
       rooms: defaultRooms,
       chatChannels: defaultChatChannels,
       chatMessages: defaultChatMessages,
+      actionTasks: [],
       notifications: [
         {
           id: 'notif-welcome',

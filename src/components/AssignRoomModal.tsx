@@ -239,6 +239,10 @@ export const AssignRoomModal: React.FC<AssignRoomModalProps> = ({
                           <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
                             Available
                           </span>
+                        ) : room.status === 'CLEANING' || room.status === 'NEEDS_CLEANING' ? (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-300 border border-amber-500/30">
+                            Under Cleaning
+                          </span>
                         ) : (
                           <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/30">
                             {room.status}
@@ -250,23 +254,6 @@ export const AssignRoomModal: React.FC<AssignRoomModalProps> = ({
                 })}
               </div>
             )}
-          </div>
-
-          {/* Workflow Automation Guarantee Preview */}
-          <div className="p-3.5 bg-slate-950 border border-slate-800 rounded-2xl space-y-2 text-xs">
-            <div className="flex items-center gap-1.5 text-amber-400 font-bold text-[11px]">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>10 System Operations Automated Automatically Upon Decision:</span>
-            </div>
-            <ul className="text-[10px] text-slate-400 space-y-1 pl-4 list-disc">
-              <li>Reserve selected room & block double-booking</li>
-              <li>Update candidate location to room & status to <code>ROOM_ASSIGNED</code></li>
-              <li>Notify assigned interviewer with room details and 'Start Interview' action</li>
-              <li>Notify reception with escort guidance</li>
-              <li>Generate Pantry hospitality preparation task (water bottles & setup)</li>
-              <li>Update live operational dashboards in real time</li>
-              <li>Log audit trail with actor name and timestamp</li>
-            </ul>
           </div>
         </div>
 
@@ -286,12 +273,12 @@ export const AssignRoomModal: React.FC<AssignRoomModalProps> = ({
             {submitting ? (
               <>
                 <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                Automating...
+                Assigning...
               </>
             ) : (
               <>
                 <CheckCircle2 className="w-3.5 h-3.5" />
-                Confirm Room & Automate Tasks
+                Confirm Room Assignment
               </>
             )}
           </button>

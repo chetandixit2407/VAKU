@@ -28,6 +28,13 @@ import {
   DoorOpen,
   Edit3,
   Trash2,
+  MapPin,
+  Search,
+  Filter,
+  Phone,
+  MessageSquare,
+  Coffee,
+  Calendar,
 } from 'lucide-react';
 import type {
   AuditLog,
@@ -37,15 +44,55 @@ import type {
   Room,
   RoomType,
   RoomStatus,
+  Candidate,
+  Interview,
+  PantryTask,
+  ActionTask,
 } from '../../types/index.ts';
 import { AdminChangeCredentialsModal } from '../AdminChangeCredentialsModal.tsx';
 
 interface AdminDashboardProps {
+  candidates?: Candidate[];
+  interviews?: Interview[];
+  rooms?: Room[];
+  pantryTasks?: PantryTask[];
+  actionTasks?: ActionTask[];
+  onOpenDossier?: (candidateId: string) => void;
+  onAssignRoom?: (candidateId: string, interviewId?: string) => void;
+  onOpenChatWithContext?: (options: {
+    candidateId?: string;
+    roomId?: string;
+    channelId?: string;
+    initialMessage?: string;
+  }) => void;
+  onMarkRoomCleaned?: (roomId: string) => void;
+  onAcknowledgeActionTask?: (taskId: string) => void;
+  onCompleteActionTask?: (taskId: string) => void;
   onRefresh: () => void;
 }
 
-export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onRefresh }) => {
-  const [activeTab, setActiveTab] = useState<'users' | 'rooms' | 'resets' | 'visibility' | 'audit' | 'settings'>('users');
+export const AdminDashboard: React.FC<AdminDashboardProps> = ({
+  candidates = [],
+  interviews = [],
+  rooms: propRooms,
+  pantryTasks = [],
+  actionTasks = [],
+  onOpenDossier,
+  onAssignRoom,
+  onOpenChatWithContext,
+  onMarkRoomCleaned,
+  onAcknowledgeActionTask,
+  onCompleteActionTask,
+  onRefresh,
+}) => {
+  const [activeTab, setActiveTab] = useState<
+    'candidates' | 'users' | 'rooms' | 'tasks' | 'resets' | 'visibility' | 'audit' | 'settings'
+  >('candidates');
+  const [taskRoleFilter, setTaskRoleFilter] = useState<'ALL' | 'RECEPTION' | 'PANTRY' | 'CUSTOM'>('ALL');
+  const [taskStatusFilter, setTaskStatusFilter] = useState<'ALL' | 'PENDING' | 'ACKNOWLEDGED' | 'COMPLETED'>('ALL');
+  const [candidateSearch, setCandidateSearch] = useState('');
+  const [candidateStatusFilter, setCandidateStatusFilter] = useState('ALL');
+  const [cleaningOverrideRoomId, setCleaningOverrideRoomId] = useState<string | null>(null);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
   const [visibilitySettings, setVisibilitySettings] = useState<Record<UserRole, RoleFieldVisibility> | null>(null);
@@ -414,6 +461,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onRefresh }) => 
     setTimeout(() => setCopiedTokenId(null), 2500);
   };
 
+  const handleAdminCleanOverride = async (roomId: string) => {
+    setCleaningOverrideRoomId(roomId);
+    try {
+      if (onMarkRoomCleaned) {
+        await onMarkRoomCleaned(roomId);
+      } else {
+        await fetch(`/api/rooms/${roomId}/cleaned`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ stewardName: 'Sameer Sir (Admin Override)' }),
+        });
+      }
+      fetchRooms();
+      onRefresh();
+    } catch (err) {
+      console.error('Failed to mark room cleaned', err);
+    } finally {
+      setCleaningOverrideRoomId(null);
+    }
+  };
+
   const handleSaveOfficeSettings = async () => {
     setSavingSettings(true);
     try {
@@ -507,6 +575,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onRefresh }) => 
         {/* Tab Switcher */}
         <div className="flex flex-wrap bg-slate-900 border border-slate-800 rounded-2xl p-1 gap-1">
           <button
+            onClick={() => setActiveTab('candidates')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
+              activeTab === 'candidates'
+                ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-bold shadow-md'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <UserCheck className="w-3.5 h-3.5" />
+            <span>Live Candidates ({candidates.length})</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('users')}
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
               activeTab === 'users'
@@ -527,7 +607,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onRefresh }) => 
             }`}
           >
             <DoorOpen className="w-3.5 h-3.5" />
-            <span>Meeting Rooms ({rooms.length})</span>
+            <span>Rooms & Pantry Monitor ({rooms.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('tasks')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 relative ${
+              activeTab === 'tasks'
+                ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Action Alerts & Tasks</span>
+            {actionTasks.filter((t) => t.status === 'PENDING').length > 0 && (
+              <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-amber-400 text-slate-950">
+                {actionTasks.filter((t) => t.status === 'PENDING').length}
+              </span>
+            )}
           </button>
 
           <button
@@ -581,6 +678,312 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onRefresh }) => 
           </button>
         </div>
       </div>
+
+      {/* TAB 0: LIVE CANDIDATES FULL VISIBILITY & AUTHORITY (ADMIN) */}
+      {activeTab === 'candidates' && (
+        <div className="space-y-4 animate-in fade-in duration-200">
+          {/* Summary Metric Cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="p-4 bg-slate-900 border border-slate-800 rounded-2xl">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                Total Intake
+              </span>
+              <div className="text-xl font-black text-white mt-1">{candidates.length}</div>
+              <span className="text-[10px] text-slate-500">Authorized View</span>
+            </div>
+            <div className="p-4 bg-slate-900 border border-blue-500/30 rounded-2xl">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400 block">
+                In Session
+              </span>
+              <div className="text-xl font-black text-blue-300 mt-1">
+                {candidates.filter((c) => c.status === 'IN_INTERVIEW').length}
+              </div>
+              <span className="text-[10px] text-blue-400/70">Live Interviews</span>
+            </div>
+            <div className="p-4 bg-slate-900 border border-amber-500/30 rounded-2xl">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 block">
+                Waiting / Assigned
+              </span>
+              <div className="text-xl font-black text-amber-300 mt-1">
+                {
+                  candidates.filter(
+                    (c) =>
+                      c.status === 'WAITING' ||
+                      c.status === 'ROOM_ASSIGNED' ||
+                      c.status === 'ARRIVED' ||
+                      c.status === 'With Kimmi Mam – Senior HR Interview'
+                  ).length
+                }
+              </div>
+              <span className="text-[10px] text-amber-400/70">In Pipeline</span>
+            </div>
+            <div className="p-4 bg-slate-900 border border-emerald-500/30 rounded-2xl">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 block">
+                Completed Today
+              </span>
+              <div className="text-xl font-black text-emerald-300 mt-1">
+                {
+                  candidates.filter(
+                    (c) =>
+                      c.status === 'CHECKED_OUT' ||
+                      c.status === 'COMPLETED' ||
+                      c.status === 'OFFERED' ||
+                      c.status === 'REJECTED'
+                  ).length
+                }
+              </div>
+              <span className="text-[10px] text-emerald-400/70">Evaluated / Departed</span>
+            </div>
+          </div>
+
+          {/* Search and Filters Bar */}
+          <div className="p-4 bg-slate-900 border border-slate-800 rounded-2xl flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            <div className="relative flex-1">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={candidateSearch}
+                onChange={(e) => setCandidateSearch(e.target.value)}
+                placeholder="Search candidate by name, position, phone, department, or room..."
+                className="w-full pl-9 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs placeholder:text-slate-500 focus:outline-hidden focus:border-amber-500"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Filter className="w-3.5 h-3.5 text-slate-400" />
+              <select
+                value={candidateStatusFilter}
+                onChange={(e) => setCandidateStatusFilter(e.target.value)}
+                className="px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:outline-hidden focus:border-amber-500"
+              >
+                <option value="ALL">All Statuses ({candidates.length})</option>
+                <option value="IN_INTERVIEW">In Interview</option>
+                <option value="ROOM_ASSIGNED">Room Assigned</option>
+                <option value="WAITING">Waiting</option>
+                <option value="ARRIVED">Arrived</option>
+                <option value="COMPLETED">Completed</option>
+                <option value="CHECKED_OUT">Checked Out</option>
+                <option value="OFFERED">Offered</option>
+                <option value="REJECTED">Rejected</option>
+              </select>
+              <button
+                onClick={onRefresh}
+                className="p-2 bg-slate-800 hover:bg-slate-700 text-amber-400 rounded-xl border border-slate-700 transition cursor-pointer"
+                title="Sync authoritative live data"
+              >
+                <RefreshCw className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Candidates Full Table */}
+          <div className="overflow-x-auto bg-slate-900 border border-slate-800 rounded-3xl shadow-xl">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-950/80 border-b border-slate-800 text-slate-300">
+                <tr>
+                  <th className="p-4 font-bold">Candidate & Position</th>
+                  <th className="p-4 font-bold">Live Location / Room</th>
+                  <th className="p-4 font-bold">Interview Stage & Interviewer</th>
+                  <th className="p-4 font-bold text-center">Status</th>
+                  <th className="p-4 font-bold">Timestamps & Workflow</th>
+                  <th className="p-4 font-bold text-right">Admin Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800/60">
+                {candidates
+                  .filter((c) => {
+                    if (c.isDeleted) return false;
+                    if (candidateStatusFilter !== 'ALL' && c.status !== candidateStatusFilter)
+                      return false;
+                    if (candidateSearch.trim()) {
+                      const q = candidateSearch.toLowerCase();
+                      const matchName = c.fullName?.toLowerCase().includes(q);
+                      const matchPos = c.position?.toLowerCase().includes(q);
+                      const matchDept = c.department?.toLowerCase().includes(q);
+                      const matchLoc = c.currentLocation?.toLowerCase().includes(q);
+                      const matchPhone = c.phone?.toLowerCase().includes(q);
+                      const matchRoom = c.assignedRoomName?.toLowerCase().includes(q);
+                      if (
+                        !matchName &&
+                        !matchPos &&
+                        !matchDept &&
+                        !matchLoc &&
+                        !matchPhone &&
+                        !matchRoom
+                      )
+                        return false;
+                    }
+                    return true;
+                  })
+                  .map((cand) => {
+                    const intv = interviews.find(
+                      (i) =>
+                        i.id === cand.currentInterviewId ||
+                        (i.candidateId === cand.id && i.status !== 'INTERVIEW_COMPLETED')
+                    );
+                    const isLiveSession = cand.status === 'IN_INTERVIEW';
+
+                    return (
+                      <tr key={cand.id} className="hover:bg-slate-800/30 transition">
+                        {/* Candidate Name & Contact */}
+                        <td className="p-4">
+                          <div className="flex items-center gap-3">
+                            {cand.livePhoto ? (
+                              <img
+                                src={cand.livePhoto}
+                                alt={cand.fullName}
+                                className="w-10 h-10 rounded-xl object-cover border border-slate-700 shrink-0"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 font-bold shrink-0">
+                                {cand.fullName?.charAt(0) || 'C'}
+                              </div>
+                            )}
+                            <div>
+                              <h4 className="font-bold text-white text-xs flex items-center gap-1.5">
+                                {cand.fullName}
+                                {isLiveSession && (
+                                  <span className="w-2 h-2 rounded-full bg-blue-400 animate-ping" />
+                                )}
+                              </h4>
+                              <p className="text-[11px] text-amber-400 font-medium">
+                                {cand.position}
+                              </p>
+                              <div className="flex items-center gap-2 text-[10px] text-slate-400 mt-0.5">
+                                {cand.phone && <span>📞 {cand.phone}</span>}
+                                {cand.department && <span>• {cand.department}</span>}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Live Location & Room */}
+                        <td className="p-4">
+                          <div className="space-y-1">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-slate-950 border border-slate-800 text-white font-semibold text-[11px]">
+                              <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                              {cand.assignedRoomName || cand.currentLocation || 'Reception Area'}
+                            </span>
+                            {cand.assignedRoomId && (
+                              <p className="text-[10px] text-slate-400 font-mono">
+                                Room ID: {cand.assignedRoomId}
+                              </p>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* Interview Stage & Interviewer */}
+                        <td className="p-4">
+                          <div className="space-y-0.5">
+                            <p className="font-semibold text-white text-xs">
+                              {intv?.roundName || cand.interviewRound || 'Direct Evaluation'}
+                            </p>
+                            <p className="text-[11px] text-amber-300">
+                              Interviewer:{' '}
+                              <strong>{intv?.interviewerName || cand.interviewerName || 'Assigned Lead'}</strong>
+                            </p>
+                            {intv?.scheduledTime && (
+                              <p className="text-[10px] text-slate-400">
+                                Time: {intv.scheduledTime}
+                              </p>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* Status */}
+                        <td className="p-4 text-center">
+                          <span
+                            className={`px-2.5 py-1 rounded-full text-[10px] font-bold border inline-block ${
+                              cand.status === 'IN_INTERVIEW'
+                                ? 'bg-blue-500/15 text-blue-300 border-blue-500/40 animate-pulse'
+                                : cand.status === 'ROOM_ASSIGNED'
+                                ? 'bg-amber-500/15 text-amber-300 border-amber-500/40'
+                                : cand.status === 'WAITING' || cand.status === 'ARRIVED'
+                                ? 'bg-purple-500/15 text-purple-300 border-purple-500/40'
+                                : cand.status === 'COMPLETED' || cand.status === 'CHECKED_OUT' || cand.status === 'OFFERED'
+                                ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/40'
+                                : 'bg-rose-500/15 text-rose-400 border-rose-500/40'
+                            }`}
+                          >
+                            {cand.status}
+                          </span>
+                        </td>
+
+                        {/* Timestamps & Workflow */}
+                        <td className="p-4">
+                          <div className="space-y-0.5 text-[10px] text-slate-400">
+                            {cand.arrivalTime && (
+                              <div className="flex items-center gap-1">
+                                <Clock className="w-3 h-3 text-slate-500" />
+                                <span>
+                                  Arrived:{' '}
+                                  {new Date(cand.arrivalTime).toLocaleTimeString([], {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  })}
+                                </span>
+                              </div>
+                            )}
+                            {cand.checkOutTime && (
+                              <div className="text-slate-500">
+                                Departed:{' '}
+                                {new Date(cand.checkOutTime).toLocaleTimeString([], {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
+                              </div>
+                            )}
+                            <div className="text-slate-500 font-mono">
+                              Intake: {new Date(cand.createdAt).toLocaleDateString()}
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Actions */}
+                        <td className="p-4 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            {onAssignRoom && (
+                              <button
+                                onClick={() => onAssignRoom(cand.id, cand.currentInterviewId)}
+                                className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-[11px] rounded-xl border border-slate-700 hover:border-amber-500/50 transition cursor-pointer flex items-center gap-1"
+                                title="Admin / HR Room Control: Change or assign room"
+                              >
+                                <DoorOpen className="w-3 h-3" />
+                                <span>Room</span>
+                              </button>
+                            )}
+                            {onOpenChatWithContext && (
+                              <button
+                                onClick={() =>
+                                  onOpenChatWithContext({
+                                    candidateId: cand.id,
+                                    roomId: cand.assignedRoomId,
+                                    initialMessage: `Status update regarding ${cand.fullName}.`,
+                                  })
+                                }
+                                className="p-1.5 bg-slate-800 hover:bg-slate-700 text-amber-300 rounded-xl border border-slate-700 transition cursor-pointer"
+                                title="Open Context Chat for candidate"
+                              >
+                                <MessageSquare className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                            {onOpenDossier && (
+                              <button
+                                onClick={() => onOpenDossier(cand.id)}
+                                className="px-3 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs rounded-xl shadow-xs transition cursor-pointer"
+                              >
+                                Dossier
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* TAB 1: STAFF USERS & FULL ACCESS CREDENTIALS OVERRIDE */}
       {activeTab === 'users' && (
@@ -688,26 +1091,72 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onRefresh }) => 
         </div>
       )}
 
-      {/* TAB 2: ROOM MANAGEMENT (CLEAN SINGLE DATA SOURCE - NO FLOOR, NO CAPACITY) */}
+      {/* TAB 2: ROOM MANAGEMENT & PANTRY CLEANING REAL-TIME MONITOR */}
       {activeTab === 'rooms' && (
         <div className="space-y-4">
+          {/* Room & Cleaning Status Metric Cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="p-4 bg-slate-900 border border-slate-800 rounded-2xl">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                Total Rooms
+              </span>
+              <div className="text-xl font-black text-white mt-1">{rooms.length}</div>
+              <span className="text-[10px] text-slate-500">Registry Total</span>
+            </div>
+            <div className="p-4 bg-slate-900 border border-emerald-500/30 rounded-2xl">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 block">
+                Available / Ready
+              </span>
+              <div className="text-xl font-black text-emerald-300 mt-1">
+                {rooms.filter((r) => r.status === 'AVAILABLE' && r.isActive !== false).length}
+              </div>
+              <span className="text-[10px] text-emerald-400/70">Ready for Interviews</span>
+            </div>
+            <div className="p-4 bg-slate-900 border border-blue-500/30 rounded-2xl">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400 block">
+                Assigned / In Session
+              </span>
+              <div className="text-xl font-black text-blue-300 mt-1">
+                {rooms.filter((r) => r.status === 'ASSIGNED' || r.status === 'OCCUPIED').length}
+              </div>
+              <span className="text-[10px] text-blue-400/70">Candidate in Room</span>
+            </div>
+            <div className="p-4 bg-slate-900 border border-amber-500/30 rounded-2xl">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 block">
+                Pantry Cleaning Active
+              </span>
+              <div className="text-xl font-black text-amber-300 mt-1">
+                {
+                  rooms.filter(
+                    (r) => r.status === 'CLEANING' || r.status === 'NEEDS_CLEANING'
+                  ).length
+                }
+              </div>
+              <span className="text-[10px] text-amber-400/70">Pending Reset & Sanitize</span>
+            </div>
+          </div>
+
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div>
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
                 <DoorOpen className="w-4 h-4 text-amber-400" />
-                Office Meeting Rooms & Interview Pods Management
+                Office Meeting Rooms & Real-Time Pantry Cleaning Monitor
               </h3>
               <p className="text-xs text-slate-400">
-                Single centralized room registry used across Room Allocation, Interview Scheduling, Reception, and Pantry hospitality.
+                Live monitoring of all room assignments, sanitization status, and Pantry steward reset timestamps.
               </p>
             </div>
             <div className="flex items-center gap-2">
               <button
-                onClick={fetchRooms}
-                className="p-2 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-xl border border-slate-800 transition cursor-pointer"
+                onClick={() => {
+                  fetchRooms();
+                  onRefresh();
+                }}
+                className="p-2 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-xl border border-slate-800 transition cursor-pointer flex items-center gap-1 text-xs"
                 title="Refresh rooms"
               >
-                <RefreshCw className={`w-4 h-4 ${loadingRooms ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-3.5 h-3.5 ${loadingRooms ? 'animate-spin' : ''}`} />
+                <span>Sync</span>
               </button>
               <button
                 onClick={() => {
@@ -727,12 +1176,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onRefresh }) => 
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-950/80 border-b border-slate-800 text-slate-300">
                 <tr>
-                  <th className="p-4 font-bold">Room Name</th>
+                  <th className="p-4 font-bold">Room Name & Occupant</th>
                   <th className="p-4 font-bold">Room Type</th>
-                  <th className="p-4 font-bold">Preferred Purpose</th>
                   <th className="p-4 font-bold text-center">Live Status</th>
+                  <th className="p-4 font-bold">Pantry Cleaning Monitor</th>
                   <th className="p-4 font-bold text-center">Active</th>
-                  <th className="p-4 font-bold text-right">Actions</th>
+                  <th className="p-4 font-bold text-right">Admin Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">
@@ -740,6 +1189,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onRefresh }) => 
                   const isAvail = room.status === 'AVAILABLE';
                   const isAssigned = room.status === 'ASSIGNED';
                   const isOccupied = room.status === 'OCCUPIED';
+                  const isCleaning =
+                    room.status === 'CLEANING' || room.status === 'NEEDS_CLEANING';
 
                   return (
                     <tr key={room.id} className="hover:bg-slate-800/30 transition">
@@ -749,42 +1200,111 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onRefresh }) => 
                             <DoorOpen className="w-5 h-5" />
                           </div>
                           <div>
-                            <h4 className="font-bold text-white text-xs">{room.name}</h4>
+                            <h4 className="font-bold text-white text-xs flex items-center gap-1.5">
+                              {room.name}
+                              {(room.id === 'room-lalit-cabin' ||
+                                room.id === 'room-kimmi-cabin' ||
+                                room.name === 'Elegance Suite' ||
+                                room.name === 'Lalit Sir Cabin' ||
+                                room.isReservedNextRound) && (
+                                <span className="px-1.5 py-0.2 bg-amber-500/15 border border-amber-500/30 text-amber-300 rounded-sm text-[9px] font-bold">
+                                  Next Round
+                                </span>
+                              )}
+                            </h4>
                             {room.currentCandidateName ? (
                               <span className="text-[11px] text-amber-400 font-semibold">
                                 Occupant: {room.currentCandidateName}
                               </span>
                             ) : (
-                              <span className="text-[10px] text-slate-500 font-mono">ID: {room.id}</span>
+                              <span className="text-[10px] text-slate-500 font-mono">
+                                ID: {room.id}
+                              </span>
                             )}
                           </div>
                         </div>
                       </td>
 
                       <td className="p-4">
-                        <span className="px-2 py-0.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-300 font-medium text-[11px]">
-                          {room.type?.replace('_', ' ')}
-                        </span>
-                      </td>
-
-                      <td className="p-4 text-slate-300">
-                        <span className="text-[11px]">{room.preferredFor || 'Interviews & Meetings'}</span>
+                        <div className="space-y-0.5">
+                          <span className="px-2 py-0.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-300 font-medium text-[11px]">
+                            {room.type?.replace('_', ' ')}
+                          </span>
+                          {room.preferredFor && (
+                            <p className="text-[10px] text-slate-500 truncate max-w-[150px]">
+                              {room.preferredFor}
+                            </p>
+                          )}
+                        </div>
                       </td>
 
                       <td className="p-4 text-center">
                         <span
-                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border inline-block ${
                             isAvail
                               ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                               : isAssigned
                               ? 'bg-amber-500/10 text-amber-300 border-amber-500/30'
                               : isOccupied
                               ? 'bg-blue-500/10 text-blue-400 border border-blue-500/30'
+                              : isCleaning
+                              ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse'
                               : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
                           }`}
                         >
-                          {room.status}
+                          {isCleaning ? 'CLEANING' : room.status}
                         </span>
+                      </td>
+
+                      {/* Pantry Cleaning Status & Timestamps */}
+                      <td className="p-4">
+                        {isCleaning ? (
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-1.5 text-amber-400 font-bold text-[11px]">
+                              <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+                              <span>Cleaning Pending (Pantry Task Active)</span>
+                            </div>
+                            {room.cleaningRequestedAt && (
+                              <p className="text-[10px] text-slate-400">
+                                Requested:{' '}
+                                {new Date(room.cleaningRequestedAt).toLocaleTimeString([], {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
+                              </p>
+                            )}
+                            <button
+                              onClick={() => handleAdminCleanOverride(room.id)}
+                              disabled={cleaningOverrideRoomId === room.id}
+                              className="mt-1 px-2 py-0.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-[10px] rounded-md transition cursor-pointer flex items-center gap-1 disabled:opacity-50"
+                              title="Mark room cleaned immediately and make available"
+                            >
+                              <CheckCircle2 className="w-3 h-3" />
+                              <span>
+                                {cleaningOverrideRoomId === room.id
+                                  ? 'Marking...'
+                                  : 'Mark Cleaned / Ready'}
+                              </span>
+                            </button>
+                          </div>
+                        ) : room.lastCleanedAt ? (
+                          <div className="space-y-0.5 text-[11px]">
+                            <span className="text-emerald-400 font-semibold flex items-center gap-1">
+                              <CheckCircle2 className="w-3 h-3" /> Cleaned & Ready
+                            </span>
+                            <p className="text-[10px] text-slate-400">
+                              {new Date(room.lastCleanedAt).toLocaleTimeString([], {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                              {room.lastCleanedBy && (
+                                <span className="text-slate-500"> • by {room.lastCleanedBy}</span>
+                              )}
+                            </p>
+                          </div>
+                        ) : (
+                          <span className="text-[11px] text-slate-500">Ready / Operational</span>
+                        )}
                       </td>
 
                       <td className="p-4 text-center">
@@ -1044,6 +1564,194 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onRefresh }) => 
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {/* TAB: REAL-TIME ACTION ALERTS & TASKS OPERATIONS (ADMIN ACCESS) */}
+      {activeTab === 'tasks' && (
+        <div className="space-y-4 animate-in fade-in duration-200">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-amber-400" />
+                Live Operational Action Alerts & Task Monitor ({actionTasks.length})
+              </h3>
+              <p className="text-xs text-slate-400">
+                Full real-time visibility across Reception candidate escorts, Pantry room preparations & cleans, and staff instructions.
+              </p>
+            </div>
+
+            <button
+              onClick={onRefresh}
+              className="p-2 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-xl border border-slate-800 transition cursor-pointer flex items-center gap-1.5 text-xs font-semibold"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Refresh Tasks</span>
+            </button>
+          </div>
+
+          {/* Filters Bar */}
+          <div className="p-3 bg-slate-900/80 border border-slate-800 rounded-2xl flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-[11px] font-bold text-slate-400 uppercase mr-1">Role:</span>
+              {(['ALL', 'RECEPTION', 'PANTRY', 'CUSTOM'] as const).map((r) => (
+                <button
+                  key={r}
+                  onClick={() => setTaskRoleFilter(r)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
+                    taskRoleFilter === r
+                      ? 'bg-amber-500 text-slate-950'
+                      : 'bg-slate-800 text-slate-400 hover:text-white'
+                  }`}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-[11px] font-bold text-slate-400 uppercase mr-1">Status:</span>
+              {(['ALL', 'PENDING', 'ACKNOWLEDGED', 'COMPLETED'] as const).map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setTaskStatusFilter(s)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
+                    taskStatusFilter === s
+                      ? 'bg-purple-500 text-white'
+                      : 'bg-slate-800 text-slate-400 hover:text-white'
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Task Cards Grid */}
+          {(() => {
+            const filtered = actionTasks.filter((t) => {
+              if (taskRoleFilter === 'RECEPTION' && t.targetRole !== 'RECEPTION' && t.taskType !== 'ESCORT_CANDIDATE') return false;
+              if (taskRoleFilter === 'PANTRY' && t.targetRole !== 'PANTRY' && t.taskType !== 'PREPARE_ROOM' && t.taskType !== 'CLEAN_ROOM') return false;
+              if (taskRoleFilter === 'CUSTOM' && (t.targetRole === 'RECEPTION' || t.targetRole === 'PANTRY')) return false;
+
+              if (taskStatusFilter !== 'ALL' && t.status !== taskStatusFilter) return false;
+              return true;
+            });
+
+            if (filtered.length === 0) {
+              return (
+                <div className="p-12 text-center bg-slate-900/60 border border-slate-800 rounded-3xl space-y-2">
+                  <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" />
+                  <h4 className="text-sm font-bold text-white">No matching action tasks found</h4>
+                  <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                    Action tasks appear in real time whenever staff send instructions like "Bring candidate to room" or "Prepare room" in chat.
+                  </p>
+                </div>
+              );
+            }
+
+            return (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                {filtered.map((task) => {
+                  const isPending = task.status === 'PENDING';
+                  const isAcknowledged = task.status === 'ACKNOWLEDGED' || task.status === 'IN_PROGRESS';
+                  const isCompleted = task.status === 'COMPLETED';
+
+                  return (
+                    <div
+                      key={task.id}
+                      className="p-4 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-2xl space-y-3 transition shadow-lg flex flex-col justify-between"
+                    >
+                      <div className="flex items-start justify-between gap-2 pb-2 border-b border-slate-800">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                              {task.targetRole} TASK
+                            </span>
+                            <span className="text-xs font-bold text-white">From: {task.senderName} ({task.senderRole})</span>
+                          </div>
+                          <div className="text-[10px] text-slate-500 flex items-center gap-1 mt-0.5">
+                            <Clock className="w-3 h-3" />
+                            <span>{new Date(task.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {new Date(task.createdAt).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+
+                        <div>
+                          {isPending && (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse">
+                              PENDING
+                            </span>
+                          )}
+                          {isAcknowledged && (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/40">
+                              ACKNOWLEDGED
+                            </span>
+                          )}
+                          {isCompleted && (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                              COMPLETED
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <h4 className="text-xs font-bold text-white">{task.title}</h4>
+                        <p className="text-xs text-slate-300 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80">
+                          "{task.instruction}"
+                        </p>
+
+                        {(task.candidateName || task.destinationRoomName) && (
+                          <div className="flex flex-wrap items-center gap-2 text-[11px]">
+                            {task.candidateName && (
+                              <span className="px-2 py-0.5 rounded-lg bg-slate-800 text-amber-300 font-semibold border border-slate-700">
+                                👤 {task.candidateName}
+                              </span>
+                            )}
+                            {task.destinationRoomName && (
+                              <span className="px-2 py-0.5 rounded-lg bg-slate-800 text-cyan-300 font-semibold border border-slate-700">
+                                🏢 {task.destinationRoomName}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-800 flex items-center justify-between gap-2">
+                        <div className="text-[10px] text-slate-400">
+                          {task.acknowledgedBy && (
+                            <span>Ack by <strong>{task.acknowledgedBy}</strong></span>
+                          )}
+                          {task.completedBy && (
+                            <span className="ml-2">Done by <strong>{task.completedBy}</strong></span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-1.5">
+                          {isPending && onAcknowledgeActionTask && (
+                            <button
+                              onClick={() => onAcknowledgeActionTask(task.id)}
+                              className="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition cursor-pointer"
+                            >
+                              Acknowledge
+                            </button>
+                          )}
+                          {!isCompleted && onCompleteActionTask && (
+                            <button
+                              onClick={() => onCompleteActionTask(task.id)}
+                              className="px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-bold transition cursor-pointer"
+                            >
+                              Complete
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
         </div>
       )}
 
