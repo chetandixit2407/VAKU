@@ -182,16 +182,17 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
             </div>
           ) : (
             <div className="space-y-3">
-              {waitingCandidates.map((cand) => {
+              {waitingCandidates.map((cand, idx) => {
                 const intv = interviews.find((i) => i.id === cand.currentInterviewId);
                 const isKimmi = cand.status === 'With Kimmi Mam – Senior HR Interview';
+                const isDark = idx % 2 === 0;
 
                 return (
                   <motion.div
                     key={cand.id}
                     whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
                     whileTap={{ scale: 0.99 }}
-                    className="p-4 sm:p-5 glass-panel rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-amber-500/15 space-y-3 transition border border-white/8"
+                    className="p-4 sm:p-5 bg-[#17191D] text-white rounded-2xl shadow-xl transition border border-white/10"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3.5">

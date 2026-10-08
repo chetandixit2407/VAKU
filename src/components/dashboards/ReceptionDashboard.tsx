@@ -341,44 +341,44 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
       )}
 
       {/* Filter & Search Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 glass-panel rounded-2xl border border-white/8">
-        <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 bg-[#17191D] rounded-3xl border border-white/10 shadow-xl">
+        <div className="flex items-center gap-2.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
           <button
             onClick={() => setActiveFilter('ALL')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer shrink-0 ${
+            className={`px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer shrink-0 ${
               activeFilter === 'ALL'
-                ? 'bg-amber-500 text-slate-950 shadow-md'
-                : 'bg-white/5 text-slate-300 hover:text-white hover:bg-white/8'
+                ? 'bg-amber-500 text-slate-950 shadow-md ring-2 ring-amber-400/50'
+                : 'card-pill'
             }`}
           >
             All Active ({activeCandidates.length})
           </button>
           <button
             onClick={() => setActiveFilter('WAITING')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer shrink-0 ${
+            className={`px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer shrink-0 ${
               activeFilter === 'WAITING'
-                ? 'bg-amber-500 text-slate-950 shadow-md'
-                : 'bg-white/5 text-slate-300 hover:text-white hover:bg-white/8'
+                ? 'bg-amber-500 text-slate-950 shadow-md ring-2 ring-amber-400/50'
+                : 'card-pill'
             }`}
           >
             Waiting Lounge ({waitingCandidates.length})
           </button>
           <button
             onClick={() => setActiveFilter('IN_MEETING')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer shrink-0 ${
+            className={`px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer shrink-0 ${
               activeFilter === 'IN_MEETING'
-                ? 'bg-amber-500 text-slate-950 shadow-md'
-                : 'bg-white/5 text-slate-300 hover:text-white hover:bg-white/8'
+                ? 'bg-amber-500 text-slate-950 shadow-md ring-2 ring-amber-400/50'
+                : 'card-pill'
             }`}
           >
             In Meetings ({candidates.filter((c) => c.status === 'IN_INTERVIEW' || c.status === 'ROOM_ASSIGNED').length})
           </button>
           <button
             onClick={() => setActiveFilter('CHECKOUT')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer shrink-0 ${
+            className={`px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer shrink-0 ${
               activeFilter === 'CHECKOUT'
-                ? 'bg-amber-500 text-slate-950 shadow-md'
-                : 'bg-white/5 text-slate-300 hover:text-white hover:bg-white/8'
+                ? 'bg-amber-500 text-slate-950 shadow-md ring-2 ring-amber-400/50'
+                : 'card-pill'
             }`}
           >
             Ready Checkout ({readyForCheckout.length})

@@ -122,45 +122,45 @@ export const SeniorHRDashboard: React.FC<SeniorHRDashboardProps> = ({
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-white/8 pb-3">
+      <div className="flex items-center gap-2.5 overflow-x-auto pb-2">
         <button
           onClick={() => setFilterTab('pending')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-2 ${
+          className={`px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer flex items-center gap-2 shrink-0 ${
             filterTab === 'pending'
-              ? 'bg-amber-500 text-slate-950 shadow-md'
-              : 'glass-panel hover:bg-white/8 text-slate-300 border border-white/8'
+              ? 'bg-amber-500 text-slate-950 shadow-md ring-2 ring-amber-400/50'
+              : 'card-pill'
           }`}
         >
           <span>Pending Senior Interviews</span>
-          <span className="px-1.5 py-0.2 rounded-full bg-slate-950/30 text-[10px] font-mono">
+          <span className="px-1.5 py-0.2 rounded-full bg-slate-950/20 text-[10px] font-mono">
             {pendingInterviews.length}
           </span>
         </button>
 
         <button
           onClick={() => setFilterTab('active')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-2 ${
+          className={`px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer flex items-center gap-2 shrink-0 ${
             filterTab === 'active'
-              ? 'bg-amber-500 text-slate-950 shadow-md'
-              : 'glass-panel hover:bg-white/8 text-slate-300 border border-white/8'
+              ? 'bg-amber-500 text-slate-950 shadow-md ring-2 ring-amber-400/50'
+              : 'card-pill'
           }`}
         >
           <span>In Active Session</span>
-          <span className="px-1.5 py-0.2 rounded-full bg-slate-950/30 text-[10px] font-mono">
+          <span className="px-1.5 py-0.2 rounded-full bg-slate-950/20 text-[10px] font-mono">
             {activeInterviews.length}
           </span>
         </button>
 
         <button
           onClick={() => setFilterTab('completed')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-2 ${
+          className={`px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer flex items-center gap-2 shrink-0 ${
             filterTab === 'completed'
-              ? 'bg-amber-500 text-slate-950 shadow-md'
-              : 'glass-panel hover:bg-white/8 text-slate-300 border border-white/8'
+              ? 'bg-amber-500 text-slate-950 shadow-md ring-2 ring-amber-400/50'
+              : 'card-pill'
           }`}
         >
           <span>Completed Evaluations</span>
-          <span className="px-1.5 py-0.2 rounded-full bg-slate-950/30 text-[10px] font-mono">
+          <span className="px-1.5 py-0.2 rounded-full bg-slate-950/20 text-[10px] font-mono">
             {completedInterviews.length}
           </span>
         </button>

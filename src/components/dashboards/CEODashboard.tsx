@@ -64,9 +64,9 @@ export const CEODashboard: React.FC<CEODashboardProps> = ({
         <motion.div
           whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
           whileTap={{ scale: 0.99 }}
-          className="p-4 glass-panel rounded-2xl border border-white/8 shadow-md hover:shadow-xl hover:shadow-amber-500/10 transition"
+          className="p-4 bg-[#17191D] text-white rounded-2xl border border-white/10 shadow-md hover:shadow-xl transition"
         >
-          <span className="text-xs text-slate-400 block font-medium">Active Office Presence</span>
+          <span className="text-xs text-[#AEB4BC] block font-medium">Active Office Presence</span>
           <p className="text-2xl font-black text-white mt-1 tabular-nums">{activeCandidates.length}</p>
           <span className="text-[10px] text-amber-400 font-semibold font-mono">Candidates on premises</span>
         </motion.div>
@@ -74,19 +74,19 @@ export const CEODashboard: React.FC<CEODashboardProps> = ({
         <motion.div
           whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
           whileTap={{ scale: 0.99 }}
-          className="p-4 glass-panel rounded-2xl border border-white/8 shadow-md hover:shadow-xl hover:shadow-blue-500/10 transition"
+          className="p-4 bg-[#17191D] text-white rounded-2xl border border-white/10 shadow-md hover:shadow-xl transition"
         >
-          <span className="text-xs text-slate-400 block font-medium">Interviews Live</span>
-          <p className="text-2xl font-black text-blue-400 mt-1 tabular-nums">{inSessionCount}</p>
-          <span className="text-[10px] text-slate-400 font-mono">Active evaluation rounds</span>
+          <span className="text-xs text-[#AEB4BC] block font-medium">Interviews Live</span>
+          <p className="text-2xl font-black text-white mt-1 tabular-nums">{inSessionCount}</p>
+          <span className="text-[10px] text-[#AEB4BC] font-mono">Active evaluation rounds</span>
         </motion.div>
 
         <motion.div
           whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
           whileTap={{ scale: 0.99 }}
-          className="p-4 glass-panel rounded-2xl border border-white/8 shadow-md hover:shadow-xl hover:shadow-emerald-500/10 transition"
+          className="p-4 bg-[#17191D] text-white rounded-2xl border border-white/10 shadow-md hover:shadow-xl transition"
         >
-          <span className="text-xs text-slate-400 block font-medium">Leadership Offers / Hires</span>
+          <span className="text-xs text-[#AEB4BC] block font-medium">Leadership Offers / Hires</span>
           <p className="text-2xl font-black text-emerald-400 mt-1 tabular-nums">{offeredCount}</p>
           <span className="text-[10px] text-emerald-400 font-semibold font-mono">Today's recommendations</span>
         </motion.div>
@@ -94,13 +94,13 @@ export const CEODashboard: React.FC<CEODashboardProps> = ({
         <motion.div
           whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
           whileTap={{ scale: 0.99 }}
-          className="p-4 glass-panel rounded-2xl border border-white/8 shadow-md hover:shadow-xl hover:shadow-purple-500/10 transition"
+          className="p-4 bg-[#17191D] text-white rounded-2xl border border-white/10 shadow-md hover:shadow-xl transition"
         >
-          <span className="text-xs text-slate-400 block font-medium">Executive Boardrooms</span>
-          <p className="text-2xl font-black text-purple-400 mt-1 tabular-nums">
+          <span className="text-xs text-[#AEB4BC] block font-medium">Executive Boardrooms</span>
+          <p className="text-2xl font-black text-white mt-1 tabular-nums">
             {rooms.filter((r) => r.type === 'EXECUTIVE_BOARDROOM').length}
           </p>
-          <span className="text-[10px] text-slate-400 font-mono">Executive meeting suites</span>
+          <span className="text-[10px] text-[#AEB4BC] font-mono">Executive meeting suites</span>
         </motion.div>
       </div>
 
@@ -111,7 +111,7 @@ export const CEODashboard: React.FC<CEODashboardProps> = ({
             <Sparkles className="w-4 h-4 text-amber-400" />
             Executive Candidate Briefs
           </h2>
-          <span className="text-xs text-slate-400 font-medium">
+          <span className="text-xs text-slate-300 font-medium">
             Confidentiality Filter Active • Operational noise suppressed
           </span>
         </div>
@@ -124,7 +124,7 @@ export const CEODashboard: React.FC<CEODashboardProps> = ({
                 key={cand.id}
                 whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
                 whileTap={{ scale: 0.99 }}
-                className="p-5 glass-panel rounded-2xl border border-white/8 space-y-3 shadow-xl hover:shadow-2xl hover:shadow-amber-500/15 transition"
+                className="p-5 bg-[#17191D] text-white rounded-2xl border border-white/10 space-y-3 shadow-xl transition"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
@@ -135,39 +135,39 @@ export const CEODashboard: React.FC<CEODashboardProps> = ({
                         className="w-12 h-12 rounded-2xl object-cover border border-amber-500/80 shadow-md"
                       />
                     ) : (
-                      <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/8 flex items-center justify-center text-slate-400">
+                      <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/8 flex items-center justify-center text-slate-300">
                         <Award className="w-6 h-6" />
                       </div>
                     )}
                     <div>
                       <h3 className="text-base font-bold text-white">{cand.fullName}</h3>
                       <p className="text-xs text-amber-400 font-medium">{cand.position}</p>
-                      <p className="text-[11px] text-slate-400">{cand.department}</p>
+                      <p className="text-[11px] text-[#D5D8DD]">{cand.department}</p>
                     </div>
                   </div>
 
-                  <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-white/6 text-amber-300 border border-white/10 font-mono">
+                  <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-white/10 text-amber-300 border border-white/15 font-mono">
                     {cand.status}
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 text-xs bg-black/30 p-3 rounded-xl border border-white/6">
+                <div className="grid grid-cols-2 gap-2 text-xs bg-black/30 p-3 rounded-xl border border-white/6 text-[#D5D8DD]">
                   <div>
-                    <span className="text-slate-500 block text-[10px]">Experience</span>
+                    <span className="block text-[10px] uppercase font-mono text-[#AEB4BC]">Experience</span>
                     <strong className="text-slate-200">{cand.totalExperience}</strong>
                   </div>
                   <div>
-                    <span className="text-slate-500 block text-[10px]">Location</span>
+                    <span className="block text-[10px] uppercase font-mono text-[#AEB4BC]">Location</span>
                     <strong className="text-slate-200">{cand.currentLocation}</strong>
                   </div>
                   {intv && (
                     <>
                       <div>
-                        <span className="text-slate-500 block text-[10px]">Current Round</span>
+                        <span className="block text-[10px] uppercase font-mono text-[#AEB4BC]">Current Round</span>
                         <strong className="text-slate-200">{intv.roundName}</strong>
                       </div>
                       <div>
-                        <span className="text-slate-500 block text-[10px]">Interviewer</span>
+                        <span className="block text-[10px] uppercase font-mono text-[#AEB4BC]">Interviewer</span>
                         <strong className="text-slate-200">{intv.interviewerName}</strong>
                       </div>
                     </>
@@ -175,12 +175,12 @@ export const CEODashboard: React.FC<CEODashboardProps> = ({
                 </div>
 
                 <div className="flex items-center justify-between pt-1">
-                  <span className="text-[11px] text-slate-500">
+                  <span className="text-[11px] text-[#AEB4BC]">
                     {cand.currentCompany ? `Ex: ${cand.currentCompany}` : 'Qualified Profile'}
                   </span>
                   <button
                     onClick={() => onOpenDossier(cand.id)}
-                    className="px-3.5 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-bold text-xs transition cursor-pointer"
+                    className="px-3.5 py-1.5 rounded-xl font-bold text-xs transition cursor-pointer shadow bg-amber-500 hover:bg-amber-400 text-slate-950"
                   >
                     Executive Dossier
                   </button>
