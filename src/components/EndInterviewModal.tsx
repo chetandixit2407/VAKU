@@ -118,22 +118,22 @@ export const EndInterviewModal: React.FC<EndInterviewModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-xs p-4">
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+      <div className="bg-white/98 border border-[#EFE0CC] rounded-3xl max-w-lg w-full shadow-[0_24px_60px_rgba(0,0,0,0.12)] overflow-hidden animate-in fade-in zoom-in-95 duration-200 text-[#111111]">
         {/* Header */}
-        <div className="p-5 sm:p-6 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
+        <div className="p-5 sm:p-6 border-b border-[#EFE0CC] flex items-center justify-between bg-white/50">
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 block">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#8C6033] block">
               Interviewer Evaluation & Outcome
             </span>
-            <h2 className="text-lg font-bold text-white mt-0.5">Conclude Interview Round</h2>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Candidate: <strong className="text-slate-200">{candidateName}</strong> • {currentRound}
+            <h2 className="text-lg font-bold text-[#111111] mt-0.5">Conclude Interview Round</h2>
+            <p className="text-xs text-[#77716B] mt-0.5">
+              Candidate: <strong className="text-[#111111]">{candidateName}</strong> • {currentRound}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition"
+            className="p-2 rounded-xl text-[#77716B] hover:text-[#111111] hover:bg-[#FAF4ED] transition cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -142,78 +142,78 @@ export const EndInterviewModal: React.FC<EndInterviewModalProps> = ({
         {/* Content */}
         <div className="p-5 sm:p-6 space-y-4 text-xs">
           {error && (
-            <div className="p-3 bg-rose-500/15 border border-rose-500/40 rounded-xl text-rose-300">
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700">
               {error}
             </div>
           )}
 
           {/* Outcome Choice */}
           <div className="space-y-1.5">
-            <label className="block font-semibold text-slate-300">
-              Select Human Business Decision: <span className="text-amber-400">*</span>
+            <label className="block font-semibold text-[#111111]">
+              Select Human Business Decision: <span className="text-rose-500">*</span>
             </label>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => setOutcome('NEXT_INTERVIEW')}
-                className={`p-3 rounded-xl border text-left transition flex items-center gap-2.5 ${
+                className={`p-3 rounded-xl border text-left transition flex items-center gap-2.5 cursor-pointer ${
                   outcome === 'NEXT_INTERVIEW'
-                    ? 'bg-amber-500/15 border-amber-500 text-amber-300 shadow-md ring-1 ring-amber-500/40'
-                    : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
+                    ? 'bg-[#FAF4ED] border-[#C99A68] text-[#8C6033] shadow-xs ring-1 ring-[#C99A68]'
+                    : 'bg-white border-[#EFE0CC] text-[#77716B] hover:border-[#D6B28A]'
                 }`}
               >
-                <ArrowRight className="w-4 h-4 text-amber-400 shrink-0" />
+                <ArrowRight className="w-4 h-4 text-[#C99A68] shrink-0" />
                 <div>
-                  <strong className="block font-bold">Advance to Next Round</strong>
-                  <span className="text-[10px] text-slate-400">Choose next interviewer</span>
+                  <strong className="block font-bold text-[#111111]">Advance to Next Round</strong>
+                  <span className="text-[10px] text-[#77716B]">Choose next interviewer</span>
                 </div>
               </button>
 
               <button
                 type="button"
                 onClick={() => setOutcome('SELECTED')}
-                className={`p-3 rounded-xl border text-left transition flex items-center gap-2.5 ${
+                className={`p-3 rounded-xl border text-left transition flex items-center gap-2.5 cursor-pointer ${
                   outcome === 'SELECTED'
-                    ? 'bg-emerald-500/15 border-emerald-500 text-emerald-300 shadow-md ring-1 ring-emerald-500/40'
-                    : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
+                    ? 'bg-emerald-50 border-emerald-400 text-emerald-800 shadow-xs ring-1 ring-emerald-400'
+                    : 'bg-white border-[#EFE0CC] text-[#77716B] hover:border-[#D6B28A]'
                 }`}
               >
-                <Award className="w-4 h-4 text-emerald-400 shrink-0" />
+                <Award className="w-4 h-4 text-emerald-600 shrink-0" />
                 <div>
-                  <strong className="block font-bold">Selected / Offer</strong>
-                  <span className="text-[10px] text-slate-400">Final hiring recommendation</span>
+                  <strong className="block font-bold text-[#111111]">Selected / Offer</strong>
+                  <span className="text-[10px] text-[#77716B]">Final recommendation</span>
                 </div>
               </button>
 
               <button
                 type="button"
                 onClick={() => setOutcome('HOLD')}
-                className={`p-3 rounded-xl border text-left transition flex items-center gap-2.5 ${
+                className={`p-3 rounded-xl border text-left transition flex items-center gap-2.5 cursor-pointer ${
                   outcome === 'HOLD'
-                    ? 'bg-blue-500/15 border-blue-500 text-blue-300 shadow-md ring-1 ring-blue-500/40'
-                    : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
+                    ? 'bg-blue-50 border-blue-400 text-blue-800 shadow-xs ring-1 ring-blue-400'
+                    : 'bg-white border-[#EFE0CC] text-[#77716B] hover:border-[#D6B28A]'
                 }`}
               >
-                <Clock className="w-4 h-4 text-blue-400 shrink-0" />
+                <Clock className="w-4 h-4 text-blue-600 shrink-0" />
                 <div>
-                  <strong className="block font-bold">Keep on Hold</strong>
-                  <span className="text-[10px] text-slate-400">Awaiting candidate pool</span>
+                  <strong className="block font-bold text-[#111111]">Keep on Hold</strong>
+                  <span className="text-[10px] text-[#77716B]">Awaiting candidate pool</span>
                 </div>
               </button>
 
               <button
                 type="button"
                 onClick={() => setOutcome('REJECTED')}
-                className={`p-3 rounded-xl border text-left transition flex items-center gap-2.5 ${
+                className={`p-3 rounded-xl border text-left transition flex items-center gap-2.5 cursor-pointer ${
                   outcome === 'REJECTED'
-                    ? 'bg-rose-500/15 border-rose-500 text-rose-300 shadow-md ring-1 ring-rose-500/40'
-                    : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
+                    ? 'bg-rose-50 border-rose-400 text-rose-800 shadow-xs ring-1 ring-rose-400'
+                    : 'bg-white border-[#EFE0CC] text-[#77716B] hover:border-[#D6B28A]'
                 }`}
               >
-                <XCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                <XCircle className="w-4 h-4 text-rose-600 shrink-0" />
                 <div>
-                  <strong className="block font-bold">Reject / Exit</strong>
-                  <span className="text-[10px] text-slate-400">Route to checkout</span>
+                  <strong className="block font-bold text-[#111111]">Reject / Exit</strong>
+                  <span className="text-[10px] text-[#77716B]">Route to checkout</span>
                 </div>
               </button>
             </div>
@@ -221,19 +221,19 @@ export const EndInterviewModal: React.FC<EndInterviewModalProps> = ({
 
           {/* Conditional Next Round details */}
           {outcome === 'NEXT_INTERVIEW' && (
-            <div className="p-3.5 bg-slate-950 border border-slate-800 rounded-2xl space-y-3 animate-in fade-in duration-200">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 block">
+            <div className="p-3.5 bg-[#FAF9F6] border border-[#EFE0CC] rounded-2xl space-y-3 animate-in fade-in duration-200">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#8C6033] block">
                 Next Evaluation Setup
               </span>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                  <label className="block text-[11px] font-semibold text-[#111111] mb-1">
                     Assign Next Interviewer:
                   </label>
                   <select
                     value={nextInterviewerId}
                     onChange={(e) => handleInterviewerChange(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-hidden focus:border-amber-400"
+                    className="w-full px-3 py-2 bg-white border border-[#E4CCAF] rounded-xl text-[#111111] text-xs focus:outline-hidden focus:border-[#C99A68]"
                   >
                     {staffUsers.map((u) => (
                       <option key={u.id} value={u.id}>
@@ -244,7 +244,7 @@ export const EndInterviewModal: React.FC<EndInterviewModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                  <label className="block text-[11px] font-semibold text-[#111111] mb-1">
                     Next Round Title:
                   </label>
                   <input
@@ -252,24 +252,24 @@ export const EndInterviewModal: React.FC<EndInterviewModalProps> = ({
                     value={nextRoundName}
                     onChange={(e) => setNextRoundName(e.target.value)}
                     placeholder="e.g. Round 2 - Leadership"
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-hidden focus:border-amber-400"
+                    className="w-full px-3 py-2 bg-white border border-[#E4CCAF] rounded-xl text-[#111111] text-xs focus:outline-hidden focus:border-[#C99A68]"
                   />
                 </div>
 
                 <div className="sm:col-span-2">
                   <div className="flex items-center justify-between mb-1">
-                    <label className="block text-[11px] font-semibold text-slate-300">
+                    <label className="block text-[11px] font-semibold text-[#111111]">
                       Next Round Room (Optional / Direct Allocation):
                     </label>
-                    <span className="text-[10px] text-amber-400 font-semibold flex items-center gap-1">
-                      <Sparkles className="w-3 h-3" />
+                    <span className="text-[10px] text-[#8C6033] font-semibold flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 text-[#C99A68]" />
                       Next Round Reserved Cabins Available
                     </span>
                   </div>
                   <select
                     value={nextRoomId}
                     onChange={(e) => setNextRoomId(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-hidden focus:border-amber-400"
+                    className="w-full px-3 py-2 bg-white border border-[#E4CCAF] rounded-xl text-[#111111] text-xs focus:outline-hidden focus:border-[#C99A68]"
                   >
                     <option value="">— Assign later from Lobby (Default) —</option>
                     <optgroup label="👑 Reserved Senior Leadership Cabins">
@@ -312,7 +312,7 @@ export const EndInterviewModal: React.FC<EndInterviewModalProps> = ({
 
           {/* Evaluation Notes */}
           <div>
-            <label className="block font-semibold text-slate-300 mb-1">
+            <label className="block font-semibold text-[#111111] mb-1">
               Interviewer Evaluation Notes & Private HR Feedback:
             </label>
             <textarea
@@ -320,23 +320,23 @@ export const EndInterviewModal: React.FC<EndInterviewModalProps> = ({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Candidate strengths, communication, culture fit, compensation remarks..."
-              className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white text-xs focus:outline-hidden focus:border-amber-400"
+              className="w-full px-3.5 py-2.5 bg-white border border-[#E4CCAF] rounded-xl text-[#111111] text-xs focus:outline-hidden focus:border-[#C99A68]"
             />
           </div>
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-800 bg-slate-950/60 flex items-center justify-end gap-3">
+        <div className="p-4 border-t border-[#EFE0CC] bg-white/50 flex items-center justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700"
+            className="px-4 py-2 rounded-xl bg-white hover:bg-[#FAF9F6] text-[#77716B] hover:text-[#111111] text-xs font-semibold border border-[#EFE0CC] transition cursor-pointer"
           >
             Cancel
           </button>
           <button
             onClick={handleEnd}
             disabled={submitting}
-            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-xs font-bold shadow-lg transition cursor-pointer flex items-center gap-1.5"
+            className="px-5 py-2.5 rounded-xl bg-[#171717] hover:bg-[#282828] text-white text-xs font-bold shadow-md transition cursor-pointer flex items-center gap-1.5 active:scale-95"
           >
             {submitting ? (
               <>
@@ -345,7 +345,7 @@ export const EndInterviewModal: React.FC<EndInterviewModalProps> = ({
               </>
             ) : (
               <>
-                <CheckCircle2 className="w-3.5 h-3.5" />
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                 Finalize Decision & Conclude
               </>
             )}

@@ -27,6 +27,7 @@ import {
   Save,
   RefreshCw,
   DoorOpen,
+  Route,
 } from 'lucide-react';
 import type { Candidate, Interview, TimelineEvent, UserRole } from '../types/index.ts';
 import { formatDateTime } from '../utils/dateFormatter.ts';
@@ -34,6 +35,7 @@ import { ResumeDocumentModal } from './ResumeDocumentModal.tsx';
 import { GovernmentIdModal } from './GovernmentIdModal.tsx';
 import { ReceptionPhotoModal } from './ReceptionPhotoModal.tsx';
 import { authenticatedFetch } from '../utils/apiClient.ts';
+import { WCRCandidateJourney } from './design-system/index.ts';
 
 interface CandidateDossierModalProps {
   candidateId: string;
@@ -61,7 +63,7 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
   const [candidate, setCandidate] = useState<Candidate | null>(initialCandidate || null);
   const [interviews, setInterviews] = useState<Interview[]>([]);
   const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
-  const [activeTab, setActiveTab] = useState<'profile' | 'validation' | 'timeline' | 'interviews'>('profile');
+  const [activeTab, setActiveTab] = useState<'overview' | 'journey' | 'interviews' | 'documents' | 'activity'>('overview');
   const [showResumeModal, setShowResumeModal] = useState<boolean>(false);
   const [showGovIdModal, setShowGovIdModal] = useState<boolean>(false);
   const [showPhotoModal, setShowPhotoModal] = useState<boolean>(false);
@@ -162,38 +164,11 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
           }
         );
         clearTimeout(timeoutId);
-
-        if (!res.ok) {
-          const errData = await res.json().catch(() => ({}));
-          throw new Error(errData.error || `Server responded with status ${res.status}`);
-        }
         const data = await res.json();
         if (data.success && data.candidate) {
           setCandidate(data.candidate);
-          setInterviews(data.interviews || []);
-          setTimeline(data.timeline || []);
-          setEditForm({
-            fullName: data.candidate.fullName || '',
-            phone: data.candidate.phone || '',
-            email: data.candidate.email || '',
-            address: data.candidate.address || '',
-            city: data.candidate.city || '',
-            state: data.candidate.state || '',
-            pincode: data.candidate.pincode || '',
-            position: data.candidate.position || '',
-            department: data.candidate.department || '',
-            totalExperience: data.candidate.totalExperience || '',
-            relevantExperience: data.candidate.relevantExperience || '',
-            currentCompany: data.candidate.currentCompany || '',
-            qualification: data.candidate.qualification || '',
-            noticePeriod: data.candidate.noticePeriod || '',
-            expectedSalary: data.candidate.expectedSalary || '',
-            skills: data.candidate.skills || '',
-            purpose: data.candidate.purpose || 'Interview / Job Application',
-            departmentToMeet: data.candidate.departmentToMeet || 'HR & Recruitment',
-            personToMeet: data.candidate.personToMeet || '',
-            hrPrivateNotes: data.candidate.hrPrivateNotes || '',
-          });
+          setInterviews(Array.isArray(data.interviews) ? data.interviews : []);
+          setTimeline(Array.isArray(data.timeline) ? data.timeline : []);
           setFetchError(null);
           setLoading(false);
           return;
@@ -207,7 +182,6 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
           await new Promise((r) => setTimeout(r, attempts * 400));
         } else {
           console.warn('[Dossier Sync]', err?.name === 'AbortError' ? 'Request timed out' : err?.message || err);
-          // If we already have candidate data (e.g. from initialCandidate), don't block the screen
           if (!candidate && !initialCandidate) {
             setFetchError(
               err?.name === 'AbortError'
@@ -282,14 +256,12 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
     document.body.removeChild(link);
   };
 
-
-
   if (!candidate && loading) {
     return (
-      <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/85 backdrop-blur-xs p-4">
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-sm w-full text-center">
-          <div className="w-10 h-10 border-2 border-amber-400 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-xs text-slate-300 font-medium">Fetching Candidate Dossier...</p>
+      <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+        <div className="bg-white/98 border border-[#EFE0CC] rounded-3xl p-8 max-w-sm w-full text-center shadow-[0_24px_60px_rgba(0,0,0,0.12)]">
+          <div className="w-10 h-10 border-2 border-[#C99A68] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-xs text-[#8C6033] font-bold">Fetching Candidate Command Dossier...</p>
         </div>
       </div>
     );
@@ -297,28 +269,28 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
 
   if (!candidate) {
     return (
-      <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/85 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full text-center space-y-4 shadow-2xl">
-          <div className="w-12 h-12 bg-rose-500/20 text-rose-400 border border-rose-500/40 rounded-full flex items-center justify-center mx-auto">
+      <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+        <div className="bg-white/98 border border-[#EFE0CC] rounded-3xl p-6 sm:p-8 max-w-md w-full text-center space-y-4 shadow-[0_24px_60px_rgba(0,0,0,0.12)]">
+          <div className="w-12 h-12 bg-rose-50 text-rose-700 border border-rose-200 rounded-full flex items-center justify-center mx-auto">
             <AlertCircle className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-white">Candidate Details Unavailable</h3>
-            <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
-              {fetchError || 'Unable to retrieve candidate dossier from server. The record may have been archived or network connection was interrupted.'}
+            <h3 className="text-base font-bold text-[#111111]">Candidate Details Unavailable</h3>
+            <p className="text-xs text-[#77716B] mt-1.5 leading-relaxed">
+              {fetchError || 'Unable to retrieve candidate dossier from server. The record may have been archived.'}
             </p>
           </div>
           <div className="flex gap-2 pt-2">
             <button
               onClick={() => fetchCandidate(1)}
-              className="flex-1 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs rounded-xl shadow-md transition cursor-pointer flex items-center justify-center gap-1.5"
+              className="flex-1 py-2.5 bg-[#171717] hover:bg-[#282828] text-white font-bold text-xs rounded-xl shadow-sm transition cursor-pointer flex items-center justify-center gap-1.5"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               <span>Retry</span>
             </button>
             <button
               onClick={onClose}
-              className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs rounded-xl border border-slate-700 transition cursor-pointer"
+              className="flex-1 py-2.5 bg-white hover:bg-[#FAF9F6] text-[#77716B] hover:text-[#111111] font-semibold text-xs rounded-xl border border-[#EFE0CC] transition cursor-pointer"
             >
               Close
             </button>
@@ -334,12 +306,10 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
     candidate.arrivalPhotoCapturedByName ||
     candidate.livePhotoCapturedBy ||
     (candidate.arrivalPhoto ? 'Reception Desk' : 'Candidate Self-Capture');
-  const resumeTimestamp = formatDateTime(candidate.resumeUploadedAt || candidate.createdAt);
 
   const govId = candidate.governmentId;
   const valResult = candidate.validationResult;
   const isGovIdVerified = govId?.verificationStatus === 'VERIFIED';
-  const isGovIdNeedsReview = govId?.verificationStatus === 'NEEDS_REVIEW';
   const hasResume = Boolean(
     candidate.resumeUrl ||
     candidate.resumeFileName ||
@@ -361,78 +331,116 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
   const canCapturePhoto = currentRole === 'RECEPTION' || currentRole === 'HR' || currentRole === 'ADMIN';
   const canEditOrDelete = currentRole === 'HR' || currentRole === 'ADMIN';
 
+  // Waiting time calculation
+  const waitingTime = (() => {
+    const t = candidate.arrivalTime || candidate.createdAt;
+    if (!t) return 'Just arrived';
+    const diffMins = Math.max(0, Math.round((Date.now() - new Date(t).getTime()) / 60000));
+    if (diffMins < 60) return `${diffMins} mins`;
+    const hrs = Math.floor(diffMins / 60);
+    const mins = diffMins % 60;
+    return `${hrs}h ${mins}m`;
+  })();
+
+  const activeInterviewer =
+    candidate.interviewerName ||
+    (candidate as any).assignedInterviewerName ||
+    (interviews.length > 0 ? interviews[0].interviewerName : 'Not Assigned');
+
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-xs p-3 sm:p-5 overflow-y-auto">
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-3xl w-full max-h-[94vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 text-slate-100">
-        {/* Sync status warning banner if background fetch failed */}
+    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 backdrop-blur-md p-3 sm:p-5 overflow-y-auto">
+      <div className="bg-white/98 border border-[#EFE0CC] rounded-3xl max-w-4xl w-full max-h-[94vh] flex flex-col shadow-[0_25px_70px_rgba(0,0,0,0.15)] overflow-hidden animate-in fade-in zoom-in-95 duration-200 text-[#171717]">
+        {/* Sync status warning banner */}
         {fetchError && (
-          <div className="px-4 py-2 bg-amber-500/10 border-b border-amber-500/30 text-amber-300 text-xs flex items-center justify-between">
+          <div className="px-4 py-2 bg-amber-50 border-b border-amber-200 text-amber-800 text-xs flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
+              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
               <span>Showing cached dossier snapshot. Real-time background sync is reconnecting.</span>
             </div>
             <button
               onClick={() => fetchCandidate(1)}
-              className="text-amber-400 hover:text-amber-300 font-bold text-xs underline cursor-pointer"
+              className="text-amber-800 hover:text-amber-950 font-bold text-xs underline cursor-pointer"
             >
               Retry Sync
             </button>
           </div>
         )}
 
-        {/* Top Header */}
-        <div className="p-5 sm:p-6 border-b border-slate-800 flex items-start justify-between bg-slate-950/80">
-          <div className="flex items-center gap-4">
+        {/* Top Header with Requirement 15 fields */}
+        <div className="p-5 sm:p-6 border-b border-[#EFE0CC] flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white">
+          <div className="flex items-start gap-4 min-w-0">
             {photoToDisplay ? (
-              <img
-                src={photoToDisplay}
-                alt={candidate.fullName}
-                className="w-16 h-16 rounded-2xl object-cover border-2 border-amber-500 shadow-md shrink-0"
-              />
+              <div className="relative shrink-0">
+                <img
+                  src={photoToDisplay}
+                  alt={candidate.fullName}
+                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-[#E4CCAF] shadow-md"
+                />
+                <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white" />
+              </div>
             ) : (
-              <div className="w-16 h-16 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 shrink-0">
-                <User className="w-8 h-8" />
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#FAF4ED] border border-[#E4CCAF] flex items-center justify-center text-[#8C6033] shrink-0 shadow-xs">
+                <User className="w-8 h-8 text-[#C99A68]" />
               </div>
             )}
-            <div>
+
+            <div className="min-w-0 space-y-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-xl font-bold text-white tracking-tight">{candidate.fullName}</h2>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-300 border border-amber-500/30">
+                <h2 className="text-xl sm:text-2xl font-black text-[#171717] tracking-tight truncate">
+                  {candidate.fullName}
+                </h2>
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-[#FAF4ED] text-[#8C6033] border border-[#E4CCAF]">
                   {candidate.status}
                 </span>
                 {valResult?.overallStatus === 'READY_FOR_RECEPTION' && (
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
                     <CheckCircle2 className="w-3 h-3" /> Ready For Reception
                   </span>
                 )}
               </div>
-              <p className="text-xs text-amber-400 font-medium mt-0.5">{candidate.position}</p>
-              <div className="flex items-center gap-3 text-[11px] text-slate-400 mt-1 flex-wrap">
-                <span className="flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5 text-slate-500" />
-                  {candidate.currentLocation || 'Reception Lounge'}
+
+              <p className="text-xs sm:text-sm font-semibold text-[#8C6033] truncate">
+                {candidate.position}
+              </p>
+
+              {/* Requirement 15 Comprehensive Header Strip */}
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-[#77716B] pt-1">
+                <span className="flex items-center gap-1 text-[#171717]">
+                  <MapPin className="w-3.5 h-3.5 text-[#C99A68]" />
+                  Location: <strong className="text-[#8C6033]">{candidate.currentLocation || 'Reception Lounge'}</strong>
                 </span>
-                <span>•</span>
-                <span>ID: {candidate.id}</span>
-                <span>•</span>
-                <span className="text-cyan-400 font-semibold">{currentRole} Profile View</span>
+
+                <span className="flex items-center gap-1">
+                  <User className="w-3.5 h-3.5 text-[#8A847D]" />
+                  Interviewer: <strong className="text-[#171717]">{activeInterviewer}</strong>
+                </span>
+
+                <span className="flex items-center gap-1">
+                  <DoorOpen className="w-3.5 h-3.5 text-sky-600" />
+                  Room: <strong className="text-emerald-700">{candidate.assignedRoomName || 'Unassigned'}</strong>
+                </span>
+
+                <span className="flex items-center gap-1">
+                  <Clock className="w-3.5 h-3.5 text-[#8A847D]" />
+                  Waiting Time: <strong className="text-[#8C6033]">{waitingTime}</strong>
+                </span>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 self-end lg:self-start shrink-0">
             {canEditOrDelete && !isEditing && (
               <>
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold text-xs border border-slate-700 transition flex items-center gap-1.5 cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl bg-white hover:bg-[#FAF9F6] text-[#171717] font-bold text-xs border border-[#E4CCAF] transition flex items-center gap-1.5 cursor-pointer shadow-2xs"
                 >
-                  <Edit3 className="w-3.5 h-3.5" />
-                  <span>Edit Candidate</span>
+                  <Edit3 className="w-3.5 h-3.5 text-[#8C6033]" />
+                  <span>Edit</span>
                 </button>
                 <button
                   onClick={() => setShowDeleteConfirm(true)}
-                  className="px-3 py-1.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 font-bold text-xs border border-rose-500/30 transition flex items-center gap-1.5 cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs border border-rose-200 transition flex items-center gap-1.5 cursor-pointer"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                   <span>Delete</span>
@@ -441,286 +449,131 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
             )}
             <button
               onClick={onClose}
-              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+              className="p-2 rounded-xl text-[#77716B] hover:text-[#171717] hover:bg-[#F3EFE9] transition cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="px-6 border-b border-slate-800 flex gap-5 text-xs font-semibold bg-slate-950/40 overflow-x-auto">
-          <button
-            onClick={() => setActiveTab('profile')}
-            className={`py-3 border-b-2 transition flex items-center gap-1.5 cursor-pointer shrink-0 ${
-              activeTab === 'profile'
-                ? 'border-amber-400 text-amber-400 font-bold'
-                : 'border-transparent text-slate-400 hover:text-white'
-            }`}
-          >
-            <User className="w-4 h-4" />
-            Candidate Profile
-          </button>
-          <button
-            onClick={() => setActiveTab('validation')}
-            className={`py-3 border-b-2 transition flex items-center gap-1.5 cursor-pointer shrink-0 ${
-              activeTab === 'validation'
-                ? 'border-cyan-400 text-cyan-400 font-bold'
-                : 'border-transparent text-slate-400 hover:text-white'
-            }`}
-          >
-            <ShieldCheck className="w-4 h-4" />
-            Automated Validation
-          </button>
-          <button
-            onClick={() => setActiveTab('interviews')}
-            className={`py-3 border-b-2 transition flex items-center gap-1.5 cursor-pointer shrink-0 ${
-              activeTab === 'interviews'
-                ? 'border-amber-400 text-amber-400 font-bold'
-                : 'border-transparent text-slate-400 hover:text-white'
-            }`}
-          >
-            <Briefcase className="w-4 h-4" />
-            Interviews ({interviews.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('timeline')}
-            className={`py-3 border-b-2 transition flex items-center gap-1.5 cursor-pointer shrink-0 ${
-              activeTab === 'timeline'
-                ? 'border-amber-400 text-amber-400 font-bold'
-                : 'border-transparent text-slate-400 hover:text-white'
-            }`}
-          >
-            <Layers className="w-4 h-4" />
-            Timeline ({timeline.length})
-          </button>
+        {/* Tab Navigation (Requirement 15: Overview, Journey, Interviews, Documents, Activity) */}
+        <div className="px-6 border-b border-[#EFE0CC] flex gap-6 text-xs font-semibold bg-[#FAF9F6] overflow-x-auto">
+          {[
+            { id: 'overview', label: 'Overview', icon: User },
+            { id: 'journey', label: 'Journey', icon: Route },
+            { id: 'interviews', label: `Interviews (${interviews.length})`, icon: Briefcase },
+            { id: 'documents', label: 'Documents', icon: FileText },
+            { id: 'activity', label: `Activity (${timeline.length})`, icon: Layers },
+          ].map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              onClick={() => setActiveTab(id as any)}
+              className={`py-3 border-b-2 transition flex items-center gap-1.5 cursor-pointer shrink-0 ${
+                activeTab === id
+                  ? 'border-[#C99A68] text-[#8C6033] font-bold'
+                  : 'border-transparent text-[#77716B] hover:text-[#171717]'
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              <span>{label}</span>
+            </button>
+          ))}
         </div>
 
         {/* Content Body */}
         <div className="p-6 overflow-y-auto flex-1 space-y-6">
           {actionError && (
-            <div className="p-3 bg-rose-500/15 border border-rose-500/40 rounded-xl text-rose-300 text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
               <span>{actionError}</span>
             </div>
           )}
 
-          {activeTab === 'profile' && !isEditing && (
+          {/* TAB: OVERVIEW */}
+          {activeTab === 'overview' && !isEditing && (
             <div className="space-y-6">
-              {/* SECTION: LIVE PHOTO */}
-              <div className="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-3">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-800/80">
-                  <div className="flex items-center gap-2 text-amber-400 text-xs font-bold uppercase tracking-wider">
-                    <Camera className="w-4 h-4" />
-                    <span>Reception & Live Photo</span>
-                  </div>
-                  <span
-                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold border flex items-center gap-1 ${
-                      candidate.arrivalPhoto
-                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                        : candidate.livePhoto
-                        ? 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30'
-                        : 'bg-slate-800 text-slate-400 border-slate-700'
-                    }`}
-                  >
-                    {candidate.arrivalPhoto ? 'Desk Verified' : candidate.livePhoto ? 'Captured' : 'Not Captured'}
-                  </span>
-                </div>
-
-                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
-                  {photoToDisplay ? (
-                    <img
-                      src={photoToDisplay}
-                      alt={candidate.fullName}
-                      className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover border-2 border-amber-500 shadow-xl shrink-0"
-                    />
-                  ) : (
-                    <div className="w-24 h-24 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-500 text-xs">
-                      No photo captured
-                    </div>
-                  )}
-
-                  <div className="flex-1 space-y-2 text-xs text-left w-full">
-                    <div className="p-2.5 bg-slate-900 rounded-xl border border-slate-800/80 space-y-1">
-                      <div className="flex justify-between items-center text-[11px]">
-                        <span className="text-slate-400">Captured:</span>
-                        <strong className="text-white">{photoTimestamp.date} at {photoTimestamp.time}</strong>
-                      </div>
-                      <div className="flex justify-between items-center text-[11px]">
-                        <span className="text-slate-400">Captured By:</span>
-                        <strong className="text-amber-300">{photoActor}</strong>
-                      </div>
-                    </div>
-
-                    {canCapturePhoto && (
-                      <button
-                        onClick={() => setShowPhotoModal(true)}
-                        className="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 text-slate-950 font-bold text-xs rounded-xl shadow-md transition cursor-pointer flex items-center justify-center gap-1.5"
-                      >
-                        <Camera className="w-3.5 h-3.5" />
-                        <span>{photoToDisplay ? 'Retake Live Photo' : 'Capture Live Photo'}</span>
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* SECTION: DOCUMENTS (RESUME & GOVERNMENT ID) - STRICTLY RESTRICTED FROM PANTRY */}
-              {currentRole !== 'PANTRY' && (
-                <div className="space-y-3">
-                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <FileText className="w-3.5 h-3.5 text-amber-400" />
-                    Candidate Documents
-                  </h3>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {/* RESUME CARD */}
-                    <div className="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
-                            <FileText className="w-4 h-4" />
-                          </div>
-                          <div>
-                            <h4 className="text-xs font-bold text-white">Resume</h4>
-                            <span className="text-[10px] text-slate-400 block">
-                              {hasResume ? (candidate.resumeFileSize || '1.4 MB') : 'Not available'}
-                            </span>
-                          </div>
-                        </div>
-                        {hasResume ? (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
-                            <CheckCircle2 className="w-3 h-3" /> Uploaded
-                          </span>
-                        ) : (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-800 text-slate-400 border border-slate-700">
-                            Not uploaded
-                          </span>
-                        )}
-                      </div>
-
-                      <p className="text-[11px] text-slate-300 truncate">
-                        {hasResume
-                          ? (candidate.resumeFileName || `${candidate.fullName.replace(/\s+/g, '_')}_Resume.pdf`)
-                          : 'No resume uploaded by candidate'}
-                      </p>
-
-                      <div className="pt-1 border-t border-slate-800/80">
-                        {hasResume ? (
-                          <div className="flex items-center gap-2">
-                            {/* PRIMARY ACTION: PREVIEW */}
-                            <button
-                              type="button"
-                              onClick={() => setShowResumeModal(true)}
-                              className="flex-1 py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-md transition cursor-pointer flex items-center justify-center gap-1.5"
-                              title="Preview resume directly inside WCR (no download required)"
-                            >
-                              <Eye className="w-3.5 h-3.5" />
-                              <span>Preview Resume</span>
-                            </button>
-
-                            {/* SECONDARY ACTION: AUTHORIZED DOWNLOAD */}
-                            <button
-                              type="button"
-                              onClick={handleDownloadResume}
-                              className="py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white font-medium text-xs border border-slate-700 transition cursor-pointer flex items-center justify-center gap-1"
-                              title="Download original file"
-                            >
-                              <Download className="w-3.5 h-3.5 text-slate-400" />
-                              <span>Download</span>
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="py-2 px-3 rounded-xl bg-slate-900/60 border border-slate-800 text-slate-500 text-xs font-medium text-center">
-                            Resume not uploaded
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* OPERATIONAL INFORMATION */}
+              {/* Operational & Contact Info */}
               <div className="space-y-3">
-                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                  Operational & Reception Information
+                <h3 className="text-xs font-bold text-[#8C6033] uppercase tracking-wider">
+                  Operational & Contact Details
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
-                  <div className="p-3 bg-slate-950 rounded-xl border border-slate-800">
-                    <span className="text-slate-400 text-[10px] block">Mobile Phone</span>
-                    <strong className="text-white">{candidate.phone || 'N/A'}</strong>
+                  <div className="p-3.5 bg-[#FAF9F6] rounded-xl border border-[#EFE0CC]">
+                    <span className="text-[#77716B] text-[10px] block">Mobile Phone</span>
+                    <strong className="text-[#171717]">{candidate.phone || 'N/A'}</strong>
                   </div>
-                  <div className="p-3 bg-slate-950 rounded-xl border border-slate-800">
-                    <span className="text-slate-400 text-[10px] block">Email Address</span>
-                    <strong className="text-white truncate block">{candidate.email || 'N/A'}</strong>
+                  <div className="p-3.5 bg-[#FAF9F6] rounded-xl border border-[#EFE0CC]">
+                    <span className="text-[#77716B] text-[10px] block">Email Address</span>
+                    <strong className="text-[#171717] truncate block">{candidate.email || 'N/A'}</strong>
                   </div>
-                  <div className="p-3 bg-slate-950 rounded-xl border border-slate-800">
-                    <span className="text-slate-400 text-[10px] block">Current Location</span>
-                    <strong className="text-amber-400">{candidate.currentLocation || 'Reception Lounge'}</strong>
+                  <div className="p-3.5 bg-[#FAF9F6] rounded-xl border border-[#EFE0CC]">
+                    <span className="text-[#77716B] text-[10px] block">Current Location</span>
+                    <strong className="text-[#8C6033]">{candidate.currentLocation || 'Reception Lounge'}</strong>
                   </div>
-                  <div className="p-3 bg-slate-950 rounded-xl border border-slate-800">
-                    <span className="text-slate-400 text-[10px] block">Visit Purpose</span>
-                    <strong className="text-white">{candidate.purpose || 'Interview / Job Application'}</strong>
+                  <div className="p-3.5 bg-[#FAF9F6] rounded-xl border border-[#EFE0CC]">
+                    <span className="text-[#77716B] text-[10px] block">Visit Purpose</span>
+                    <strong className="text-[#171717]">{candidate.purpose || 'Interview / Job Application'}</strong>
                   </div>
-                  <div className="p-3 bg-slate-950 rounded-xl border border-slate-800">
-                    <span className="text-slate-400 text-[10px] block">Department</span>
-                    <strong className="text-white">{candidate.department || 'Sales & Business Development'}</strong>
+                  <div className="p-3.5 bg-[#FAF9F6] rounded-xl border border-[#EFE0CC]">
+                    <span className="text-[#77716B] text-[10px] block">Department</span>
+                    <strong className="text-[#171717]">{candidate.department || 'Sales & Business Development'}</strong>
                   </div>
-                  <div className="p-3 bg-slate-950 rounded-xl border border-slate-800">
-                    <span className="text-slate-400 text-[10px] block">Interviewer / Host</span>
-                    <strong className="text-slate-200">{candidate.interviewerName || candidate.personToMeet || 'Assigned on arrival'}</strong>
+                  <div className="p-3.5 bg-[#FAF9F6] rounded-xl border border-[#EFE0CC]">
+                    <span className="text-[#77716B] text-[10px] block">Address</span>
+                    <strong className="text-[#171717] truncate block">
+                      {[candidate.city, candidate.state].filter(Boolean).join(', ') || 'N/A'}
+                    </strong>
                   </div>
                 </div>
               </div>
 
-              {/* PROFESSIONAL BACKGROUND */}
+              {/* Professional Background */}
               <div className="space-y-3">
-                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <h3 className="text-xs font-bold text-[#8C6033] uppercase tracking-wider">
                   Professional Background
                 </h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
-                  <div className="p-3 bg-slate-950 rounded-xl border border-slate-800">
-                    <span className="text-slate-400 text-[10px] block">Total Experience</span>
-                    <strong className="text-white">{candidate.totalExperience || 'Fresher'}</strong>
+                  <div className="p-3.5 bg-[#FAF9F6] rounded-xl border border-[#EFE0CC]">
+                    <span className="text-[#77716B] text-[10px] block">Total Experience</span>
+                    <strong className="text-[#171717]">{candidate.totalExperience || 'Fresher'}</strong>
                   </div>
-                  <div className="p-3 bg-slate-950 rounded-xl border border-slate-800">
-                    <span className="text-slate-400 text-[10px] block">Previous Company</span>
-                    <strong className="text-white">{candidate.currentCompany || 'N/A'}</strong>
+                  <div className="p-3.5 bg-[#FAF9F6] rounded-xl border border-[#EFE0CC]">
+                    <span className="text-[#77716B] text-[10px] block">Current / Previous Company</span>
+                    <strong className="text-[#171717]">{candidate.currentCompany || 'N/A'}</strong>
                   </div>
-                  <div className="p-3 bg-slate-950 rounded-xl border border-slate-800">
-                    <span className="text-slate-400 text-[10px] block">Qualification</span>
-                    <strong className="text-white">{candidate.qualification || 'Graduate'}</strong>
+                  <div className="p-3.5 bg-[#FAF9F6] rounded-xl border border-[#EFE0CC]">
+                    <span className="text-[#77716B] text-[10px] block">Qualification</span>
+                    <strong className="text-[#171717]">{candidate.qualification || 'Graduate'}</strong>
                   </div>
-                  <div className="p-3 bg-slate-950 rounded-xl border border-slate-800">
-                    <span className="text-slate-400 text-[10px] block">Notice Period</span>
-                    <strong className="text-white">{candidate.noticePeriod || 'Immediate'}</strong>
+                  <div className="p-3.5 bg-[#FAF9F6] rounded-xl border border-[#EFE0CC]">
+                    <span className="text-[#77716B] text-[10px] block">Notice Period</span>
+                    <strong className="text-[#171717]">{candidate.noticePeriod || 'Immediate'}</strong>
                   </div>
-                  <div className="p-3 bg-slate-950 rounded-xl border border-slate-800">
-                    <span className="text-slate-400 text-[10px] block">Expected CTC</span>
+                  <div className="p-3.5 bg-[#FAF9F6] rounded-xl border border-[#EFE0CC]">
+                    <span className="text-[#77716B] text-[10px] block">Expected Salary</span>
                     {canViewConfidential ? (
-                      <strong className="text-white">{candidate.expectedSalary || 'Confidential'}</strong>
+                      <strong className="text-[#171717]">{candidate.expectedSalary || 'Confidential'}</strong>
                     ) : (
-                      <span className="text-slate-500 font-mono text-[11px] flex items-center gap-1">
-                        <Lock className="w-3 h-3" /> Confidential (HR Only)
+                      <span className="text-[#77716B] font-mono text-[11px] flex items-center gap-1">
+                        <Lock className="w-3 h-3" /> Confidential
                       </span>
                     )}
                   </div>
-                  <div className="p-3 bg-slate-950 rounded-xl border border-slate-800">
-                    <span className="text-slate-400 text-[10px] block">Skills</span>
-                    <strong className="text-slate-200">{candidate.skills || 'Luxury Advisory'}</strong>
+                  <div className="p-3.5 bg-[#FAF9F6] rounded-xl border border-[#EFE0CC]">
+                    <span className="text-[#77716B] text-[10px] block">Key Skills</span>
+                    <strong className="text-[#8C6033] truncate block">{candidate.skills || 'Advisory'}</strong>
                   </div>
                 </div>
               </div>
 
-              {/* CONFIDENTIAL HR NOTES */}
+              {/* Confidential HR Notes: Signature Charcoal Inner Panel */}
               {canViewConfidential && (
-                <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl space-y-2">
-                  <div className="flex items-center gap-2 text-amber-400 text-xs font-bold uppercase tracking-wider">
-                    <Lock className="w-3.5 h-3.5" />
-                    <span>Confidential HR Notes (Restricted)</span>
+                <div className="p-4 bg-[#171717] border border-[#2D2D2D] rounded-2xl space-y-2 text-white shadow-md">
+                  <div className="flex items-center gap-2 text-[#D6B28A] text-xs font-bold uppercase tracking-wider">
+                    <Lock className="w-3.5 h-3.5 text-[#C99A68]" />
+                    <span>Confidential HR Remarks (Authorized View)</span>
                   </div>
-                  <p className="text-slate-200 text-xs italic">
+                  <p className="text-[#EFE0CC] text-xs italic leading-relaxed">
                     {candidate.hrPrivateNotes || 'No private HR notes recorded yet.'}
                   </p>
                 </div>
@@ -728,269 +581,166 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
             </div>
           )}
 
-          {/* EDIT CANDIDATE FORM VIEW */}
-          {activeTab === 'profile' && isEditing && (
-            <div className="space-y-4 animate-in fade-in duration-200">
-              <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-                <h3 className="text-sm font-bold text-amber-400 flex items-center gap-2">
-                  <Edit3 className="w-4 h-4" /> Editing Candidate Profile (HR / Admin)
-                </h3>
-                <span className="text-[10px] text-slate-500 font-mono">ID: {candidateId}</span>
-              </div>
+          {/* TAB: JOURNEY */}
+          {activeTab === 'journey' && (
+            <div className="space-y-6">
+              <WCRCandidateJourney
+                status={candidate.status}
+                interviewStage={candidate.interviewRound}
+              />
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Full Name *</label>
-                  <input
-                    type="text"
-                    value={editForm.fullName}
-                    onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Mobile Phone *</label>
-                  <input
-                    type="text"
-                    value={editForm.phone}
-                    onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Email Address *</label>
-                  <input
-                    type="email"
-                    value={editForm.email}
-                    onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Position Applied *</label>
-                  <input
-                    type="text"
-                    value={editForm.position}
-                    onChange={(e) => setEditForm({ ...editForm, position: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Department</label>
-                  <input
-                    type="text"
-                    value={editForm.department}
-                    onChange={(e) => setEditForm({ ...editForm, department: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Total Experience</label>
-                  <input
-                    type="text"
-                    value={editForm.totalExperience}
-                    onChange={(e) => setEditForm({ ...editForm, totalExperience: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Relevant Experience</label>
-                  <input
-                    type="text"
-                    value={editForm.relevantExperience}
-                    onChange={(e) => setEditForm({ ...editForm, relevantExperience: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Current Company</label>
-                  <input
-                    type="text"
-                    value={editForm.currentCompany}
-                    onChange={(e) => setEditForm({ ...editForm, currentCompany: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Qualification</label>
-                  <input
-                    type="text"
-                    value={editForm.qualification}
-                    onChange={(e) => setEditForm({ ...editForm, qualification: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Notice Period</label>
-                  <input
-                    type="text"
-                    value={editForm.noticePeriod}
-                    onChange={(e) => setEditForm({ ...editForm, noticePeriod: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Expected CTC</label>
-                  <input
-                    type="text"
-                    value={editForm.expectedSalary}
-                    onChange={(e) => setEditForm({ ...editForm, expectedSalary: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white"
-                  />
-                </div>
-                <div className="col-span-2">
-                  <label className="block text-slate-300 font-semibold mb-1">Street Address</label>
-                  <input
-                    type="text"
-                    value={editForm.address}
-                    onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white"
-                  />
-                </div>
-                <div className="grid grid-cols-3 gap-2 col-span-2">
-                  <div>
-                    <label className="block text-slate-300 font-semibold mb-1">City</label>
-                    <input
-                      type="text"
-                      value={editForm.city}
-                      onChange={(e) => setEditForm({ ...editForm, city: e.target.value })}
-                      className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white"
-                    />
+              <div className="p-4 bg-[#FAF9F6] rounded-2xl border border-[#EFE0CC] space-y-3 text-xs">
+                <h4 className="font-bold text-[#171717] text-sm flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-[#C99A68]" />
+                  <span>Pipeline Milestone Log</span>
+                </h4>
+                <div className="space-y-2 text-[#77716B]">
+                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-white border border-[#EFE0CC]">
+                    <span className="text-[#171717]">Initial QR Self-Registration</span>
+                    <span className="text-emerald-700 font-bold">✓ Completed</span>
                   </div>
-                  <div>
-                    <label className="block text-slate-300 font-semibold mb-1">State</label>
-                    <input
-                      type="text"
-                      value={editForm.state}
-                      onChange={(e) => setEditForm({ ...editForm, state: e.target.value })}
-                      className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white"
-                    />
+                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-white border border-[#EFE0CC]">
+                    <span className="text-[#171717]">Reception Arrival & Photo Capture</span>
+                    <span className="text-emerald-700 font-bold">
+                      {candidate.arrivalPhoto || candidate.livePhoto ? '✓ Verified' : 'Pending Desk Verification'}
+                    </span>
                   </div>
-                  <div>
-                    <label className="block text-slate-300 font-semibold mb-1">Pincode</label>
-                    <input
-                      type="text"
-                      value={editForm.pincode}
-                      onChange={(e) => setEditForm({ ...editForm, pincode: e.target.value })}
-                      className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white"
-                    />
+                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-white border border-[#EFE0CC]">
+                    <span className="text-[#171717]">Room Allocation & Escort</span>
+                    <span className="text-[#8C6033] font-bold">
+                      {candidate.assignedRoomName ? `Assigned to ${candidate.assignedRoomName}` : 'Awaiting HR Room Choice'}
+                    </span>
                   </div>
                 </div>
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Purpose of Visit</label>
-                  <input
-                    type="text"
-                    value={editForm.purpose}
-                    onChange={(e) => setEditForm({ ...editForm, purpose: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Host / Person to Meet</label>
-                  <input
-                    type="text"
-                    value={editForm.personToMeet}
-                    onChange={(e) => setEditForm({ ...editForm, personToMeet: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white"
-                  />
-                </div>
-                <div className="col-span-2">
-                  <label className="block text-slate-300 font-semibold mb-1">Skills</label>
-                  <input
-                    type="text"
-                    value={editForm.skills}
-                    onChange={(e) => setEditForm({ ...editForm, skills: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white"
-                  />
-                </div>
-                <div className="col-span-2">
-                  <label className="block text-slate-300 font-semibold mb-1">Confidential HR Notes</label>
-                  <textarea
-                    rows={3}
-                    value={editForm.hrPrivateNotes}
-                    onChange={(e) => setEditForm({ ...editForm, hrPrivateNotes: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white resize-none"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => setIsEditing(false)}
-                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSaveEdit}
-                  disabled={savingEdit}
-                  className="px-5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-md cursor-pointer"
-                >
-                  <Save className="w-4 h-4" />
-                  {savingEdit ? 'Saving...' : 'Save Changes'}
-                </button>
               </div>
             </div>
           )}
 
-          {/* TAB: AUTOMATED VALIDATION SUMMARY */}
-          {activeTab === 'validation' && (
+          {/* TAB: DOCUMENTS (Resume, Gov ID, Photo) */}
+          {activeTab === 'documents' && (
             <div className="space-y-4">
-              <div className="p-5 bg-slate-950 border border-slate-800 rounded-2xl space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-                  <h3 className="text-base font-bold text-white flex items-center gap-2">
-                    <ShieldCheck className="w-5 h-5 text-cyan-400" />
-                    Automated Validation Summary
-                  </h3>
-                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/40">
-                    {valResult?.overallStatus || 'READY_FOR_RECEPTION'}
-                  </span>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Resume Card */}
+                <div className="p-4 bg-[#FAF9F6] rounded-2xl border border-[#EFE0CC] space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-[#8C6033] uppercase tracking-wider flex items-center gap-1.5">
+                      <FileText className="w-4 h-4 text-[#C99A68]" />
+                      Candidate Resume
+                    </span>
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                        hasResume
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          : 'bg-slate-100 text-[#77716B] border-slate-200'
+                      }`}
+                    >
+                      {hasResume ? 'Attached' : 'Missing'}
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-[#77716B]">
+                    {candidate.resumeFileName || 'Official candidate curriculum vitae.'}
+                  </p>
+
+                  <div className="flex items-center gap-2 pt-2">
+                    {hasResume ? (
+                      <>
+                        <button
+                          onClick={() => setShowResumeModal(true)}
+                          className="flex-1 py-2 rounded-xl bg-[#171717] hover:bg-[#282828] text-white font-bold text-xs transition cursor-pointer flex items-center justify-center gap-1.5"
+                        >
+                          <Eye className="w-3.5 h-3.5 text-[#C99A68]" />
+                          <span>View Resume</span>
+                        </button>
+                        <button
+                          onClick={handleDownloadResume}
+                          className="px-3 py-2 rounded-xl bg-white hover:bg-[#FAF9F6] border border-[#E4CCAF] text-[#171717] text-xs font-semibold transition cursor-pointer"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                        </button>
+                      </>
+                    ) : (
+                      <span className="text-xs text-[#8A847D] italic">No document available</span>
+                    )}
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                  <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 flex items-center justify-between">
-                    <span className="text-slate-300">Personal Information</span>
-                    <span className="text-emerald-400 font-bold flex items-center gap-1">
-                      <Check className="w-3.5 h-3.5" /> Passed
+                {/* Government ID Card */}
+                <div className="p-4 bg-[#FAF9F6] rounded-2xl border border-[#EFE0CC] space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-[#8C6033] uppercase tracking-wider flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 text-cyan-600" />
+                      Government ID
+                    </span>
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                        isGovIdVerified
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          : hasGovId
+                          ? 'bg-amber-50 text-amber-700 border-amber-200'
+                          : 'bg-slate-100 text-[#77716B] border-slate-200'
+                      }`}
+                    >
+                      {isGovIdVerified ? 'Verified' : hasGovId ? 'Uploaded' : 'Missing'}
                     </span>
                   </div>
-                  <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 flex items-center justify-between">
-                    <span className="text-slate-300">Government ID & Format</span>
-                    <span className="text-emerald-400 font-bold flex items-center gap-1">
-                      <Check className="w-3.5 h-3.5" /> Verified
-                    </span>
-                  </div>
-                  <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 flex items-center justify-between">
-                    <span className="text-slate-300">Resume Document</span>
-                    <span className="text-emerald-400 font-bold flex items-center gap-1">
-                      <Check className="w-3.5 h-3.5" /> Attached
-                    </span>
-                  </div>
-                  <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 flex items-center justify-between">
-                    <span className="text-slate-300">Data Consistency Check</span>
-                    <span className="text-emerald-400 font-bold flex items-center gap-1">
-                      <Check className="w-3.5 h-3.5" /> Passed
-                    </span>
+
+                  <p className="text-xs text-[#77716B]">
+                    {govId?.idType ? `Type: ${govId.idType}` : 'Encrypted government identification doc.'}
+                  </p>
+
+                  <div className="pt-2">
+                    {hasGovId ? (
+                      <button
+                        onClick={() => setShowGovIdModal(true)}
+                        className="w-full py-2 rounded-xl bg-[#171717] hover:bg-[#282828] text-white font-bold text-xs transition cursor-pointer flex items-center justify-center gap-1.5"
+                      >
+                        <Eye className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>Inspect Government ID</span>
+                      </button>
+                    ) : (
+                      <span className="text-xs text-[#8A847D] italic">Not provided</span>
+                    )}
                   </div>
                 </div>
               </div>
+
+              {/* Reception Photo Desk Verification */}
+              {canCapturePhoto && (
+                <div className="p-4 bg-[#FAF9F6] rounded-2xl border border-[#EFE0CC] flex items-center justify-between">
+                  <div>
+                    <h4 className="text-xs font-bold text-[#171717]">Reception Desk Camera Verification</h4>
+                    <p className="text-[11px] text-[#77716B]">Capture or update high-resolution photo on arrival.</p>
+                  </div>
+                  <button
+                    onClick={() => setShowPhotoModal(true)}
+                    className="px-3.5 py-2 rounded-xl bg-white hover:bg-[#FAF9F6] border border-[#E4CCAF] text-[#8C6033] font-bold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                  >
+                    <Camera className="w-4 h-4 text-[#C99A68]" />
+                    <span>Open Camera</span>
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
+          {/* TAB: INTERVIEWS */}
           {activeTab === 'interviews' && (
             <div className="space-y-3">
               {interviews.length === 0 ? (
-                <div className="text-center py-8 text-slate-500">No interview rounds scheduled yet.</div>
+                <div className="text-center py-8 text-[#77716B] text-xs">No interview rounds scheduled yet.</div>
               ) : (
                 interviews.map((intv) => (
-                  <div key={intv.id} className="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2 text-xs">
+                  <div key={intv.id} className="p-4 bg-[#FAF9F6] border border-[#EFE0CC] rounded-2xl space-y-2 text-xs">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-white text-sm">{intv.roundName}</span>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-800 text-amber-300 border border-slate-700">
+                      <span className="font-bold text-[#171717] text-sm">{intv.roundName}</span>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#FAF4ED] text-[#8C6033] border border-[#E4CCAF]">
                         {intv.status}
                       </span>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] text-[#77716B]">
+                      <span>Interviewer: <strong className="text-[#171717]">{intv.interviewerName}</strong></span>
+                      <span>Scheduled: {intv.scheduledTime}</span>
                     </div>
                   </div>
                 ))
@@ -998,30 +748,107 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
             </div>
           )}
 
-          {activeTab === 'timeline' && (
+          {/* TAB: ACTIVITY / TIMELINE */}
+          {activeTab === 'activity' && (
             <div className="space-y-3">
-              {timeline.map((event) => {
-                const formatted = formatDateTime(event.timestamp);
-                return (
-                  <div key={event.id} className="p-3.5 bg-slate-950 border border-slate-800 rounded-2xl flex items-start gap-3 text-xs">
-                    <div className="w-2 h-2 rounded-full bg-amber-400 mt-1.5 shrink-0" />
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-white">{event.eventType}</span>
-                        <span className="text-[10px] text-slate-400">{formatted.date} at {formatted.time}</span>
+              {timeline.length === 0 ? (
+                <div className="text-center py-8 text-[#77716B] text-xs">No activity logged yet.</div>
+              ) : (
+                timeline.map((event) => {
+                  const formatted = formatDateTime(event.timestamp);
+                  return (
+                    <div key={event.id} className="p-3.5 bg-[#FAF9F6] border border-[#EFE0CC] rounded-2xl flex items-start gap-3 text-xs">
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#C99A68] mt-1 shrink-0" />
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-[#171717]">{event.eventType}</span>
+                          <span className="text-[10px] text-[#8A847D]">
+                            {formatted.date} at {formatted.time}
+                          </span>
+                        </div>
+                        <p className="text-[#77716B] text-[11px] mt-0.5">{event.description}</p>
                       </div>
-                      <p className="text-slate-300 text-[11px] mt-0.5">{event.description}</p>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
+            </div>
+          )}
+
+          {/* EDIT CANDIDATE FORM VIEW */}
+          {isEditing && (
+            <div className="space-y-4 animate-in fade-in duration-200">
+              <div className="flex items-center justify-between pb-2 border-b border-[#EFE0CC]">
+                <h3 className="text-sm font-bold text-[#8C6033] flex items-center gap-2">
+                  <Edit3 className="w-4 h-4 text-[#C99A68]" /> Editing Candidate Profile (HR / Admin)
+                </h3>
+                <span className="text-[10px] text-[#8A847D] font-mono">ID: {candidateId}</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div>
+                  <label className="block text-[#171717] font-semibold mb-1">Full Name *</label>
+                  <input
+                    type="text"
+                    value={editForm.fullName}
+                    onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })}
+                    className="w-full px-3 py-2 bg-white border border-[#E4CCAF] rounded-xl text-[#171717]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[#171717] font-semibold mb-1">Mobile Phone *</label>
+                  <input
+                    type="text"
+                    value={editForm.phone}
+                    onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                    className="w-full px-3 py-2 bg-white border border-[#E4CCAF] rounded-xl text-[#171717]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[#171717] font-semibold mb-1">Email Address *</label>
+                  <input
+                    type="email"
+                    value={editForm.email}
+                    onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                    className="w-full px-3 py-2 bg-white border border-[#E4CCAF] rounded-xl text-[#171717]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[#171717] font-semibold mb-1">Position Applied *</label>
+                  <input
+                    type="text"
+                    value={editForm.position}
+                    onChange={(e) => setEditForm({ ...editForm, position: e.target.value })}
+                    className="w-full px-3 py-2 bg-white border border-[#E4CCAF] rounded-xl text-[#171717]"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-[#EFE0CC]">
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(false)}
+                  className="px-4 py-2 bg-white border border-[#EFE0CC] text-[#77716B] hover:text-[#171717] text-xs font-semibold rounded-xl"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveEdit}
+                  disabled={savingEdit}
+                  className="px-5 py-2 bg-[#171717] hover:bg-[#282828] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm cursor-pointer"
+                >
+                  <Save className="w-4 h-4 text-[#C99A68]" />
+                  {savingEdit ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
             </div>
           )}
         </div>
 
         {/* Footer Actions */}
-        <div className="p-4 border-t border-slate-800 bg-slate-950/80 flex items-center justify-between">
-          <span className="text-xs text-slate-500">Security: Role-based authenticated access</span>
+        <div className="p-4 border-t border-[#EFE0CC] bg-white flex items-center justify-between">
+          <span className="text-xs text-[#8A847D]">Security: Role-based authenticated access</span>
           <div className="flex gap-2">
             {onAssignRoom && (currentRole === 'HR' || currentRole === 'ADMIN') && candidate.status !== 'CHECKED_OUT' && candidate.status !== 'DELETED' && (
               <button
@@ -1029,16 +856,16 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
                   onClose();
                   onAssignRoom(candidate.id, candidate.currentInterviewId);
                 }}
-                className="px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs rounded-xl shadow-md transition cursor-pointer flex items-center gap-1.5"
+                className="px-4 py-2 bg-[#171717] hover:bg-[#282828] text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer flex items-center gap-1.5"
                 title="HR / Admin Room Control: Assign or change room"
               >
-                <DoorOpen className="w-3.5 h-3.5" />
+                <DoorOpen className="w-3.5 h-3.5 text-[#C99A68]" />
                 <span>{candidate.assignedRoomId ? 'Change / Reassign Room' : 'Assign Room Now'}</span>
               </button>
             )}
             <button
               onClick={onClose}
-              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-slate-700 transition cursor-pointer"
+              className="px-4 py-2 bg-white hover:bg-[#FAF9F6] text-[#171717] text-xs font-semibold rounded-xl border border-[#EFE0CC] transition cursor-pointer"
             >
               Close Dossier
             </button>
@@ -1048,30 +875,29 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
 
       {/* DELETE CONFIRMATION MODAL */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/85 backdrop-blur-xs p-4">
-          <div className="bg-slate-900 border border-rose-500/50 rounded-3xl p-6 max-w-md w-full space-y-4 text-slate-100 shadow-2xl">
-            <div className="w-12 h-12 bg-rose-500/20 text-rose-400 border border-rose-500/40 rounded-full flex items-center justify-center mx-auto">
+        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+          <div className="bg-white/98 border border-rose-200 rounded-3xl p-6 max-w-md w-full space-y-4 text-[#111111] shadow-[0_24px_60px_rgba(0,0,0,0.12)]">
+            <div className="w-12 h-12 bg-rose-50 text-rose-700 border border-rose-200 rounded-full flex items-center justify-center mx-auto">
               <Trash2 className="w-6 h-6" />
             </div>
             <div className="text-center space-y-1.5">
-              <h3 className="text-lg font-bold text-white">Delete Candidate?</h3>
-              <p className="text-xs text-slate-300 font-medium">
-                Candidate: <strong className="text-amber-400">{candidate.fullName}</strong>
+              <h3 className="text-lg font-bold text-[#111111]">Delete Candidate?</h3>
+              <p className="text-xs text-[#77716B] font-medium">
+                Candidate: <strong className="text-[#8C6033]">{candidate.fullName}</strong>
               </p>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                This action will remove/archive the candidate record<br className="hidden sm:inline" />
-                {' '}and associated operational data according to retention policy.
+              <p className="text-xs text-[#77716B] leading-relaxed">
+                This action will remove/archive the candidate record according to retention policy.
               </p>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Reason for Archival</label>
+              <label className="block text-xs font-semibold text-[#111111] mb-1">Reason for Archival</label>
               <input
                 type="text"
                 value={deleteReason}
                 onChange={(e) => setDeleteReason(e.target.value)}
                 placeholder="e.g. Withdrawn by candidate / Duplicate application"
-                className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white"
+                className="w-full px-3 py-2 bg-white border border-[#E4CCAF] rounded-xl text-xs text-[#111111] focus:outline-hidden focus:border-[#C99A68]"
               />
             </div>
 
@@ -1079,7 +905,7 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
               <button
                 type="button"
                 onClick={() => setShowDeleteConfirm(false)}
-                className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs rounded-xl transition"
+                className="flex-1 py-2.5 bg-white hover:bg-[#FAF9F6] text-[#77716B] hover:text-[#111111] font-semibold text-xs rounded-xl border border-[#EFE0CC] transition cursor-pointer"
               >
                 Cancel
               </button>
@@ -1087,7 +913,7 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
                 type="button"
                 onClick={handleDeleteCandidate}
                 disabled={deleting}
-                className="flex-1 py-2.5 bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-400 hover:to-rose-500 text-slate-950 font-black text-xs rounded-xl shadow-lg transition"
+                className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-md transition cursor-pointer"
               >
                 {deleting ? 'Archiving...' : 'Delete Candidate'}
               </button>

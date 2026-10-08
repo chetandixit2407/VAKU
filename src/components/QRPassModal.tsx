@@ -238,35 +238,35 @@ export const QRPassModal: React.FC<QRPassModalProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-xs p-4">
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-3xl w-full shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 text-slate-100">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+      <div className="bg-[#1a0f0a]/95 border border-[rgba(225,165,95,0.28)] rounded-3xl max-w-3xl w-full shadow-2xl shadow-black/80 overflow-hidden animate-in fade-in zoom-in-95 duration-200 text-slate-100">
         {/* Top Header */}
-        <div className="p-5 sm:p-6 border-b border-slate-800 flex items-center justify-between bg-slate-950/70">
+        <div className="p-5 sm:p-6 border-b border-[rgba(200,140,80,0.18)] flex items-center justify-between bg-[#140b07]/90">
           <div>
             <div className="flex items-center gap-2">
               <QrCode className="w-5 h-5 text-amber-400" />
-              <h2 className="text-lg font-bold text-white">WCR QR Station & Intake Hub</h2>
+              <h2 className="text-lg font-bold text-[#fdf6ed]">WCR QR Station & Intake Hub</h2>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-[#a88d77] mt-0.5">
               Two distinct workflows: General Blank Registration for walk-ins & Scheduled Interview Passes.
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition"
+            className="p-2 rounded-xl text-[#a88d77] hover:text-white hover:bg-[#25150d] transition cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Workflow Tab Selector */}
-        <div className="p-3 bg-slate-950 border-b border-slate-800 flex gap-2">
+        <div className="p-3 bg-[#120a06] border-b border-[rgba(200,140,80,0.18)] flex gap-2">
           <button
             onClick={() => setActiveTab('GENERAL')}
             className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
               activeTab === 'GENERAL'
-                ? 'bg-amber-500 text-slate-950 shadow-md'
-                : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                ? 'bg-gradient-to-r from-[#c98944] to-amber-600 text-slate-950 shadow-md'
+                : 'text-[#a88d77] hover:text-[#fdf6ed] hover:bg-[#20120b]'
             }`}
           >
             <UserPlus className="w-4 h-4" />
@@ -276,8 +276,8 @@ export const QRPassModal: React.FC<QRPassModalProps> = ({
             onClick={() => setActiveTab('SCHEDULED')}
             className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
               activeTab === 'SCHEDULED'
-                ? 'bg-amber-500 text-slate-950 shadow-md'
-                : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                ? 'bg-gradient-to-r from-[#c98944] to-amber-600 text-slate-950 shadow-md'
+                : 'text-[#a88d77] hover:text-[#fdf6ed] hover:bg-[#20120b]'
             }`}
           >
             <Calendar className="w-4 h-4" />
@@ -289,7 +289,7 @@ export const QRPassModal: React.FC<QRPassModalProps> = ({
         {activeTab === 'GENERAL' && (
           <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
             {/* Left: QR Display */}
-            <div className="flex flex-col items-center justify-center p-6 bg-slate-950 border border-slate-800 rounded-2xl text-center space-y-4">
+            <div className="flex flex-col items-center justify-center p-6 bg-[#120a06] border border-[rgba(200,140,80,0.22)] rounded-2xl text-center space-y-4">
               <div className="p-3 bg-white rounded-2xl shadow-xl inline-block border-2 border-emerald-500">
                 {generalQrDataUrl ? (
                   <img src={generalQrDataUrl} alt="WCR General QR" className="w-48 h-48 object-contain" />
@@ -305,15 +305,15 @@ export const QRPassModal: React.FC<QRPassModalProps> = ({
                   Reception Standee QR
                 </span>
                 <h4 className="text-sm font-bold text-white pt-1">General New Candidate Intake</h4>
-                <p className="text-[11px] text-slate-400">
+                <p className="text-[11px] text-[#a88d77]">
                   Every scan generates an isolated, 100% blank form.
                 </p>
 
-                <div className="mt-2 p-2 bg-slate-900 rounded-xl border border-slate-800 text-[11px] text-slate-300 flex items-center justify-between gap-1 overflow-hidden">
-                  <span className="truncate font-mono text-[10px] text-slate-400">{generalScanUrl}</span>
+                <div className="mt-2 p-2 bg-[#1a0f0a] rounded-xl border border-[rgba(200,140,80,0.2)] text-[11px] text-slate-300 flex items-center justify-between gap-1 overflow-hidden">
+                  <span className="truncate font-mono text-[10px] text-[#a88d77]">{generalScanUrl}</span>
                   <button
                     onClick={() => handleCopyUrl(generalScanUrl)}
-                    className="p-1 text-amber-400 hover:text-amber-300 shrink-0"
+                    className="p-1 text-amber-400 hover:text-amber-300 shrink-0 cursor-pointer"
                     title="Copy URL"
                   >
                     {copiedUrl ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
@@ -338,7 +338,7 @@ export const QRPassModal: React.FC<QRPassModalProps> = ({
                 </button>
                 <button
                   onClick={() => setIsStandeeMode(true)}
-                  className="w-full py-2 px-3 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="w-full py-2 px-3 bg-[#1e110a] hover:bg-[#2c180e] border border-[rgba(200,140,80,0.22)] text-[#e8c89b] text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <Printer className="w-3.5 h-3.5 text-amber-400" />
                   <span>View / Print Reception Wall Standee</span>
@@ -348,12 +348,12 @@ export const QRPassModal: React.FC<QRPassModalProps> = ({
 
             {/* Right: Technical Specifications */}
             <div className="space-y-4">
-              <div className="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2.5 text-xs text-slate-300">
-                <span className="font-bold text-white flex items-center gap-1.5 text-xs">
+              <div className="p-4 bg-[#120a06] border border-[rgba(200,140,80,0.22)] rounded-2xl space-y-2.5 text-xs text-slate-300">
+                <span className="font-bold text-[#fdf6ed] flex items-center gap-1.5 text-xs">
                   <ShieldCheck className="w-4 h-4 text-emerald-400" />
                   General QR Architecture (Mandatory Spec)
                 </span>
-                <ul className="space-y-2 text-[11px] text-slate-400 list-disc pl-4">
+                <ul className="space-y-2 text-[11px] text-[#a88d77] list-disc pl-4">
                   <li>
                     <strong className="text-slate-200">Genuinely Blank Form:</strong> Name, phone, email, and address fields are initialized empty.
                   </li>
@@ -372,9 +372,9 @@ export const QRPassModal: React.FC<QRPassModalProps> = ({
                 </ul>
               </div>
 
-              <div className="p-4 bg-gradient-to-br from-amber-500/10 to-slate-950 border border-amber-500/30 rounded-2xl text-xs space-y-1">
+              <div className="p-4 bg-gradient-to-br from-[#382012]/60 to-[#120a06] border border-[rgba(200,140,80,0.25)] rounded-2xl text-xs space-y-1">
                 <span className="text-amber-400 font-bold block text-[11px]">Reception Desk Kiosk Tip:</span>
-                <p className="text-slate-300 text-[11px] leading-relaxed">
+                <p className="text-[#c9b19e] text-[11px] leading-relaxed">
                   Display this QR on the reception counter tablet or print the acrylic standee. Walk-in applicants scan with iPhone Camera, Android Camera, or Google Lens to register instantly.
                 </p>
               </div>
@@ -386,7 +386,7 @@ export const QRPassModal: React.FC<QRPassModalProps> = ({
         {activeTab === 'SCHEDULED' && (
           <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Left: Scheduled QR */}
-            <div className="flex flex-col items-center justify-center p-6 bg-slate-950 border border-slate-800 rounded-2xl text-center space-y-4">
+            <div className="flex flex-col items-center justify-center p-6 bg-[#120a06] border border-[rgba(200,140,80,0.22)] rounded-2xl text-center space-y-4">
               {selectedSession ? (
                 <>
                   <div className="p-3 bg-white rounded-2xl shadow-xl inline-block border-2 border-amber-500">
@@ -401,12 +401,12 @@ export const QRPassModal: React.FC<QRPassModalProps> = ({
 
                   <div className="space-y-1 w-full max-w-xs">
                     <div className="flex items-center justify-center gap-2">
-                      <code className="px-2.5 py-1 bg-slate-900 border border-slate-700 rounded-lg text-amber-400 font-mono text-xs font-bold">
+                      <code className="px-2.5 py-1 bg-[#1c100a] border border-[rgba(200,140,80,0.3)] rounded-lg text-amber-400 font-mono text-xs font-bold">
                         {selectedSession.token}
                       </code>
                       <button
                         onClick={() => handleCopy(selectedSession.token)}
-                        className="p-1 text-slate-400 hover:text-white transition"
+                        className="p-1 text-[#a88d77] hover:text-white transition cursor-pointer"
                         title="Copy token"
                       >
                         {copiedToken === selectedSession.token ? (
@@ -420,11 +420,11 @@ export const QRPassModal: React.FC<QRPassModalProps> = ({
                     <h4 className="text-sm font-bold text-white pt-1">{selectedSession.candidateName}</h4>
                     <p className="text-xs text-amber-400 font-medium">{selectedSession.position}</p>
 
-                    <div className="mt-2 p-2 bg-slate-900 rounded-xl border border-slate-800 text-[11px] text-slate-300 flex items-center justify-between gap-1 overflow-hidden">
-                      <span className="truncate font-mono text-[10px] text-slate-400">{scheduledScanUrl}</span>
+                    <div className="mt-2 p-2 bg-[#1a0f0a] rounded-xl border border-[rgba(200,140,80,0.2)] text-[11px] text-slate-300 flex items-center justify-between gap-1 overflow-hidden">
+                      <span className="truncate font-mono text-[10px] text-[#a88d77]">{scheduledScanUrl}</span>
                       <button
                         onClick={() => handleCopyUrl(scheduledScanUrl)}
-                        className="p-1 text-amber-400 hover:text-amber-300 shrink-0"
+                        className="p-1 text-amber-400 hover:text-amber-300 shrink-0 cursor-pointer"
                       >
                         {copiedUrl ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                       </button>
@@ -437,14 +437,14 @@ export const QRPassModal: React.FC<QRPassModalProps> = ({
                         onClose();
                         onLaunchCheckIn(selectedSession.token);
                       }}
-                      className="w-full py-2.5 px-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-xs font-black rounded-xl shadow-lg transition cursor-pointer flex items-center justify-center gap-2"
+                      className="w-full py-2.5 px-4 bg-gradient-to-r from-[#c98944] to-amber-600 hover:from-[#db974e] hover:to-amber-500 text-slate-950 text-xs font-black rounded-xl shadow-lg transition cursor-pointer flex items-center justify-center gap-2"
                     >
                       <Smartphone className="w-4 h-4" />
                       <span>Open Scheduled Candidate Form</span>
                     </button>
                     <button
                       onClick={() => setIsStandeeMode(true)}
-                      className="w-full py-2 px-3 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer"
+                      className="w-full py-2 px-3 bg-[#1e110a] hover:bg-[#2c180e] border border-[rgba(200,140,80,0.22)] text-[#e8c89b] text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer"
                     >
                       <Printer className="w-3.5 h-3.5 text-amber-400" />
                       <span>Print Candidate Pass</span>
@@ -452,14 +452,14 @@ export const QRPassModal: React.FC<QRPassModalProps> = ({
                   </div>
                 </>
               ) : (
-                <div className="text-xs text-slate-500 py-12">No scheduled pass selected</div>
+                <div className="text-xs text-[#a88d77] py-12">No scheduled pass selected</div>
               )}
             </div>
 
             {/* Right: Scheduled Sessions List */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                <span className="text-xs font-bold text-[#e8c89b] uppercase tracking-wider">
                   Active Scheduled Passes ({sessions.length})
                 </span>
                 <button
@@ -474,50 +474,50 @@ export const QRPassModal: React.FC<QRPassModalProps> = ({
               {showNewPassForm ? (
                 <form
                   onSubmit={handleCreateScheduledPass}
-                  className="p-3.5 bg-slate-950 border border-slate-800 rounded-2xl space-y-2.5 text-xs animate-in fade-in"
+                  className="p-3.5 bg-[#120a06] border border-[rgba(200,140,80,0.25)] rounded-2xl space-y-2.5 text-xs animate-in fade-in"
                 >
                   <span className="font-bold text-amber-400 block">Issue New Scheduled Pass</span>
                   <div>
-                    <label className="text-[10px] text-slate-400 block">Candidate Name</label>
+                    <label className="text-[10px] text-[#a88d77] block">Candidate Name</label>
                     <input
                       type="text"
                       value={newCandidateName}
                       onChange={(e) => setNewCandidateName(e.target.value)}
-                      className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-xs"
+                      className="w-full px-2.5 py-1.5 bg-[#1e110a] border border-[rgba(200,140,80,0.22)] rounded-lg text-white text-xs"
                       required
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] text-slate-400 block">Position</label>
+                    <label className="text-[10px] text-[#a88d77] block">Position</label>
                     <input
                       type="text"
                       value={newPosition}
                       onChange={(e) => setNewPosition(e.target.value)}
-                      className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-xs"
+                      className="w-full px-2.5 py-1.5 bg-[#1e110a] border border-[rgba(200,140,80,0.22)] rounded-lg text-white text-xs"
                       required
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] text-slate-400 block">Appointment Time</label>
+                    <label className="text-[10px] text-[#a88d77] block">Appointment Time</label>
                     <input
                       type="text"
                       value={newTime}
                       onChange={(e) => setNewTime(e.target.value)}
-                      className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-xs"
+                      className="w-full px-2.5 py-1.5 bg-[#1e110a] border border-[rgba(200,140,80,0.22)] rounded-lg text-white text-xs"
                     />
                   </div>
                   <div className="flex justify-end gap-2 pt-1">
                     <button
                       type="button"
                       onClick={() => setShowNewPassForm(false)}
-                      className="px-2.5 py-1 text-slate-400 hover:text-white"
+                      className="px-2.5 py-1 text-[#a88d77] hover:text-white cursor-pointer"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={generating}
-                      className="px-3 py-1 bg-amber-500 text-slate-950 font-bold rounded-lg text-xs"
+                      className="px-3 py-1 bg-gradient-to-r from-[#c98944] to-amber-600 text-slate-950 font-bold rounded-lg text-xs cursor-pointer"
                     >
                       Generate Pass
                     </button>
@@ -533,20 +533,20 @@ export const QRPassModal: React.FC<QRPassModalProps> = ({
                         onClick={() => setSelectedSession(sess)}
                         className={`p-3 rounded-2xl border transition cursor-pointer text-xs flex items-center justify-between ${
                           isSelected
-                            ? 'bg-amber-500/10 border-amber-500 shadow-md ring-1 ring-amber-500/30'
-                            : 'bg-slate-950/60 border-slate-800 hover:border-slate-700'
+                            ? 'bg-[#3b2011] border-amber-500 shadow-md ring-1 ring-amber-500/30'
+                            : 'bg-[#120a06]/60 border-[rgba(200,140,80,0.18)] hover:border-[rgba(200,140,80,0.35)]'
                         }`}
                       >
                         <div className="space-y-0.5">
                           <div className="flex items-center gap-1.5">
                             <span className="font-bold text-white">{sess.candidateName}</span>
-                            <span className="font-mono text-[10px] px-1.5 py-0.2 bg-slate-900 text-amber-400 rounded-sm">
+                            <span className="font-mono text-[10px] px-1.5 py-0.2 bg-[#1a0f0a] text-amber-400 rounded-sm">
                               {sess.token}
                             </span>
                           </div>
-                          <p className="text-[11px] text-slate-400">{sess.position}</p>
+                          <p className="text-[11px] text-[#a88d77]">{sess.position}</p>
                           {sess.appointmentTime && (
-                            <p className="text-[10px] text-slate-500">Scheduled: {sess.appointmentTime}</p>
+                            <p className="text-[10px] text-[#7d6554]">Scheduled: {sess.appointmentTime}</p>
                           )}
                         </div>
 
@@ -569,14 +569,14 @@ export const QRPassModal: React.FC<QRPassModalProps> = ({
         )}
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-800 bg-slate-950/60 flex items-center justify-between text-xs">
-          <span className="text-slate-400 text-[11px] flex items-center gap-1">
+        <div className="p-4 border-t border-[rgba(200,140,80,0.18)] bg-[#140b07]/90 flex items-center justify-between text-xs">
+          <span className="text-[#a88d77] text-[11px] flex items-center gap-1">
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
             HTTPS Production Compliant • Real device scanning ready
           </span>
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-slate-700 cursor-pointer"
+            className="px-4 py-2 bg-[#20120b] hover:bg-[#2c180e] text-[#fdf6ed] text-xs font-semibold rounded-xl border border-[rgba(200,140,80,0.2)] cursor-pointer transition"
           >
             Close
           </button>

@@ -141,18 +141,18 @@ export const ResetPasswordView: React.FC<ResetPasswordViewProps> = ({
   const strength = getPasswordStrength();
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-4 selection:bg-amber-500 selection:text-slate-950">
+    <div className="min-h-screen bg-[#0e0805] text-[#fdf6ed] flex flex-col items-center justify-center p-4 selection:bg-[#c98944] selection:text-slate-950 relative">
       {/* Background ambient lighting */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[rgba(200,135,70,0.15)] rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-md w-full relative z-10 space-y-6">
         {/* Brand Header */}
         <div className="text-center space-y-2">
-          <div className="w-14 h-14 bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl flex items-center justify-center text-slate-950 font-black text-2xl shadow-xl shadow-amber-500/20 mx-auto">
+          <div className="w-14 h-14 bg-gradient-to-br from-[#c98944] via-amber-500 to-[#e8c89b] rounded-2xl flex items-center justify-center text-slate-950 font-black text-2xl shadow-xl shadow-amber-900/40 border border-[#fdf6ed]/30 mx-auto">
             <Building className="w-8 h-8" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-white tracking-tight">White Collar Realty</h1>
+            <h1 className="text-xl font-bold text-[#fdf6ed] tracking-tight">White Collar Realty</h1>
             <p className="text-xs text-amber-400 font-semibold tracking-wider uppercase">
               Staff Security & Password Management
             </p>
@@ -160,11 +160,11 @@ export const ResetPasswordView: React.FC<ResetPasswordViewProps> = ({
         </div>
 
         {/* Card Container */}
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-5">
+        <div className="bg-[#1a0f0a]/95 border border-[rgba(225,165,95,0.28)] rounded-3xl p-6 sm:p-8 shadow-2xl shadow-black/80 space-y-5">
           {verifying ? (
             <div className="py-12 text-center space-y-3">
               <div className="w-10 h-10 border-2 border-amber-400 border-t-transparent rounded-full animate-spin mx-auto" />
-              <p className="text-xs text-slate-400 font-medium">Verifying reset authorization token...</p>
+              <p className="text-xs text-[#a88d77] font-medium">Verifying reset authorization token...</p>
             </div>
           ) : verifyError ? (
             /* ERROR / INVALID TOKEN STATE */
@@ -180,7 +180,7 @@ export const ResetPasswordView: React.FC<ResetPasswordViewProps> = ({
               <div className="pt-2">
                 <button
                   onClick={onBackToLogin}
-                  className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs rounded-xl border border-slate-700 transition"
+                  className="w-full py-2.5 bg-[#20120b] hover:bg-[#2c180e] text-[#c9b19e] font-semibold text-xs rounded-xl border border-[rgba(200,140,80,0.25)] transition"
                 >
                   Return to Staff Login
                 </button>
@@ -194,17 +194,17 @@ export const ResetPasswordView: React.FC<ResetPasswordViewProps> = ({
               </div>
               <div>
                 <h3 className="text-lg font-bold text-white">Password Updated Successfully!</h3>
-                <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                <p className="text-xs text-[#a88d77] mt-1 leading-relaxed">
                   Your new password has been securely hashed and stored. You can now access your staff dashboard.
                 </p>
               </div>
 
-              <div className="p-3.5 bg-slate-950 border border-slate-800 rounded-2xl text-xs text-left space-y-1">
-                <div className="flex justify-between text-slate-400">
+              <div className="p-3.5 bg-[#120a06] border border-[rgba(200,140,80,0.25)] rounded-2xl text-xs text-left space-y-1">
+                <div className="flex justify-between text-[#a88d77]">
                   <span>Account:</span>
                   <strong className="text-white">{verifyData?.request?.userName}</strong>
                 </div>
-                <div className="flex justify-between text-slate-400">
+                <div className="flex justify-between text-[#a88d77]">
                   <span>Role:</span>
                   <span className="text-amber-400 font-mono">{verifyData?.request?.userRole}</span>
                 </div>
@@ -212,7 +212,7 @@ export const ResetPasswordView: React.FC<ResetPasswordViewProps> = ({
 
               <button
                 onClick={onBackToLogin}
-                className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs rounded-xl shadow-lg transition cursor-pointer flex items-center justify-center gap-1.5"
+                className="w-full py-2.5 bg-gradient-to-r from-[#c98944] to-amber-600 hover:from-[#db974e] hover:to-amber-500 text-slate-950 font-black text-xs rounded-xl shadow-lg transition cursor-pointer flex items-center justify-center gap-1.5"
               >
                 <span>Proceed to Staff Login</span>
                 <ArrowRight className="w-4 h-4" />
@@ -222,16 +222,16 @@ export const ResetPasswordView: React.FC<ResetPasswordViewProps> = ({
             /* FORM STATE */
             <div className="space-y-4">
               {/* User Profile Banner */}
-              <div className="p-3.5 bg-slate-950 border border-slate-800 rounded-2xl flex items-center justify-between text-xs">
+              <div className="p-3.5 bg-[#120a06] border border-[rgba(200,140,80,0.25)] rounded-2xl flex items-center justify-between text-xs">
                 <div>
                   <h4 className="font-bold text-white">{verifyData?.request?.userName}</h4>
-                  <p className="text-[11px] text-slate-400">{verifyData?.request?.userEmail}</p>
+                  <p className="text-[11px] text-[#a88d77]">{verifyData?.request?.userEmail}</p>
                 </div>
                 <div className="text-right">
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-300 border border-amber-500/30">
                     {verifyData?.request?.userRole}
                   </span>
-                  <p className="text-[10px] text-slate-500 mt-0.5">{verifyData?.request?.department}</p>
+                  <p className="text-[10px] text-[#8d735f] mt-0.5">{verifyData?.request?.department}</p>
                 </div>
               </div>
 
@@ -272,23 +272,23 @@ export const ResetPasswordView: React.FC<ResetPasswordViewProps> = ({
 
               <form onSubmit={handleResetSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  <label className="block text-xs font-semibold text-[#e8c89b] mb-1.5">
                     New Password
                   </label>
                   <div className="relative">
-                    <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <Lock className="w-4 h-4 text-[#8d735f] absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
                       type={showPassword ? 'text' : 'password'}
                       required
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="Enter new strong password (min 5 chars)"
-                      className="w-full pl-10 pr-10 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-amber-400 transition"
+                      className="w-full pl-10 pr-10 py-2.5 bg-[#120a06] border border-[rgba(200,140,80,0.25)] rounded-xl text-xs text-white placeholder-[#7d6554] focus:outline-hidden focus:border-amber-400 transition"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8d735f] hover:text-[#fdf6ed] transition cursor-pointer"
                       tabIndex={-1}
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -298,33 +298,33 @@ export const ResetPasswordView: React.FC<ResetPasswordViewProps> = ({
                   {/* Password strength bar */}
                   {newPassword && (
                     <div className="mt-2 space-y-1">
-                      <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                      <div className="h-1.5 w-full bg-[#1e110a] rounded-full overflow-hidden border border-[rgba(200,140,80,0.15)]">
                         <div
                           className={`h-full ${strength.color} transition-all duration-300`}
                           style={{ width: strength.width }}
                         />
                       </div>
-                      <div className="flex justify-between text-[10px] text-slate-400">
-                        <span>Strength: <strong className="text-slate-200">{strength.label}</strong></span>
-                        <span className="text-slate-500">PBKDF2 SHA-256</span>
+                      <div className="flex justify-between text-[10px] text-[#a88d77]">
+                        <span>Strength: <strong className="text-[#fdf6ed]">{strength.label}</strong></span>
+                        <span className="text-[#8d735f]">PBKDF2 SHA-256</span>
                       </div>
                     </div>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  <label className="block text-xs font-semibold text-[#e8c89b] mb-1.5">
                     Confirm New Password
                   </label>
                   <div className="relative">
-                    <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <Lock className="w-4 h-4 text-[#8d735f] absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
                       type={showPassword ? 'text' : 'password'}
                       required
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="Re-enter new password"
-                      className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-amber-400 transition"
+                      className="w-full pl-10 pr-4 py-2.5 bg-[#120a06] border border-[rgba(200,140,80,0.25)] rounded-xl text-xs text-white placeholder-[#7d6554] focus:outline-hidden focus:border-amber-400 transition"
                     />
                   </div>
                 </div>
@@ -333,14 +333,14 @@ export const ResetPasswordView: React.FC<ResetPasswordViewProps> = ({
                   <button
                     type="button"
                     onClick={onBackToLogin}
-                    className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs rounded-xl border border-slate-700 transition"
+                    className="flex-1 py-2.5 bg-[#20120b] hover:bg-[#2c180e] text-[#a88d77] hover:text-[#fdf6ed] font-semibold text-xs rounded-xl border border-[rgba(200,140,80,0.2)] transition cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="flex-1 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs rounded-xl shadow-lg transition cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
+                    className="flex-1 py-2.5 bg-gradient-to-r from-[#c98944] to-amber-600 hover:from-[#db974e] hover:to-amber-500 text-slate-950 font-black text-xs rounded-xl shadow-lg transition cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
                   >
                     {submitting ? (
                       <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
@@ -358,7 +358,7 @@ export const ResetPasswordView: React.FC<ResetPasswordViewProps> = ({
         </div>
 
         {/* Security badge footer */}
-        <div className="text-center text-[11px] text-slate-500 flex items-center justify-center gap-1.5">
+        <div className="text-center text-[11px] text-[#8d735f] flex items-center justify-center gap-1.5">
           <ShieldCheck className="w-3.5 h-3.5 text-amber-500" />
           <span>WCR End-to-End Encrypted Identity & Access Management</span>
         </div>

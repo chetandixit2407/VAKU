@@ -9,8 +9,10 @@ import {
   MapPin,
   Sparkles,
   ArrowRight,
+  StopCircle,
 } from 'lucide-react';
 import type { Candidate, Interview, Room } from '../../types/index.ts';
+import { WCRGlassCard, WCRMetricCard } from '../design-system/index.ts';
 
 interface InterviewerDashboardProps {
   candidates: Candidate[];
@@ -45,44 +47,71 @@ export const InterviewerDashboard: React.FC<InterviewerDashboardProps> = ({
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Top Banner */}
-      <div className="p-6 bg-slate-900 border border-slate-800 rounded-3xl shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <WCRGlassCard className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4" elevation="standard">
         <div>
           <div className="flex items-center gap-2">
-            <UserCheck className="w-5 h-5 text-blue-400" />
-            <h1 className="text-xl font-bold text-white tracking-tight">
+            <UserCheck className="w-5 h-5 text-[#8C6033]" />
+            <h1 className="text-xl sm:text-2xl font-black text-[#171717] tracking-tight">
               Interviewer Command Station
             </h1>
           </div>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Active logged-in interviewer: <strong className="text-amber-400">Nisha Verma (Senior Director)</strong>
+          <p className="text-xs text-[#77716B] mt-0.5">
+            Active logged-in interviewer: <strong className="text-[#171717]">Nisha Verma (Senior Director)</strong>
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-semibold">
-            {waitingInterviews.length} Candidates Waiting
+          <span className="px-3 py-1.5 rounded-xl bg-[#FAF4ED] border border-[#E4CCAF] text-[#8C6033] text-xs font-bold">
+            {waitingInterviews.length} In Queue
           </span>
-          <span className="px-3 py-1.5 rounded-xl bg-blue-500/10 border border-blue-500/30 text-blue-300 text-xs font-semibold">
+          <span className="px-3 py-1.5 rounded-xl bg-sky-50 border border-sky-200 text-sky-700 text-xs font-bold">
             {activeInterviews.length} In Session
           </span>
         </div>
+      </WCRGlassCard>
+
+      {/* KPI Metric Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <WCRMetricCard
+          label="Awaiting Evaluation"
+          value={waitingInterviews.length}
+          subtitle="Arrived & ready"
+          icon={<Clock className="w-5 h-5" />}
+          accentColor="amber"
+        />
+
+        <WCRMetricCard
+          label="Active Interview"
+          value={activeInterviews.length}
+          subtitle="In room currently"
+          icon={<Play className="w-5 h-5" />}
+          accentColor="blue"
+        />
+
+        <WCRMetricCard
+          label="Completed Today"
+          value={completedInterviews.length}
+          subtitle="Evaluations submitted"
+          icon={<CheckCircle2 className="w-5 h-5" />}
+          accentColor="emerald"
+        />
       </div>
 
       {/* High-Priority Waiting Queue */}
       <div className="space-y-4">
-        <h2 className="text-base font-bold text-white flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping" />
+        <h2 className="text-base font-extrabold text-[#171717] flex items-center gap-2 tracking-tight">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#C99A68] animate-pulse" />
           Candidates Arrived & Assigned To You
         </h2>
 
         {waitingInterviews.length === 0 ? (
-          <div className="p-10 text-center bg-slate-900/60 border border-slate-800 rounded-3xl space-y-2">
-            <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" />
-            <h3 className="text-sm font-bold text-white">No candidates waiting for your review</h3>
-            <p className="text-xs text-slate-400">
+          <WCRGlassCard className="p-10 text-center space-y-2" elevation="subtle">
+            <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto" />
+            <h3 className="text-sm font-bold text-[#171717]">No candidates waiting for your review</h3>
+            <p className="text-xs text-[#77716B]">
               When HR schedules or advances a candidate to your round, and they arrive, you will receive an automated alert here.
             </p>
-          </div>
+          </WCRGlassCard>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {waitingInterviews.map((intv) => {
@@ -90,181 +119,114 @@ export const InterviewerDashboard: React.FC<InterviewerDashboardProps> = ({
               const hasRoom = intv.roomId || intv.status === 'ROOM_ASSIGNED';
 
               return (
-                <div
+                <WCRGlassCard
                   key={intv.id}
-                  className="p-5 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-2xl shadow-xl space-y-4 transition"
+                  enableTilt={true}
+                  className="p-5 space-y-4"
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3.5">
+                    <div className="flex items-center gap-3.5 min-w-0">
                       {cand?.livePhoto ? (
                         <img
                           src={cand.livePhoto}
                           alt={intv.candidateName}
-                          className="w-14 h-14 rounded-2xl object-cover border-2 border-amber-500 shadow-md shrink-0"
+                          className="w-14 h-14 rounded-2xl object-cover border-2 border-[#E4CCAF] shadow-xs shrink-0"
                         />
                       ) : (
-                        <div className="w-14 h-14 rounded-2xl bg-slate-800 flex items-center justify-center text-slate-400 shrink-0">
+                        <div className="w-14 h-14 rounded-2xl bg-[#FAF4ED] border border-[#E4CCAF] flex items-center justify-center text-[#8C6033] shrink-0">
                           <UserCheck className="w-7 h-7" />
                         </div>
                       )}
-                      <div>
-                        <h3 className="text-base font-bold text-white">{intv.candidateName}</h3>
-                        <p className="text-xs text-amber-400 font-semibold">{intv.position}</p>
-                        <p className="text-[11px] text-slate-400 mt-0.5">{intv.roundName}</p>
+                      <div className="min-w-0">
+                        <h3 className="text-base font-bold text-[#171717] truncate">{intv.candidateName}</h3>
+                        <p className="text-xs text-[#8C6033] font-semibold truncate">{intv.position}</p>
+                        <p className="text-[11px] text-[#77716B] mt-0.5 truncate">{intv.roundName}</p>
                       </div>
                     </div>
 
                     <span
-                      className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                      className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider shrink-0 ${
                         hasRoom
-                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
-                          : 'bg-amber-500/10 text-amber-300 border border-amber-500/30'
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                          : 'bg-[#FAF4ED] text-[#8C6033] border border-[#E4CCAF]'
                       }`}
                     >
-                      {hasRoom ? 'Room Ready' : 'Awaiting HR Room'}
+                      {hasRoom ? 'Room Ready' : 'Awaiting Room'}
                     </span>
                   </div>
 
                   {/* Room & Location Status */}
-                  <div className="p-3 bg-slate-950/80 border border-slate-800 rounded-xl space-y-1.5 text-xs">
+                  <div className="p-3 bg-[#FAF9F6] border border-[#EFE0CC] rounded-xl space-y-1.5 text-xs">
                     <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-slate-400">Designated Room:</span>
-                      <strong className={hasRoom ? 'text-amber-400 font-bold' : 'text-slate-500 italic'}>
-                        {intv.roomName || 'Pending HR Assignment'}
-                      </strong>
-                    </div>
-                    <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-slate-400">Current Location:</span>
-                      <span className="text-slate-200 font-medium">
-                        {cand?.currentLocation || 'Waiting Lounge'}
+                      <span className="text-[#77716B] flex items-center gap-1">
+                        <DoorOpen className="w-3.5 h-3.5 text-[#C99A68]" />
+                        Room: <strong className="text-[#171717]">{intv.roomName || cand?.assignedRoomName || 'Lobby Waiting'}</strong>
                       </span>
+                      <span className="font-mono text-[#8A847D]">{intv.scheduledTime}</span>
                     </div>
                   </div>
-
-                  {/* Candidate Profile Snippet */}
-                  {cand && (
-                    <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-400">
-                      <div>
-                        <span>Experience: </span>
-                        <strong className="text-slate-200">{cand.totalExperience}</strong>
-                      </div>
-                      <div>
-                        <span>Notice Period: </span>
-                        <strong className="text-slate-200">{cand.noticePeriod}</strong>
-                      </div>
-                    </div>
-                  )}
 
                   {/* Actions */}
-                  <div className="flex items-center gap-2 pt-2 border-t border-slate-800">
+                  <div className="flex items-center justify-between gap-2 pt-1">
+                    <button
+                      onClick={() => onOpenDossier(intv.candidateId)}
+                      className="px-3.5 py-2 bg-white hover:bg-[#FAF9F6] text-[#171717] font-semibold text-xs rounded-xl border border-[#EFE0CC] transition cursor-pointer shadow-2xs"
+                    >
+                      Inspect Dossier
+                    </button>
                     <button
                       onClick={() => onStartInterview(intv.id)}
-                      className="flex-1 py-2 px-3 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 text-xs font-bold rounded-xl shadow-lg transition cursor-pointer flex items-center justify-center gap-1.5"
+                      className="px-4 py-2 bg-[#171717] hover:bg-[#282828] text-white font-extrabold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer active:scale-95 hover:border-[#C99A68]"
                     >
-                      <Play className="w-3.5 h-3.5 fill-current" />
+                      <Play className="w-3.5 h-3.5 text-[#C99A68]" />
                       <span>Start Interview</span>
                     </button>
-                    {cand && (
-                      <button
-                        onClick={() => onOpenDossier(cand.id)}
-                        className="py-2 px-3 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl border border-slate-700 transition"
-                      >
-                        View Resume
-                      </button>
-                    )}
                   </div>
-                </div>
+                </WCRGlassCard>
               );
             })}
           </div>
         )}
       </div>
 
-      {/* Active Interviews In Session */}
+      {/* Active Interviews Session */}
       {activeInterviews.length > 0 && (
-        <div className="space-y-4 pt-4 border-t border-slate-800">
-          <h2 className="text-base font-bold text-white flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-blue-400" />
-            Interviews Currently In Progress ({activeInterviews.length})
+        <div className="space-y-4 pt-4">
+          <h2 className="text-base font-extrabold text-[#171717] flex items-center gap-2 tracking-tight">
+            <span className="w-2.5 h-2.5 rounded-full bg-sky-500 animate-pulse" />
+            Active Interview In Session
           </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-3">
             {activeInterviews.map((intv) => (
-              <div
+              <WCRGlassCard
                 key={intv.id}
-                className="p-5 bg-slate-900 border border-blue-500/40 rounded-2xl shadow-xl space-y-4"
+                className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                elevation="high"
               >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-base font-bold text-white">{intv.candidateName}</h3>
-                    <p className="text-xs text-amber-400">{intv.position}</p>
-                  </div>
-                  <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-300 border border-blue-500/30 flex items-center gap-1">
-                    <Clock className="w-3 h-3 animate-spin" />
-                    In Session: {intv.roomName || 'Meeting Room'}
-                  </span>
-                </div>
-
-                <div className="p-3 bg-slate-950 rounded-xl text-xs text-slate-300">
-                  <p>Round: <strong>{intv.roundName}</strong></p>
-                  <p className="text-[11px] text-slate-400 mt-1">
-                    Started: {intv.startedAt ? new Date(intv.startedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Active now'}
+                <div>
+                  <h3 className="text-lg font-bold text-[#171717]">{intv.candidateName}</h3>
+                  <p className="text-xs text-[#8C6033] font-medium">{intv.position} &bull; {intv.roundName}</p>
+                  <p className="text-[11px] text-[#77716B] mt-1">
+                    Room: <strong className="text-emerald-700">{intv.roomName || 'Assigned Room'}</strong>
                   </p>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => onOpenDossier(intv.candidateId)}
+                    className="px-3.5 py-2 bg-white hover:bg-[#FAF9F6] text-[#171717] font-semibold text-xs rounded-xl border border-[#EFE0CC] transition cursor-pointer shadow-2xs"
+                  >
+                    Dossier
+                  </button>
                   <button
                     onClick={() => onOpenEndInterviewModal(intv)}
-                    className="flex-1 py-2.5 px-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs rounded-xl shadow-lg transition cursor-pointer flex items-center justify-center gap-1.5"
+                    className="px-4 py-2 bg-[#171717] hover:bg-[#282828] text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer active:scale-95"
                   >
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>Conclude & Decide Next Stage</span>
+                    <StopCircle className="w-3.5 h-3.5 text-[#C99A68]" />
+                    <span>Conclude & Submit Decision</span>
                   </button>
-                  {intv.candidateId && (
-                    <button
-                      onClick={() => onOpenDossier(intv.candidateId)}
-                      className="px-3 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-semibold hover:bg-slate-700"
-                    >
-                      Dossier
-                    </button>
-                  )}
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Completed Interviews Today */}
-      {completedInterviews.length > 0 && (
-        <div className="space-y-3 pt-4 border-t border-slate-800">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-            Concluded Interviews Today ({completedInterviews.length})
-          </h3>
-          <div className="space-y-2">
-            {completedInterviews.map((intv) => (
-              <div
-                key={intv.id}
-                className="p-3 bg-slate-900/60 border border-slate-800 rounded-xl flex items-center justify-between text-xs"
-              >
-                <div>
-                  <span className="font-bold text-white">{intv.candidateName}</span>
-                  <span className="text-slate-400 ml-2">({intv.roundName})</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-emerald-400">
-                    Decision: {intv.outcome}
-                  </span>
-                  {intv.candidateId && (
-                    <button
-                      onClick={() => onOpenDossier(intv.candidateId)}
-                      className="text-amber-400 hover:underline text-[11px]"
-                    >
-                      View Record
-                    </button>
-                  )}
-                </div>
-              </div>
+              </WCRGlassCard>
             ))}
           </div>
         </div>

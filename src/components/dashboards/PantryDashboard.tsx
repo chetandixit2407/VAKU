@@ -253,16 +253,16 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Steward Banner */}
-      <div className="p-6 bg-slate-900 border border-slate-800 rounded-3xl shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="p-6 bg-white/95 border border-[#EFE0CC] rounded-3xl shadow-[0_14px_45px_rgba(0,0,0,0.05)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <Coffee className="w-5 h-5 text-amber-300" />
-            <h1 className="text-xl font-bold text-white tracking-tight">
+            <Coffee className="w-5 h-5 text-[#C99A68]" />
+            <h1 className="text-xl font-black text-[#111111] tracking-tight">
               Pantry & Hospitality Operations
             </h1>
           </div>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Logged-in steward: <strong className="text-amber-400">Suresh Kumar</strong> • Central Hospitality Station
+          <p className="text-xs text-[#77716B] mt-0.5">
+            Logged-in steward: <strong className="text-[#171717]">Suresh Kumar</strong> • Central Hospitality Station
           </p>
         </div>
 
@@ -275,46 +275,46 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
               }
               setShowAssignModal(true);
             }}
-            className="px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-xs font-black rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer"
+            className="px-4 py-2 bg-[#171717] hover:bg-[#24211E] text-white text-xs font-bold rounded-xl shadow-sm hover:border-[#C99A68] transition flex items-center gap-1.5 cursor-pointer"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4 text-[#C99A68]" />
             <span>Assign Task</span>
           </button>
-          <span className="px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-semibold">
+          <span className="px-3 py-1.5 rounded-xl bg-[#FAF9F6] border border-[#EFE0CC] text-[#C99A68] text-xs font-semibold">
             {pendingTasks.length} Active Tasks
           </span>
-          <span className="px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold">
+          <span className="px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold">
             {completedTasks.length} Done Today
           </span>
         </div>
       </div>
 
       {/* Strict Information Rule Alert */}
-      <div className="p-3.5 bg-slate-950 border border-slate-800 rounded-2xl flex items-center justify-between text-xs text-slate-400">
+      <div className="p-3.5 bg-white/80 border border-[#EFE0CC] rounded-2xl flex items-center justify-between text-xs text-[#77716B]">
         <div className="flex items-center gap-2">
-          <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+          <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
           <span>
-            <strong>Confidentiality Enforced:</strong> Pantry display strictly contains{' '}
-            <strong className="text-amber-400">WHAT, WHERE, and WHEN</strong>. Candidate resumes, contact details, and compensation remarks are suppressed.
+            <strong className="text-[#171717]">Confidentiality Enforced:</strong> Pantry display strictly contains{' '}
+            <strong className="text-[#C99A68]">WHAT, WHERE, and WHEN</strong>. Candidate resumes, contact details, and compensation remarks are suppressed.
           </span>
         </div>
       </div>
 
       {/* 🚨 PROMINENT REAL-TIME ACTION ALERTS & ROOM SERVICE TASKS */}
       {pantryActionTasks.length > 0 && (
-        <div className="p-5 bg-gradient-to-r from-amber-500/10 via-slate-900 to-amber-500/5 border-2 border-amber-500/60 rounded-3xl space-y-3 shadow-2xl shadow-amber-500/10 animate-in fade-in duration-300">
-          <div className="flex items-center justify-between gap-2 flex-wrap pb-2 border-b border-amber-500/30">
+        <div className="p-5 bg-white/95 border-2 border-[#C99A68]/40 rounded-3xl space-y-3 shadow-[0_14px_45px_rgba(0,0,0,0.05)] animate-in fade-in duration-300">
+          <div className="flex items-center justify-between gap-2 flex-wrap pb-2 border-b border-[#EFE0CC]">
             <div className="flex items-center gap-2.5">
               <span className="relative flex h-3.5 w-3.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-amber-500"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#C99A68] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-[#C99A68]"></span>
               </span>
               <div>
-                <h2 className="text-sm font-black text-amber-300 tracking-wide uppercase flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4 text-amber-400" />
+                <h2 className="text-sm font-black text-[#111111] tracking-wide uppercase flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-[#C99A68]" />
                   <span>Immediate Pantry Action Alerts ({pantryActionTasks.length})</span>
                 </h2>
-                <p className="text-[11px] text-slate-300">
+                <p className="text-[11px] text-[#77716B]">
                   Room preparation, beverage service & cleaning requests synchronized in real time from Staff Chat.
                 </p>
               </div>
@@ -323,9 +323,9 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
             {onOpenChat && (
               <button
                 onClick={onOpenChat}
-                className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-[11px] font-bold transition flex items-center gap-1 cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-[#FAF9F6] hover:bg-[#F8F6F2] text-[#171717] border border-[#EFE0CC] text-[11px] font-bold transition flex items-center gap-1 cursor-pointer"
               >
-                <MessageSquare className="w-3.5 h-3.5" />
+                <MessageSquare className="w-3.5 h-3.5 text-[#C99A68]" />
                 <span>Open Pantry Chat</span>
               </button>
             )}
@@ -341,29 +341,29 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
               return (
                 <div
                   key={task.id}
-                  className={`p-4 rounded-2xl border transition shadow-lg relative flex flex-col justify-between ${
+                  className={`p-4 rounded-2xl border transition shadow-sm relative flex flex-col justify-between ${
                     isPending
-                      ? 'bg-slate-900/95 border-amber-400 ring-2 ring-amber-500/30'
+                      ? 'bg-white border-[#C99A68] ring-2 ring-[#C99A68]/20'
                       : isAcknowledged
-                      ? 'bg-slate-900/95 border-sky-400/80 ring-1 ring-sky-500/30'
-                      : 'bg-slate-900/80 border-emerald-500/40 opacity-80'
+                      ? 'bg-white border-sky-300 ring-1 ring-sky-200'
+                      : 'bg-[#FAF9F6] border-[#EFE0CC] opacity-80'
                   }`}
                 >
                   {/* Top Header: Sender, Time & Status */}
-                  <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-slate-800">
+                  <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-[#EFE0CC]">
                     <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 flex items-center justify-center font-black text-xs border border-amber-500/30 shrink-0">
+                      <div className="w-7 h-7 rounded-lg bg-[#FAF9F6] text-[#C99A68] flex items-center justify-center font-black text-xs border border-[#EFE0CC] shrink-0">
                         <Coffee className="w-4 h-4" />
                       </div>
                       <div className="min-w-0">
-                        <div className="text-xs font-bold text-white truncate flex items-center gap-1.5">
+                        <div className="text-xs font-bold text-[#111111] truncate flex items-center gap-1.5">
                           <span>Requested by: {task.senderName}</span>
-                          <span className="px-1.5 py-0.2 rounded text-[9px] font-semibold bg-slate-800 text-amber-400 border border-slate-700">
+                          <span className="px-1.5 py-0.2 rounded text-[9px] font-semibold bg-[#FAF9F6] text-[#77716B] border border-[#EFE0CC]">
                             {task.senderRole}
                           </span>
                         </div>
-                        <div className="text-[10px] text-slate-400 flex items-center gap-1">
-                          <Clock className="w-3 h-3 text-slate-500" />
+                        <div className="text-[10px] text-[#8A847D] flex items-center gap-1">
+                          <Clock className="w-3 h-3 text-[#C99A68]" />
                           <span>{new Date(task.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
                       </div>
@@ -371,20 +371,20 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
 
                     <div>
                       {isPending && (
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/50 flex items-center gap-1 animate-pulse">
-                          <AlertCircle className="w-3 h-3" />
+                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#C99A68]/15 text-[#171717] border border-[#C99A68]/40 flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3 text-[#C99A68]" />
                           ACTION REQUIRED
                         </span>
                       )}
                       {isAcknowledged && (
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/50 flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3 text-sky-400" />
+                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-sky-50 text-sky-800 border border-sky-200 flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3 text-sky-600" />
                           IN PROGRESS
                         </span>
                       )}
                       {isCompleted && (
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-600" />
                           COMPLETED
                         </span>
                       )}
@@ -394,31 +394,32 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
                   {/* Body Content */}
                   <div className="py-3 space-y-2">
                     <div className="flex items-center gap-2">
-                      <DoorOpen className="w-4 h-4 text-cyan-400 shrink-0" />
-                      <span className="text-xs sm:text-sm font-bold text-white">
-                        Room: <strong className="text-cyan-300 font-mono">{resolvedRoom}</strong>
+                      <DoorOpen className="w-4 h-4 text-[#C99A68] shrink-0" />
+                      <span className="text-xs sm:text-sm font-bold text-[#111111]">
+                        Room: <strong className="text-[#171717]">{resolvedRoom}</strong>
                       </span>
                     </div>
 
-                    <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                    {/* Dark Charcoal Inner Panel for Action */}
+                    <div className="p-3 rounded-xl bg-[#171717] text-white border border-[#24211E] space-y-1">
+                      <span className="text-[10px] font-bold text-[#D6B28A] uppercase tracking-wider block">
                         Required Action
                       </span>
-                      <p className="text-xs text-amber-300 font-semibold leading-relaxed">
+                      <p className="text-xs text-white font-medium leading-relaxed">
                         {task.instruction || task.title || 'Prepare room for meeting'}
                       </p>
                     </div>
                   </div>
 
                   {/* Actions Footer */}
-                  <div className="pt-2.5 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
+                  <div className="pt-2.5 border-t border-[#EFE0CC] flex flex-wrap items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
                       {isPending && (
                         <button
                           onClick={() => onAcknowledgeTask && onAcknowledgeTask(task.id)}
-                          className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-md shadow-amber-500/20"
+                          className="px-3.5 py-1.5 rounded-xl bg-[#171717] hover:bg-[#24211E] text-white font-bold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-sm"
                         >
-                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <CheckCircle2 className="w-3.5 h-3.5 text-[#C99A68]" />
                           <span>ACKNOWLEDGE</span>
                         </button>
                       )}
@@ -435,7 +436,7 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
                               onMarkRoomCleaned(task.roomId);
                             }
                           }}
-                          className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-md shadow-emerald-500/20"
+                          className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-sm"
                         >
                           <CheckCircle2 className="w-3.5 h-3.5" />
                           <span>MARK COMPLETED</span>
@@ -443,7 +444,7 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
                       )}
 
                       {isCompleted && (
-                        <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
+                        <span className="text-[11px] text-emerald-700 font-semibold flex items-center gap-1">
                           <CheckCircle2 className="w-3.5 h-3.5" /> Serviced at {task.completedAt ? new Date(task.completedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'recently'}
                         </span>
                       )}
@@ -463,8 +464,8 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
           {/* Active Tasks Queue */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-base font-bold text-white flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping" />
+              <h2 className="text-base font-bold text-[#111111] flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#C99A68] animate-ping" />
                 Hospitality Tasks Queue ({pendingTasks.length})
               </h2>
               <div className="flex items-center gap-2">
@@ -476,26 +477,26 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
                     }
                     setShowAssignModal(true);
                   }}
-                  className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-400 text-xs font-bold rounded-lg border border-slate-700 flex items-center gap-1 cursor-pointer transition"
+                  className="px-3 py-1.5 bg-[#FAF9F6] hover:bg-[#F8F6F2] text-[#171717] text-xs font-bold rounded-xl border border-[#EFE0CC] flex items-center gap-1 cursor-pointer transition"
                 >
-                  <Plus className="w-3.5 h-3.5" />
+                  <Plus className="w-3.5 h-3.5 text-[#C99A68]" />
                   <span>Assign Task</span>
                 </button>
                 <button
                   onClick={onRefresh}
-                  className="text-xs text-slate-400 hover:text-amber-400 flex items-center gap-1 cursor-pointer p-1.5"
+                  className="text-xs text-[#77716B] hover:text-[#171717] flex items-center gap-1 cursor-pointer p-1.5"
                 >
-                  <RefreshCw className="w-3.5 h-3.5" />
+                  <RefreshCw className="w-3.5 h-3.5 text-[#C99A68]" />
                   <span>Sync</span>
                 </button>
               </div>
             </div>
 
             {pendingTasks.length === 0 ? (
-              <div className="p-10 text-center bg-slate-900/60 border border-slate-800 rounded-3xl space-y-2">
-                <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" />
-                <h3 className="text-sm font-bold text-white">All rooms prepped & serviced</h3>
-                <p className="text-xs text-slate-400 max-w-sm mx-auto">
+              <div className="p-10 text-center bg-white/90 border border-[#EFE0CC] rounded-3xl shadow-[0_10px_35px_rgba(0,0,0,0.03)] space-y-2">
+                <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto" />
+                <h3 className="text-sm font-bold text-[#111111]">All rooms prepped & serviced</h3>
+                <p className="text-xs text-[#77716B] max-w-sm mx-auto">
                   Hospitality tasks are generated dynamically when HR assigns candidates to rooms, or you can manually assign a task using the "Assign Task" button.
                 </p>
               </div>
@@ -508,11 +509,11 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
                   return (
                     <div
                       key={task.id}
-                      className="p-5 bg-slate-900 border-2 border-amber-500/50 hover:border-amber-400 rounded-2xl shadow-xl space-y-3.5 transition"
+                      className="p-5 bg-white/95 border border-[#EFE0CC] hover:border-[#C99A68] rounded-2xl shadow-[0_10px_35px_rgba(0,0,0,0.04)] space-y-3.5 transition"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex items-center gap-3">
-                          <div className="w-11 h-11 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                          <div className="w-11 h-11 rounded-2xl bg-[#FAF9F6] border border-[#EFE0CC] flex items-center justify-center text-[#C99A68]">
                             {task.taskType === 'ROOM_RESET' ? (
                               <RefreshCw className="w-5 h-5" />
                             ) : task.taskType === 'WATER_BEVERAGE' ? (
@@ -523,40 +524,40 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="text-[10px] uppercase font-bold text-amber-400 tracking-wider">
+                              <span className="text-[10px] uppercase font-bold text-[#C99A68] tracking-wider">
                                 {task.taskType === 'ROOM_RESET'
                                   ? 'Sanitization Reset'
                                   : task.taskType === 'WATER_BEVERAGE'
                                   ? 'Beverage Delivery'
                                   : 'Hospitality Setup'}
                               </span>
-                              <span className="text-[10px] text-slate-500">•</span>
-                              <span className="text-[11px] text-slate-400 font-mono">
+                              <span className="text-[10px] text-[#8A847D]">•</span>
+                              <span className="text-[11px] text-[#77716B] font-mono">
                                 {new Date(task.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                               </span>
                             </div>
-                            <h3 className="text-lg font-black text-white">{resolvedName}</h3>
+                            <h3 className="text-lg font-black text-[#111111]">{resolvedName}</h3>
                             {task.candidateName && (
-                              <p className="text-xs text-slate-300 font-medium">
-                                For: <strong className="text-amber-400">{task.candidateName}</strong>
+                              <p className="text-xs text-[#77716B] font-medium">
+                                For: <strong className="text-[#171717]">{task.candidateName}</strong>
                               </p>
                             )}
                           </div>
                         </div>
 
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-300 border border-amber-500/30 animate-pulse">
+                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#FAF9F6] text-[#C99A68] border border-[#EFE0CC]">
                           Pending Action
                         </span>
                       </div>
 
-                      <p className="text-xs text-slate-200">{displayDesc}</p>
+                      <p className="text-xs text-[#77716B]">{displayDesc}</p>
 
                       {/* Checklist of required items */}
-                      <div className="p-3 bg-slate-950/80 border border-slate-800 rounded-xl space-y-1.5 text-xs">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                      <div className="p-3 bg-[#FAF9F6] border border-[#EFE0CC] rounded-xl space-y-1.5 text-xs">
+                        <span className="text-[10px] font-bold text-[#77716B] uppercase tracking-wider block">
                           Required Hospitality Checklist:
                         </span>
-                        <ul className="space-y-1 text-slate-300 pl-4 list-disc text-[11px]">
+                        <ul className="space-y-1 text-[#171717] pl-4 list-disc text-[11px]">
                           {task.requiredItems?.map((item, idx) => (
                             <li key={idx}>{item}</li>
                           ))}
@@ -567,9 +568,9 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
                       <div className="pt-2 flex justify-end">
                         <button
                           onClick={() => onCompleteTask(task.id)}
-                          className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-black text-xs rounded-xl shadow-lg transition cursor-pointer flex items-center justify-center gap-2"
+                          className="w-full sm:w-auto px-6 py-2.5 bg-[#171717] hover:bg-[#24211E] text-white font-bold text-xs rounded-xl shadow-sm hover:border-[#C99A68] transition cursor-pointer flex items-center justify-center gap-2"
                         >
-                          <CheckCircle2 className="w-4 h-4" />
+                          <CheckCircle2 className="w-4 h-4 text-[#C99A68]" />
                           <span>
                             {task.taskType === 'ROOM_RESET'
                               ? 'Mark Cleaned & Ready (Make Available)'
@@ -587,13 +588,12 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
           {/* Real-time Candidate Room Allocation Live Status */}
           {roomAssignedCandidates.length > 0 && (
             <div className="space-y-3 pt-2">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Users className="w-4 h-4 text-cyan-400" />
+              <h3 className="text-sm font-bold text-[#111111] flex items-center gap-2">
+                <Users className="w-4 h-4 text-[#C99A68]" />
                 Active Candidates In Assigned Rooms ({roomAssignedCandidates.length})
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {roomAssignedCandidates.map((cand) => {
-                  // Single source of truth room lookup
                   const assignedRoom = rooms.find(
                     (r) =>
                       r.currentCandidateId === cand.id ||
@@ -607,16 +607,16 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
                   return (
                     <div
                       key={cand.id}
-                      className="p-3.5 bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-between text-xs"
+                      className="p-3.5 bg-white/95 border border-[#EFE0CC] rounded-2xl flex items-center justify-between text-xs shadow-sm"
                     >
                       <div className="space-y-0.5">
-                        <h4 className="font-bold text-white">{cand.fullName}</h4>
-                        <span className="text-[10px] text-slate-400">{cand.position}</span>
+                        <h4 className="font-bold text-[#111111]">{cand.fullName}</h4>
+                        <span className="text-[10px] text-[#77716B]">{cand.position}</span>
                       </div>
                       <div className="text-right">
-                        <span className="text-[10px] text-slate-400 block">Assigned Room:</span>
-                        <span className="font-bold text-amber-400 text-xs flex items-center gap-1 justify-end">
-                          <DoorOpen className="w-3.5 h-3.5" />
+                        <span className="text-[10px] text-[#77716B] block">Assigned Room:</span>
+                        <span className="font-bold text-[#171717] text-xs flex items-center gap-1 justify-end">
+                          <DoorOpen className="w-3.5 h-3.5 text-[#C99A68]" />
                           {displayRoomName}
                         </span>
                       </div>
@@ -630,8 +630,8 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
 
         {/* Right Col: Office Rooms Live Status Grid */}
         <div className="space-y-4">
-          <h2 className="text-base font-bold text-white flex items-center gap-2">
-            <DoorOpen className="w-4 h-4 text-amber-400" />
+          <h2 className="text-base font-bold text-[#111111] flex items-center gap-2">
+            <DoorOpen className="w-4 h-4 text-[#C99A68]" />
             Office Meeting Rooms & Pods
           </h2>
 
@@ -645,21 +645,21 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
               return (
                 <div
                   key={room.id}
-                  className="p-3.5 bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-between text-xs"
+                  className="p-3.5 bg-white/95 border border-[#EFE0CC] rounded-2xl flex items-center justify-between text-xs shadow-sm"
                 >
                   <div className="space-y-0.5">
-                    <h4 className="font-bold text-white">{room.name}</h4>
+                    <h4 className="font-bold text-[#111111]">{room.name}</h4>
                     {room.currentCandidateName ? (
-                      <p className="text-[11px] text-amber-400 font-semibold">
+                      <p className="text-[11px] text-[#C99A68] font-semibold">
                         Occupant: {room.currentCandidateName}
                       </p>
                     ) : (
-                      <p className="text-[10px] text-slate-400 uppercase tracking-wider">
+                      <p className="text-[10px] text-[#77716B] uppercase tracking-wider">
                         {room.type?.replace('_', ' ') || 'Room'}
                       </p>
                     )}
                     {room.lastCleanedAt && !isCleaning && (
-                      <p className="text-[9px] text-slate-500">
+                      <p className="text-[9px] text-[#8A847D]">
                         Cleaned: {new Date(room.lastCleanedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </p>
                     )}
@@ -668,14 +668,14 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
                     <span
                       className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
                         isAvailable
-                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                           : isAssigned
-                          ? 'bg-amber-500/10 text-amber-300 border border-amber-500/30'
+                          ? 'bg-[#FAF9F6] text-[#C99A68] border border-[#EFE0CC]'
                           : isCleaning
-                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse'
+                          ? 'bg-amber-50 text-amber-800 border border-amber-200 animate-pulse'
                           : isOccupied
-                          ? 'bg-blue-500/10 text-blue-400 border border-blue-500/30'
-                          : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
+                          ? 'bg-[#FAF9F6] text-[#171717] border border-[#C99A68]/40'
+                          : 'bg-rose-50 text-rose-700 border border-rose-200'
                       }`}
                     >
                       {isCleaning ? 'Cleaning / Reset' : room.status}
@@ -684,10 +684,10 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
                       <button
                         onClick={() => handleMarkCleaned(room.id)}
                         disabled={markingRoomId === room.id}
-                        className="px-2.5 py-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-[10px] rounded-lg shadow-sm transition flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                        className="px-2.5 py-1 bg-[#171717] hover:bg-[#24211E] text-white font-bold text-[10px] rounded-lg shadow-sm transition flex items-center gap-1 cursor-pointer disabled:opacity-50"
                         title="Mark room cleaned and make it available"
                       >
-                        <CheckCircle2 className="w-3 h-3" />
+                        <CheckCircle2 className="w-3 h-3 text-[#C99A68]" />
                         <span>{markingRoomId === room.id ? 'Marking...' : 'Ready'}</span>
                       </button>
                     )}
@@ -699,8 +699,8 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
 
           {/* Completed History Today */}
           {completedTasks.length > 0 && (
-            <div className="space-y-2 pt-4 border-t border-slate-800">
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+            <div className="space-y-2 pt-4 border-t border-[#EFE0CC]">
+              <h3 className="text-xs font-bold text-[#77716B] uppercase tracking-wider">
                 Completed Hospitality Logs ({completedTasks.length})
               </h3>
               <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
@@ -709,10 +709,10 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
                   return (
                     <div
                       key={t.id}
-                      className="p-2.5 bg-slate-950/60 border border-slate-800/80 rounded-xl flex items-center justify-between text-[11px] text-slate-400"
+                      className="p-2.5 bg-[#FAF9F6] border border-[#EFE0CC] rounded-xl flex items-center justify-between text-[11px] text-[#77716B]"
                     >
-                      <span className="font-medium text-slate-300">{resolvedName}</span>
-                      <span className="text-emerald-400 font-semibold flex items-center gap-1">
+                      <span className="font-medium text-[#171717]">{resolvedName}</span>
+                      <span className="text-emerald-700 font-semibold flex items-center gap-1">
                         <CheckCircle2 className="w-3 h-3" /> Done
                       </span>
                     </div>
@@ -726,30 +726,30 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
 
       {/* ASSIGN TASK MODAL (DYNAMIC ROOM MANAGEMENT SOURCE OF TRUTH) */}
       {showAssignModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white/98 border border-[#EFE0CC] rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-[0_24px_60px_rgba(0,0,0,0.12)] space-y-5 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-4 border-b border-[#EFE0CC]">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                <div className="w-10 h-10 rounded-2xl bg-[#FAF9F6] border border-[#EFE0CC] flex items-center justify-center text-[#C99A68]">
                   <Coffee className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-black text-white">Pantry → Assign Task</h3>
-                  <p className="text-xs text-slate-400">
+                  <h3 className="text-lg font-black text-[#111111]">Pantry → Assign Task</h3>
+                  <p className="text-xs text-[#77716B]">
                     Direct dynamic room sync from Room Management
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setShowAssignModal(false)}
-                className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition cursor-pointer"
+                className="w-8 h-8 rounded-full bg-[#FAF9F6] hover:bg-[#F8F6F2] text-[#77716B] hover:text-[#111111] flex items-center justify-center transition cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {assignError && (
-              <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl flex items-center gap-2 text-xs text-rose-400">
+              <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-2 text-xs text-rose-700">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{assignError}</span>
               </div>
@@ -758,15 +758,15 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
             <form onSubmit={handleCreateTask} className="space-y-4">
               {/* Room Selection Dropdown (Single Source of Truth) */}
               <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-                  Select Room (From Room Management) <span className="text-amber-400">*</span>
+                <label className="block text-xs font-bold text-[#171717] uppercase tracking-wider mb-2">
+                  Select Room (From Room Management) <span className="text-[#C99A68]">*</span>
                 </label>
                 <div className="relative">
                   <select
                     value={selectedRoomId}
                     onChange={(e) => handleRoomSelectChange(e.target.value)}
                     required
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white font-medium focus:border-amber-400 focus:outline-none appearance-none cursor-pointer"
+                    className="w-full bg-[#FAF9F6] border border-[#EFE0CC] rounded-xl px-4 py-3 text-sm text-[#111111] font-medium focus:border-[#C99A68] focus:outline-none appearance-none cursor-pointer"
                   >
                     {activeRooms.length === 0 ? (
                       <option value="">No rooms configured in Room Management</option>
@@ -778,16 +778,16 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
                       ))
                     )}
                   </select>
-                  <DoorOpen className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <DoorOpen className="w-4 h-4 text-[#77716B] absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 </div>
-                <p className="text-[11px] text-slate-400 mt-1">
+                <p className="text-[11px] text-[#77716B] mt-1">
                   Rooms are retrieved dynamically from centralized Room Management.
                 </p>
               </div>
 
               {/* Task Type */}
               <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-[#171717] uppercase tracking-wider mb-2">
                   Hospitality Task Type
                 </label>
                 <div className="grid grid-cols-3 gap-2">
@@ -805,11 +805,11 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
                         onClick={() => setSelectedTaskType(t.type)}
                         className={`p-3 rounded-xl border text-left transition cursor-pointer flex flex-col items-center justify-center gap-1.5 ${
                           isSelected
-                            ? 'bg-amber-500/20 border-amber-400 text-amber-300 font-bold'
-                            : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700'
+                            ? 'bg-[#FAF9F6] border-[#C99A68] text-[#111111] font-bold shadow-xs'
+                            : 'bg-white border-[#EFE0CC] text-[#77716B] hover:border-[#C99A68]/50'
                         }`}
                       >
-                        <Icon className="w-4 h-4" />
+                        <Icon className="w-4 h-4 text-[#C99A68]" />
                         <span className="text-xs">{t.label}</span>
                       </button>
                     );
@@ -819,7 +819,7 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
 
               {/* Candidate Name / Occupant (Optional) */}
               <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-[#171717] uppercase tracking-wider mb-2">
                   Candidate / Occupant Name (Optional)
                 </label>
                 <input
@@ -827,13 +827,13 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
                   value={taskCandidateName}
                   onChange={(e) => setTaskCandidateName(e.target.value)}
                   placeholder="e.g. Rahul Sharma"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:border-amber-400 focus:outline-none"
+                  className="w-full bg-[#FAF9F6] border border-[#EFE0CC] rounded-xl px-4 py-2.5 text-sm text-[#111111] focus:border-[#C99A68] focus:outline-none"
                 />
               </div>
 
               {/* Checklist Items */}
               <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-[#171717] uppercase tracking-wider mb-2">
                   Checklist Items
                 </label>
                 <div className="space-y-2 mb-2">
@@ -851,15 +851,15 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
                         onClick={() => handleToggleItem(item)}
                         className={`flex items-center gap-2.5 p-2.5 rounded-xl border text-xs cursor-pointer select-none transition ${
                           isChecked
-                            ? 'bg-amber-500/10 border-amber-500/40 text-amber-200'
-                            : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
+                            ? 'bg-[#FAF9F6] border-[#C99A68] text-[#171717]'
+                            : 'bg-white border-[#EFE0CC] text-[#77716B] hover:border-[#C99A68]/50'
                         }`}
                       >
                         <input
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => {}}
-                          className="accent-amber-400 rounded cursor-pointer"
+                          className="accent-[#C99A68] rounded cursor-pointer"
                         />
                         <span>{item}</span>
                       </label>
@@ -880,12 +880,12 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
                       }
                     }}
                     placeholder="Add custom hospitality item..."
-                    className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-amber-400 focus:outline-none"
+                    className="flex-1 bg-[#FAF9F6] border border-[#EFE0CC] rounded-xl px-3 py-2 text-xs text-[#111111] focus:border-[#C99A68] focus:outline-none"
                   />
                   <button
                     type="button"
                     onClick={handleAddCustomItem}
-                    className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-amber-400 rounded-xl text-xs font-bold cursor-pointer transition"
+                    className="px-3 py-2 bg-[#171717] hover:bg-[#24211E] text-white rounded-xl text-xs font-bold cursor-pointer transition"
                   >
                     Add
                   </button>
@@ -894,7 +894,7 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
 
               {/* Additional Remarks */}
               <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-[#171717] uppercase tracking-wider mb-2">
                   Task Note / Special Instructions (Optional)
                 </label>
                 <input
@@ -902,13 +902,13 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
                   value={taskDescription}
                   onChange={(e) => setTaskDescription(e.target.value)}
                   placeholder="e.g. VIP guest, serve immediately"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:border-amber-400 focus:outline-none"
+                  className="w-full bg-[#FAF9F6] border border-[#EFE0CC] rounded-xl px-4 py-2.5 text-sm text-[#111111] focus:border-[#C99A68] focus:outline-none"
                 />
               </div>
 
               {/* Priority */}
               <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-[#171717] uppercase tracking-wider mb-2">
                   Priority
                 </label>
                 <div className="flex gap-2">
@@ -920,9 +920,9 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
                       className={`flex-1 py-2 rounded-xl text-xs font-bold uppercase transition cursor-pointer border ${
                         taskPriority === p
                           ? p === 'CRITICAL'
-                            ? 'bg-rose-500/20 border-rose-500 text-rose-400'
-                            : 'bg-amber-500/20 border-amber-400 text-amber-300'
-                          : 'bg-slate-950 border-slate-800 text-slate-400'
+                            ? 'bg-rose-50 border-rose-300 text-rose-700'
+                            : 'bg-[#FAF9F6] border-[#C99A68] text-[#111111]'
+                          : 'bg-white border-[#EFE0CC] text-[#77716B]'
                       }`}
                     >
                       {p}
@@ -936,19 +936,19 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowAssignModal(false)}
-                  className="flex-1 px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition cursor-pointer"
+                  className="flex-1 px-4 py-3 bg-[#FAF9F6] hover:bg-[#F8F6F2] text-[#171717] font-bold text-xs rounded-xl border border-[#EFE0CC] transition cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submittingTask || activeRooms.length === 0}
-                  className="flex-1 px-4 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 disabled:opacity-50 text-slate-950 font-black text-xs rounded-xl shadow-lg transition cursor-pointer flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-3 bg-[#171717] hover:bg-[#24211E] disabled:opacity-50 text-white font-black text-xs rounded-xl shadow-md transition cursor-pointer flex items-center justify-center gap-2"
                 >
                   {submittingTask ? (
-                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <RefreshCw className="w-4 h-4 animate-spin text-[#C99A68]" />
                   ) : (
-                    <Coffee className="w-4 h-4" />
+                    <Coffee className="w-4 h-4 text-[#C99A68]" />
                   )}
                   <span>Dispatch Task</span>
                 </button>

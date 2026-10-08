@@ -162,31 +162,31 @@ export const AdminChangeCredentialsModal: React.FC<AdminChangeCredentialsModalPr
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-xs p-3 sm:p-5 overflow-y-auto">
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-xl w-full p-6 sm:p-8 text-slate-100 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 max-h-[92vh] flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-3 sm:p-5 overflow-y-auto">
+      <div className="bg-white/98 border border-[#EFE0CC] rounded-3xl max-w-xl w-full p-6 sm:p-8 text-[#111111] shadow-[0_24px_60px_rgba(0,0,0,0.12)] relative animate-in fade-in zoom-in-95 duration-200 max-h-[92vh] flex flex-col overflow-hidden">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-400 hover:text-white transition"
+          className="absolute top-5 right-5 p-2 rounded-xl bg-[#FAF9F6] hover:bg-[#F8F6F2] text-[#77716B] hover:text-[#111111] transition cursor-pointer"
           aria-label="Close"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Modal Header */}
-        <div className="flex items-center gap-3 pb-4 border-b border-slate-800 shrink-0">
-          <div className="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400">
+        <div className="flex items-center gap-3 pb-4 border-b border-[#EFE0CC] shrink-0">
+          <div className="w-12 h-12 rounded-2xl bg-[#FAF9F6] border border-[#EFE0CC] flex items-center justify-center text-[#C99A68]">
             <KeyRound className="w-6 h-6" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
+            <h2 className="text-lg font-black text-[#111111] tracking-tight flex items-center gap-2">
               <span>Change ID & Password (Full Access)</span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-300 border border-amber-500/30">
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FAF9F6] text-[#C99A68] border border-[#EFE0CC]">
                 Admin Control
               </span>
             </h2>
-            <p className="text-xs text-slate-400">
-              Direct Administrative Override for <strong className="text-white">{targetUser.name}</strong>
+            <p className="text-xs text-[#77716B]">
+              Direct Administrative Override for <strong className="text-[#171717]">{targetUser.name}</strong>
             </p>
           </div>
         </div>
@@ -194,31 +194,31 @@ export const AdminChangeCredentialsModal: React.FC<AdminChangeCredentialsModalPr
         {/* Modal Body */}
         <div className="overflow-y-auto flex-1 py-4 space-y-4 pr-1">
           {error && (
-            <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-2xl text-rose-300 text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-2xl text-rose-700 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
           {successMessage && (
-            <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl text-emerald-300 text-xs flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-800 text-xs flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
               <span>{successMessage}</span>
             </div>
           )}
 
-          {/* Quick Action: Instant Reset Link */}
-          <div className="p-3.5 bg-slate-950 border border-slate-800 rounded-2xl space-y-2">
+          {/* Quick Action: Instant Reset Link (Charcoal Inner Panel) */}
+          <div className="p-3.5 bg-[#171717] border border-[#24211E] rounded-2xl space-y-2 text-white shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
-                <Link className="w-3.5 h-3.5 text-amber-400" />
+              <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                <Link className="w-3.5 h-3.5 text-[#C99A68]" />
                 <span>Instant Reset Link Generator</span>
               </span>
               <button
                 type="button"
                 onClick={handleGenerateResetLink}
                 disabled={generatingLink}
-                className="px-3 py-1 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-bold text-[11px] rounded-xl transition cursor-pointer flex items-center gap-1"
+                className="px-3 py-1 bg-white/10 hover:bg-white/20 border border-white/20 text-[#D6B28A] font-bold text-[11px] rounded-xl transition cursor-pointer flex items-center gap-1"
               >
                 {generatingLink ? 'Generating...' : 'Generate Direct Link'}
               </button>
@@ -231,12 +231,12 @@ export const AdminChangeCredentialsModal: React.FC<AdminChangeCredentialsModalPr
                     type="text"
                     readOnly
                     value={generatedLink}
-                    className="flex-1 px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-xl font-mono text-[11px] text-amber-300 select-all"
+                    className="flex-1 px-3 py-1.5 bg-[#24211E] border border-white/10 rounded-xl font-mono text-[11px] text-[#D6B28A] select-all"
                   />
                   <button
                     type="button"
                     onClick={handleCopyLink}
-                    className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs rounded-xl border border-slate-700 transition flex items-center gap-1"
+                    className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs rounded-xl border border-white/15 transition flex items-center gap-1 cursor-pointer"
                   >
                     <Copy className="w-3.5 h-3.5" />
                     <span>{copied ? 'Copied' : 'Copy'}</span>
@@ -250,7 +250,7 @@ export const AdminChangeCredentialsModal: React.FC<AdminChangeCredentialsModalPr
             {/* Full Name & Username */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block font-semibold text-slate-300 mb-1">
+                <label className="block font-semibold text-[#171717] mb-1">
                   Staff Name
                 </label>
                 <input
@@ -258,12 +258,12 @@ export const AdminChangeCredentialsModal: React.FC<AdminChangeCredentialsModalPr
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-hidden focus:border-amber-400 transition"
+                  className="w-full px-3 py-2 bg-[#FAF9F6] border border-[#EFE0CC] rounded-xl text-[#111111] focus:outline-hidden focus:border-[#C99A68] transition"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-300 mb-1">
+                <label className="block font-semibold text-[#171717] mb-1">
                   Staff Username / ID
                 </label>
                 <input
@@ -271,7 +271,7 @@ export const AdminChangeCredentialsModal: React.FC<AdminChangeCredentialsModalPr
                   required
                   value={formData.username}
                   onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white font-mono focus:outline-hidden focus:border-amber-400 transition"
+                  className="w-full px-3 py-2 bg-[#FAF9F6] border border-[#EFE0CC] rounded-xl text-[#111111] font-mono focus:outline-hidden focus:border-[#C99A68] transition"
                 />
               </div>
             </div>
@@ -279,7 +279,7 @@ export const AdminChangeCredentialsModal: React.FC<AdminChangeCredentialsModalPr
             {/* Email & Phone */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block font-semibold text-slate-300 mb-1">
+                <label className="block font-semibold text-[#171717] mb-1">
                   Official Email Address
                 </label>
                 <input
@@ -287,12 +287,12 @@ export const AdminChangeCredentialsModal: React.FC<AdminChangeCredentialsModalPr
                   required
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-hidden focus:border-amber-400 transition"
+                  className="w-full px-3 py-2 bg-[#FAF9F6] border border-[#EFE0CC] rounded-xl text-[#111111] focus:outline-hidden focus:border-[#C99A68] transition"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-300 mb-1">
+                <label className="block font-semibold text-[#171717] mb-1">
                   Phone Number
                 </label>
                 <input
@@ -300,32 +300,32 @@ export const AdminChangeCredentialsModal: React.FC<AdminChangeCredentialsModalPr
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   placeholder="+91 98100 00000"
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-hidden focus:border-amber-400 transition"
+                  className="w-full px-3 py-2 bg-[#FAF9F6] border border-[#EFE0CC] rounded-xl text-[#111111] focus:outline-hidden focus:border-[#C99A68] transition"
                 />
               </div>
             </div>
 
-            {/* DIRECT PASSWORD OVERRIDE */}
-            <div className="p-3.5 bg-amber-500/5 border border-amber-500/20 rounded-2xl space-y-2">
+            {/* DIRECT PASSWORD OVERRIDE (Charcoal Inner Panel) */}
+            <div className="p-3.5 bg-[#171717] border border-[#24211E] rounded-2xl space-y-2 text-white">
               <div className="flex items-center justify-between">
-                <label className="block font-bold text-amber-300">
+                <label className="block font-bold text-[#D6B28A]">
                   Set New Password Directly (Admin Override)
                 </label>
-                <span className="text-[10px] text-slate-400">Leave blank to keep current</span>
+                <span className="text-[10px] text-white/60">Leave blank to keep current</span>
               </div>
               <div className="relative">
-                <Lock className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Lock className="w-4 h-4 text-white/50 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={formData.newPassword}
                   onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
                   placeholder="Enter new password (e.g. wcr123 or strong pass)"
-                  className="w-full pl-9 pr-10 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-hidden focus:border-amber-400 transition"
+                  className="w-full pl-9 pr-10 py-2 bg-[#24211E] border border-white/10 rounded-xl text-white placeholder-white/40 focus:outline-hidden focus:border-[#C99A68] transition"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white cursor-pointer"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -335,13 +335,13 @@ export const AdminChangeCredentialsModal: React.FC<AdminChangeCredentialsModalPr
             {/* Role & Department */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block font-semibold text-slate-300 mb-1">
+                <label className="block font-semibold text-[#171717] mb-1">
                   Assigned User Role
                 </label>
                 <select
                   value={formData.role}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value as UserRole })}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-hidden focus:border-amber-400 transition"
+                  className="w-full px-3 py-2 bg-[#FAF9F6] border border-[#EFE0CC] rounded-xl text-[#111111] focus:outline-hidden focus:border-[#C99A68] transition"
                 >
                   {rolesList.map((r) => (
                     <option key={r.role} value={r.role}>
@@ -352,7 +352,7 @@ export const AdminChangeCredentialsModal: React.FC<AdminChangeCredentialsModalPr
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-300 mb-1">
+                <label className="block font-semibold text-[#171717] mb-1">
                   Department
                 </label>
                 <input
@@ -360,7 +360,7 @@ export const AdminChangeCredentialsModal: React.FC<AdminChangeCredentialsModalPr
                   value={formData.department}
                   onChange={(e) => setFormData({ ...formData, department: e.target.value })}
                   placeholder="e.g. HR, Sales, Administration"
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-hidden focus:border-amber-400 transition"
+                  className="w-full px-3 py-2 bg-[#FAF9F6] border border-[#EFE0CC] rounded-xl text-[#111111] focus:outline-hidden focus:border-[#C99A68] transition"
                 />
               </div>
             </div>
@@ -368,7 +368,7 @@ export const AdminChangeCredentialsModal: React.FC<AdminChangeCredentialsModalPr
             {/* Designation & Account Status */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
               <div>
-                <label className="block font-semibold text-slate-300 mb-1">
+                <label className="block font-semibold text-[#171717] mb-1">
                   Designation / Title
                 </label>
                 <input
@@ -376,30 +376,30 @@ export const AdminChangeCredentialsModal: React.FC<AdminChangeCredentialsModalPr
                   value={formData.designation}
                   onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
                   placeholder="e.g. Senior HR Manager"
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-hidden focus:border-amber-400 transition"
+                  className="w-full px-3 py-2 bg-[#FAF9F6] border border-[#EFE0CC] rounded-xl text-[#111111] focus:outline-hidden focus:border-[#C99A68] transition"
                 />
               </div>
 
               <div className="pt-4 sm:pt-0">
-                <label className="block font-semibold text-slate-300 mb-1">
+                <label className="block font-semibold text-[#171717] mb-1">
                   Account Status
                 </label>
                 <button
                   type="button"
                   onClick={() => setFormData({ ...formData, isActive: !formData.isActive })}
-                  className={`w-full py-2 px-3 rounded-xl border flex items-center justify-between transition ${
+                  className={`w-full py-2 px-3 rounded-xl border flex items-center justify-between transition cursor-pointer ${
                     formData.isActive
-                      ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-                      : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
+                      ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                      : 'bg-rose-50 border-rose-200 text-rose-800'
                   }`}
                 >
                   <span className="font-bold">
                     {formData.isActive ? 'Active (Enabled)' : 'Deactivated (Locked)'}
                   </span>
                   {formData.isActive ? (
-                    <ToggleRight className="w-5 h-5 text-emerald-400" />
+                    <ToggleRight className="w-5 h-5 text-emerald-600" />
                   ) : (
-                    <ToggleLeft className="w-5 h-5 text-rose-400" />
+                    <ToggleLeft className="w-5 h-5 text-rose-600" />
                   )}
                 </button>
               </div>
@@ -408,11 +408,11 @@ export const AdminChangeCredentialsModal: React.FC<AdminChangeCredentialsModalPr
         </div>
 
         {/* Modal Footer */}
-        <div className="pt-4 border-t border-slate-800 flex items-center justify-end gap-3 shrink-0">
+        <div className="pt-4 border-t border-[#EFE0CC] flex items-center justify-end gap-3 shrink-0">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs rounded-xl border border-slate-700 transition"
+            className="px-4 py-2 bg-[#FAF9F6] hover:bg-[#F8F6F2] text-[#171717] font-semibold text-xs rounded-xl border border-[#EFE0CC] transition cursor-pointer"
           >
             Cancel
           </button>
@@ -420,13 +420,13 @@ export const AdminChangeCredentialsModal: React.FC<AdminChangeCredentialsModalPr
             type="submit"
             form="admin-credentials-form"
             disabled={loading}
-            className="px-5 py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-400 hover:to-purple-500 text-white font-black text-xs rounded-xl shadow-lg transition cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+            className="px-5 py-2 bg-[#171717] hover:bg-[#24211E] text-white font-black text-xs rounded-xl shadow-md transition cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
           >
             {loading ? (
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
             ) : (
               <>
-                <Shield className="w-3.5 h-3.5" />
+                <Shield className="w-3.5 h-3.5 text-[#C99A68]" />
                 <span>Save Credentials & Changes</span>
               </>
             )}

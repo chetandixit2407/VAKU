@@ -5189,6 +5189,7 @@ async function startServer() {
         middlewareMode: true,
         hmr: false,
         watch: isHmrDisabled ? null : {},
+        allowedHosts: true,
       },
       appType: 'spa',
     });
