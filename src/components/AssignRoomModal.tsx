@@ -100,22 +100,22 @@ export const AssignRoomModal: React.FC<AssignRoomModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-      <div className="bg-white/95 border border-[#EFE0CC] rounded-3xl max-w-lg w-full shadow-[0_24px_60px_rgba(0,0,0,0.12)] overflow-hidden animate-in fade-in zoom-in-95 duration-200 text-[#111111]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-xs p-4">
+      <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="p-5 sm:p-6 border-b border-[#EFE0CC] flex items-center justify-between bg-white/50">
+        <div className="p-5 sm:p-6 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#8C6033] block">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 block">
               HR Human Decision Required
             </span>
-            <h2 className="text-lg font-bold text-[#111111] mt-0.5">Assign Interview Room</h2>
-            <p className="text-xs text-[#77716B] mt-0.5">
-              Candidate: <strong className="text-[#111111]">{candidateName}</strong>
+            <h2 className="text-lg font-bold text-white mt-0.5">Assign Interview Room</h2>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Candidate: <strong className="text-slate-200">{candidateName}</strong>
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-[#77716B] hover:text-[#111111] hover:bg-[#FAF4ED] transition cursor-pointer"
+            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition"
           >
             <X className="w-5 h-5" />
           </button>
@@ -124,24 +124,24 @@ export const AssignRoomModal: React.FC<AssignRoomModalProps> = ({
         {/* Content */}
         <div className="p-5 sm:p-6 space-y-4">
           {error && (
-            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs">
+            <div className="p-3 bg-rose-500/15 border border-rose-500/40 rounded-xl text-rose-300 text-xs">
               {error}
             </div>
           )}
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <label className="block text-xs font-semibold text-[#111111]">
+              <label className="block text-xs font-semibold text-slate-300">
                 Select Room for Candidate Allocation:
               </label>
-              <div className="flex items-center gap-1 bg-[#FAF9F6] p-1 rounded-xl border border-[#EFE0CC]">
+              <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
                 <button
                   type="button"
                   onClick={() => setRoomCategory('operational')}
                   className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition cursor-pointer ${
                     roomCategory === 'operational'
-                      ? 'bg-[#171717] text-white shadow-xs'
-                      : 'text-[#77716B] hover:text-[#111111]'
+                      ? 'bg-amber-500 text-slate-950 shadow-xs'
+                      : 'text-slate-400 hover:text-white'
                   }`}
                 >
                   Operational Rooms
@@ -151,19 +151,19 @@ export const AssignRoomModal: React.FC<AssignRoomModalProps> = ({
                   onClick={() => setRoomCategory('next_round')}
                   className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition cursor-pointer flex items-center gap-1 ${
                     roomCategory === 'next_round'
-                      ? 'bg-[#171717] text-white shadow-xs'
-                      : 'text-[#8C6033] hover:text-[#111111]'
+                      ? 'bg-amber-500 text-slate-950 shadow-xs'
+                      : 'text-amber-400 hover:text-amber-300'
                   }`}
                 >
-                  <Sparkles className="w-3 h-3 text-[#C99A68]" />
+                  <Sparkles className="w-3 h-3" />
                   <span>Next Round Cabins</span>
                 </button>
               </div>
             </div>
 
             {roomCategory === 'next_round' && (
-              <div className="p-2.5 bg-[#FAF4ED] border border-[#E4CCAF] rounded-xl text-[11px] text-[#8C6033] flex items-center gap-2">
-                <Sparkles className="w-4 h-4 shrink-0 text-[#C99A68]" />
+              <div className="p-2.5 bg-amber-500/10 border border-amber-500/30 rounded-xl text-[11px] text-amber-300 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 shrink-0 text-amber-400" />
                 <span>
                   <strong>Reserved for Senior & Next Round Interviews:</strong> Lalit Sir Cabin and Elegance Suite.
                 </span>
@@ -171,7 +171,7 @@ export const AssignRoomModal: React.FC<AssignRoomModalProps> = ({
             )}
 
             {loadingRooms ? (
-              <div className="p-8 text-center text-xs text-[#77716B]">Loading room availability...</div>
+              <div className="p-8 text-center text-xs text-slate-400">Loading room availability...</div>
             ) : (
               <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
                 {rooms
@@ -196,32 +196,32 @@ export const AssignRoomModal: React.FC<AssignRoomModalProps> = ({
                       onClick={() => isAvail && setSelectedRoomId(room.id)}
                       className={`p-3.5 rounded-2xl border transition flex items-center justify-between ${
                         !isAvail
-                          ? 'opacity-40 bg-[#FAF9F6] border-[#EFE0CC] cursor-not-allowed'
+                          ? 'opacity-40 bg-slate-950/40 border-slate-800 cursor-not-allowed'
                           : isSelected
-                          ? 'bg-[#FAF4ED] border-[#C99A68] shadow-md ring-1 ring-[#C99A68] cursor-pointer'
-                          : 'bg-white hover:bg-[#FAF9F6] border-[#EFE0CC] hover:border-[#D6B28A] cursor-pointer'
+                          ? 'bg-amber-500/10 border-amber-500/80 shadow-md ring-1 ring-amber-500/40 cursor-pointer'
+                          : 'bg-slate-950/60 border-slate-800 hover:border-slate-700 cursor-pointer'
                       }`}
                     >
                       <div className="flex items-center gap-3">
                         <div
                           className={`w-9 h-9 rounded-xl flex items-center justify-center ${
                             isSelected
-                              ? 'bg-[#C99A68] text-white shadow-xs'
-                              : 'bg-[#FAF4ED] text-[#8C6033] border border-[#E4CCAF]'
+                              ? 'bg-amber-500 text-slate-950'
+                              : 'bg-slate-800 text-slate-300'
                           }`}
                         >
                           <DoorOpen className="w-5 h-5" />
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <h4 className="text-xs font-bold text-[#111111]">{room.name}</h4>
+                            <h4 className="text-xs font-bold text-white">{room.name}</h4>
                             {(room.id === 'room-lalit-cabin' || room.id === 'room-kimmi-cabin' || room.name === 'Elegance Suite' || room.name === 'Lalit Sir Cabin') && (
-                              <span className="px-1.5 py-0.5 bg-[#FAF4ED] border border-[#E4CCAF] text-[#8C6033] rounded-md text-[9px] font-bold">
+                              <span className="px-1.5 py-0.2 bg-amber-500/15 border border-amber-500/30 text-amber-300 rounded-sm text-[9px] font-bold">
                                 Next Round Reserved
                               </span>
                             )}
                           </div>
-                          <div className="flex items-center gap-3 text-[10px] text-[#77716B] mt-0.5">
+                          <div className="flex items-center gap-3 text-[10px] text-slate-400 mt-0.5">
                             <span>Type: {room.type?.replace('_', ' ') || 'Meeting Room'}</span>
                             {room.preferredFor && (
                               <span className="truncate max-w-[200px]">({room.preferredFor})</span>
@@ -232,19 +232,19 @@ export const AssignRoomModal: React.FC<AssignRoomModalProps> = ({
 
                       <div>
                         {isSelected ? (
-                          <span className="w-5 h-5 rounded-full bg-[#171717] text-white flex items-center justify-center">
+                          <span className="w-5 h-5 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center">
                             <CheckCircle2 className="w-3.5 h-3.5" />
                           </span>
                         ) : isAvail ? (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
                             Available
                           </span>
                         ) : room.status === 'CLEANING' || room.status === 'NEEDS_CLEANING' ? (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-                            Cleaning
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-300 border border-amber-500/30">
+                            Under Cleaning
                           </span>
                         ) : (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#F5F5F5] text-[#171717] border border-[#E0E0E0]">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/30">
                             {room.status}
                           </span>
                         )}
@@ -258,17 +258,17 @@ export const AssignRoomModal: React.FC<AssignRoomModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-[#EFE0CC] bg-white/50 flex items-center justify-end gap-3">
+        <div className="p-4 border-t border-slate-800 bg-slate-950/60 flex items-center justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-xl bg-white hover:bg-[#FAF9F6] text-[#77716B] hover:text-[#111111] text-xs font-semibold border border-[#EFE0CC] transition cursor-pointer"
+            className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 transition"
           >
             Cancel
           </button>
           <button
             onClick={handleAssign}
             disabled={submitting || !selectedRoomId}
-            className="px-5 py-2.5 rounded-xl bg-[#171717] hover:bg-[#282828] text-white text-xs font-bold shadow-md transition cursor-pointer disabled:opacity-50 flex items-center gap-1.5 active:scale-95"
+            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-xs font-bold shadow-lg transition cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
           >
             {submitting ? (
               <>
@@ -277,7 +277,7 @@ export const AssignRoomModal: React.FC<AssignRoomModalProps> = ({
               </>
             ) : (
               <>
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                <CheckCircle2 className="w-3.5 h-3.5" />
                 Confirm Room Assignment
               </>
             )}

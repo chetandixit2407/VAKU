@@ -189,6 +189,7 @@ export interface CandidateValidationResult {
   checksPerformed: number;
   checksPassed: number;
   checksFlagged: number;
+  confidenceScore?: number;
   systemActor: string;
   summary: string;
   checks: ValidationCheckItem[];
@@ -211,6 +212,7 @@ export type GovernmentIdType = 'AADHAAR' | 'PAN' | 'DRIVING_LICENSE' | 'VOTER_ID
 export interface GovernmentIdDocument {
   id?: string;
   candidateId?: string;
+  type?: string;
   idType?: GovernmentIdType;
   idTypeName?: string;
   idNumberMasked?: string;
@@ -295,6 +297,15 @@ export interface Candidate {
   totalDurationMinutes?: number;
   appointmentId?: string;
   currentInterviewId?: string;
+  token?: string;
+  receptionPhotoUrl?: string;
+  receptionPhotoCapturedAt?: string;
+  photoUrl?: string;
+  checkedInAt?: string;
+  assignedInterviewerName?: string;
+  assignedInterviewerId?: string;
+  governmentIdDocument?: GovernmentIdDocument;
+  qrVerificationStatus?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -391,7 +402,7 @@ export interface Notification {
   payload?: Record<string, any>; // Role-filtered payload
 }
 
-export type PantryTaskType = 'ROOM_PREP' | 'WATER_BEVERAGE' | 'ROOM_RESET' | 'CUSTOM';
+export type PantryTaskType = 'ROOM_PREP' | 'WATER_BEVERAGE' | 'ROOM_RESET' | 'CLEANING' | 'CUSTOM';
 export type PantryTaskStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
 
 export interface PantryTask {
@@ -464,6 +475,8 @@ export interface TimelineEvent {
   actorName: string;
   eventType: string;
   description: string;
+  action?: string;
+  details?: string;
   metadata?: Record<string, any>;
 }
 

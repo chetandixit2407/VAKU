@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   X,
   User,
@@ -27,15 +28,27 @@ import {
   Save,
   RefreshCw,
   DoorOpen,
-  Route,
+  GraduationCap,
+  DollarSign,
+  IdCard,
+  FileCheck,
 } from 'lucide-react';
 import type { Candidate, Interview, TimelineEvent, UserRole } from '../types/index.ts';
 import { formatDateTime } from '../utils/dateFormatter.ts';
 import { ResumeDocumentModal } from './ResumeDocumentModal.tsx';
 import { GovernmentIdModal } from './GovernmentIdModal.tsx';
 import { ReceptionPhotoModal } from './ReceptionPhotoModal.tsx';
+import { VisitorArrivalTimeline } from './VisitorArrivalTimeline.tsx';
 import { authenticatedFetch } from '../utils/apiClient.ts';
-import { WCRCandidateJourney } from './design-system/index.ts';
+
+type DossierSection =
+  | 'Identity'
+  | 'Application'
+  | 'Experience'
+  | 'Interview'
+  | 'Documents'
+  | 'Status'
+  | 'Notes';
 
 interface CandidateDossierModalProps {
   candidateId: string;
@@ -63,7 +76,9 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
   const [candidate, setCandidate] = useState<Candidate | null>(initialCandidate || null);
   const [interviews, setInterviews] = useState<Interview[]>([]);
   const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
-  const [activeTab, setActiveTab] = useState<'overview' | 'journey' | 'interviews' | 'documents' | 'activity'>('overview');
+  const [activeSection, setActiveSection] = useState<DossierSection>('Identity');
+
+  // Sub-Modals
   const [showResumeModal, setShowResumeModal] = useState<boolean>(false);
   const [showGovIdModal, setShowGovIdModal] = useState<boolean>(false);
   const [showPhotoModal, setShowPhotoModal] = useState<boolean>(false);
@@ -99,7 +114,6 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
     hrPrivateNotes: initialCandidate?.hrPrivateNotes || '',
   });
 
-  // Keep candidate synced if initialCandidate is supplied or updated
   useEffect(() => {
     if (initialCandidate) {
       setCandidate(initialCandidate);
@@ -158,17 +172,42 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
           `/api/candidates/${encodeURIComponent(candidateId.trim())}?role=${encodeURIComponent(currentRole)}`,
           {
             signal: controller.signal,
-            headers: {
-              'x-user-role': currentRole,
-            },
+            headers: { 'x-user-role': currentRole },
           }
         );
         clearTimeout(timeoutId);
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || `Server error: ${res.status}`);
+        }
         const data = await res.json();
         if (data.success && data.candidate) {
           setCandidate(data.candidate);
-          setInterviews(Array.isArray(data.interviews) ? data.interviews : []);
-          setTimeline(Array.isArray(data.timeline) ? data.timeline : []);
+          setInterviews(data.interviews || []);
+          setTimeline(data.timeline || []);
+          setEditForm({
+            fullName: data.candidate.fullName || '',
+            phone: data.candidate.phone || '',
+            email: data.candidate.email || '',
+            address: data.candidate.address || '',
+            city: data.candidate.city || '',
+            state: data.candidate.state || '',
+            pincode: data.candidate.pincode || '',
+            position: data.candidate.position || '',
+            department: data.candidate.department || '',
+            totalExperience: data.candidate.totalExperience || '',
+            relevantExperience: data.candidate.relevantExperience || '',
+            currentCompany: data.candidate.currentCompany || '',
+            qualification: data.candidate.qualification || '',
+            noticePeriod: data.candidate.noticePeriod || '',
+            expectedSalary: data.candidate.expectedSalary || '',
+            skills: data.candidate.skills || '',
+            purpose: data.candidate.purpose || 'Interview / Job Application',
+            departmentToMeet: data.candidate.departmentToMeet || 'HR & Recruitment',
+            personToMeet: data.candidate.personToMeet || '',
+            hrPrivateNotes: data.candidate.hrPrivateNotes || '',
+          });
           setFetchError(null);
           setLoading(false);
           return;
@@ -181,13 +220,8 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
         if (attempts <= retries) {
           await new Promise((r) => setTimeout(r, attempts * 400));
         } else {
-          console.warn('[Dossier Sync]', err?.name === 'AbortError' ? 'Request timed out' : err?.message || err);
           if (!candidate && !initialCandidate) {
-            setFetchError(
-              err?.name === 'AbortError'
-                ? 'Server took too long to respond. Please check your connection and retry.'
-                : err?.message || 'Failed to load candidate details.'
-            );
+            setFetchError(err?.message || 'Failed to load candidate details.');
           }
           setLoading(false);
         }
@@ -232,9 +266,8 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
       if (data.success) {
         setShowDeleteConfirm(false);
         if (onCandidateDeleted) onCandidateDeleted();
-        onClose();
       } else {
-        setActionError(data.error || 'Failed to delete candidate.');
+        setActionError(data.error || 'Failed to delete record.');
       }
     } catch (err: any) {
       setActionError(err.message || 'Network error during deletion.');
@@ -243,687 +276,668 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
     }
   };
 
-  const handleDownloadResume = () => {
-    if (!candidate) return;
-    const downloadUrl = `/api/candidates/${candidate.id}/resume/download?role=${currentRole}`;
-    const fileName = candidate.resumeFileName || `${candidate.fullName.replace(/\s+/g, '_')}_Resume.pdf`;
-
-    const link = document.createElement('a');
-    link.href = downloadUrl;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  if (!candidate && loading) {
-    return (
-      <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-        <div className="bg-white/98 border border-[#EFE0CC] rounded-3xl p-8 max-w-sm w-full text-center shadow-[0_24px_60px_rgba(0,0,0,0.12)]">
-          <div className="w-10 h-10 border-2 border-[#C99A68] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-xs text-[#8C6033] font-bold">Fetching Candidate Command Dossier...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!candidate) {
-    return (
-      <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-        <div className="bg-white/98 border border-[#EFE0CC] rounded-3xl p-6 sm:p-8 max-w-md w-full text-center space-y-4 shadow-[0_24px_60px_rgba(0,0,0,0.12)]">
-          <div className="w-12 h-12 bg-rose-50 text-rose-700 border border-rose-200 rounded-full flex items-center justify-center mx-auto">
-            <AlertCircle className="w-6 h-6" />
-          </div>
-          <div>
-            <h3 className="text-base font-bold text-[#111111]">Candidate Details Unavailable</h3>
-            <p className="text-xs text-[#77716B] mt-1.5 leading-relaxed">
-              {fetchError || 'Unable to retrieve candidate dossier from server. The record may have been archived.'}
-            </p>
-          </div>
-          <div className="flex gap-2 pt-2">
-            <button
-              onClick={() => fetchCandidate(1)}
-              className="flex-1 py-2.5 bg-[#171717] hover:bg-[#282828] text-white font-bold text-xs rounded-xl shadow-sm transition cursor-pointer flex items-center justify-center gap-1.5"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-              <span>Retry</span>
-            </button>
-            <button
-              onClick={onClose}
-              className="flex-1 py-2.5 bg-white hover:bg-[#FAF9F6] text-[#77716B] hover:text-[#111111] font-semibold text-xs rounded-xl border border-[#EFE0CC] transition cursor-pointer"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const photoToDisplay = candidate.arrivalPhoto || candidate.livePhoto;
-  const photoTimestamp = formatDateTime(candidate.arrivalPhotoCapturedAt || candidate.livePhotoCapturedAt || candidate.createdAt);
-  const photoActor =
-    candidate.arrivalPhotoCapturedByName ||
-    candidate.livePhotoCapturedBy ||
-    (candidate.arrivalPhoto ? 'Reception Desk' : 'Candidate Self-Capture');
-
-  const govId = candidate.governmentId;
-  const valResult = candidate.validationResult;
-  const isGovIdVerified = govId?.verificationStatus === 'VERIFIED';
-  const hasResume = Boolean(
-    candidate.resumeUrl ||
-    candidate.resumeFileName ||
-    candidate.resumeMetadata
-  );
-  const hasGovId = Boolean(
-    govId?.storageKey ||
-    govId?.documentDataUrl ||
-    govId?.maskedIdNumber ||
-    govId?.idType ||
-    govId?.originalFileName ||
-    govId?.id ||
-    candidate.hasGovernmentId ||
-    candidate.governmentIdFileName ||
-    candidate.governmentIdFileUrl
-  );
-
-  const canViewConfidential = currentRole === 'HR' || currentRole === 'ADMIN' || currentRole === 'CEO';
-  const canCapturePhoto = currentRole === 'RECEPTION' || currentRole === 'HR' || currentRole === 'ADMIN';
-  const canEditOrDelete = currentRole === 'HR' || currentRole === 'ADMIN';
-
-  // Waiting time calculation
-  const waitingTime = (() => {
-    const t = candidate.arrivalTime || candidate.createdAt;
-    if (!t) return 'Just arrived';
-    const diffMins = Math.max(0, Math.round((Date.now() - new Date(t).getTime()) / 60000));
-    if (diffMins < 60) return `${diffMins} mins`;
-    const hrs = Math.floor(diffMins / 60);
-    const mins = diffMins % 60;
-    return `${hrs}h ${mins}m`;
-  })();
-
-  const activeInterviewer =
-    candidate.interviewerName ||
-    (candidate as any).assignedInterviewerName ||
-    (interviews.length > 0 ? interviews[0].interviewerName : 'Not Assigned');
+  const sections: { id: DossierSection; label: string; icon: any }[] = [
+    { id: 'Identity', label: 'Identity', icon: User },
+    { id: 'Application', label: 'Application', icon: Briefcase },
+    { id: 'Experience', label: 'Experience', icon: Layers },
+    { id: 'Interview', label: 'Interview', icon: Calendar },
+    { id: 'Documents', label: 'Documents', icon: FileCheck },
+    { id: 'Status', label: 'Status', icon: Clock },
+    { id: 'Notes', label: 'Notes', icon: FileText },
+  ];
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 backdrop-blur-md p-3 sm:p-5 overflow-y-auto">
-      <div className="bg-white/98 border border-[#EFE0CC] rounded-3xl max-w-4xl w-full max-h-[94vh] flex flex-col shadow-[0_25px_70px_rgba(0,0,0,0.15)] overflow-hidden animate-in fade-in zoom-in-95 duration-200 text-[#171717]">
-        {/* Sync status warning banner */}
-        {fetchError && (
-          <div className="px-4 py-2 bg-amber-50 border-b border-amber-200 text-amber-800 text-xs flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
-              <span>Showing cached dossier snapshot. Real-time background sync is reconnecting.</span>
-            </div>
-            <button
-              onClick={() => fetchCandidate(1)}
-              className="text-amber-800 hover:text-amber-950 font-bold text-xs underline cursor-pointer"
-            >
-              Retry Sync
-            </button>
-          </div>
-        )}
-
-        {/* Top Header with Requirement 15 fields */}
-        <div className="p-5 sm:p-6 border-b border-[#EFE0CC] flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white">
-          <div className="flex items-start gap-4 min-w-0">
-            {photoToDisplay ? (
-              <div className="relative shrink-0">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-3 sm:p-4 overflow-y-auto">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96, y: 12 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.96, y: 8 }}
+        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+        className="glass-panel-elevated rounded-3xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-white/12 text-slate-100 overflow-hidden"
+      >
+        {/* Top Header Bar */}
+        <div className="p-4 sm:p-5 border-b border-white/8 flex items-center justify-between bg-white/2 shrink-0">
+          <div className="flex items-center gap-3 min-w-0">
+            {/* Live photo or fallback avatar */}
+            <div className="relative shrink-0">
+              {candidate?.receptionPhotoUrl || candidate?.photoUrl ? (
                 <img
-                  src={photoToDisplay}
-                  alt={candidate.fullName}
-                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-[#E4CCAF] shadow-md"
+                  src={candidate.receptionPhotoUrl || candidate.photoUrl}
+                  alt={candidate?.fullName}
+                  className="w-12 h-12 rounded-2xl object-cover border-2 border-amber-500/40 shadow-lg"
                 />
-                <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white" />
-              </div>
-            ) : (
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#FAF4ED] border border-[#E4CCAF] flex items-center justify-center text-[#8C6033] shrink-0 shadow-xs">
-                <User className="w-8 h-8 text-[#C99A68]" />
-              </div>
-            )}
+              ) : (
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center font-bold text-base">
+                  {(candidate?.fullName || 'WCR').slice(0, 2).toUpperCase()}
+                </div>
+              )}
+              {candidate?.receptionPhotoUrl && (
+                <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center ring-2 ring-[#07090C]" title="Authoritative Desk Photo Captured">
+                  <Check className="w-2.5 h-2.5 stroke-[3]" />
+                </span>
+              )}
+            </div>
 
-            <div className="min-w-0 space-y-1">
+            <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-xl sm:text-2xl font-black text-[#171717] tracking-tight truncate">
-                  {candidate.fullName}
+                <h2 className="text-base sm:text-lg font-bold text-white truncate">
+                  {candidate?.fullName || 'Candidate Profile'}
                 </h2>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-[#FAF4ED] text-[#8C6033] border border-[#E4CCAF]">
-                  {candidate.status}
+                <span className="px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-[10px] font-bold text-amber-300 font-mono">
+                  {candidate?.token || candidate?.id}
                 </span>
-                {valResult?.overallStatus === 'READY_FOR_RECEPTION' && (
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3" /> Ready For Reception
-                  </span>
-                )}
               </div>
-
-              <p className="text-xs sm:text-sm font-semibold text-[#8C6033] truncate">
-                {candidate.position}
+              <p className="text-xs text-slate-400 truncate">
+                {candidate?.position} &bull; {candidate?.department || 'Operations'}
               </p>
-
-              {/* Requirement 15 Comprehensive Header Strip */}
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-[#77716B] pt-1">
-                <span className="flex items-center gap-1 text-[#171717]">
-                  <MapPin className="w-3.5 h-3.5 text-[#C99A68]" />
-                  Location: <strong className="text-[#8C6033]">{candidate.currentLocation || 'Reception Lounge'}</strong>
-                </span>
-
-                <span className="flex items-center gap-1">
-                  <User className="w-3.5 h-3.5 text-[#8A847D]" />
-                  Interviewer: <strong className="text-[#171717]">{activeInterviewer}</strong>
-                </span>
-
-                <span className="flex items-center gap-1">
-                  <DoorOpen className="w-3.5 h-3.5 text-sky-600" />
-                  Room: <strong className="text-emerald-700">{candidate.assignedRoomName || 'Unassigned'}</strong>
-                </span>
-
-                <span className="flex items-center gap-1">
-                  <Clock className="w-3.5 h-3.5 text-[#8A847D]" />
-                  Waiting Time: <strong className="text-[#8C6033]">{waitingTime}</strong>
-                </span>
-              </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 self-end lg:self-start shrink-0">
-            {canEditOrDelete && !isEditing && (
-              <>
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="px-3 py-1.5 rounded-xl bg-white hover:bg-[#FAF9F6] text-[#171717] font-bold text-xs border border-[#E4CCAF] transition flex items-center gap-1.5 cursor-pointer shadow-2xs"
-                >
-                  <Edit3 className="w-3.5 h-3.5 text-[#8C6033]" />
-                  <span>Edit</span>
-                </button>
-                <button
-                  onClick={() => setShowDeleteConfirm(true)}
-                  className="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs border border-rose-200 transition flex items-center gap-1.5 cursor-pointer"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  <span>Delete</span>
-                </button>
-              </>
+          {/* Action buttons (Edit, Delete, Close) */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            {(currentRole === 'ADMIN' || currentRole === 'HR' || currentRole === 'SENIOR_HR') && (
+              <button
+                onClick={() => setIsEditing(!isEditing)}
+                className={`p-2 rounded-xl border text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
+                  isEditing
+                    ? 'bg-amber-500 text-slate-950 border-amber-400'
+                    : 'bg-white/5 hover:bg-white/10 text-slate-300 border-white/8'
+                }`}
+                title={isEditing ? 'Cancel Edit' : 'Edit Candidate'}
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">{isEditing ? 'Cancel' : 'Edit'}</span>
+              </button>
             )}
+
+            {currentRole === 'ADMIN' && (
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                className="p-2 rounded-xl bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 border border-white/8 transition cursor-pointer"
+                title="Archive / Delete candidate"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            )}
+
             <button
               onClick={onClose}
-              className="p-2 rounded-xl text-[#77716B] hover:text-[#171717] hover:bg-[#F3EFE9] transition cursor-pointer"
+              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/8 transition cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        {/* Tab Navigation (Requirement 15: Overview, Journey, Interviews, Documents, Activity) */}
-        <div className="px-6 border-b border-[#EFE0CC] flex gap-6 text-xs font-semibold bg-[#FAF9F6] overflow-x-auto">
-          {[
-            { id: 'overview', label: 'Overview', icon: User },
-            { id: 'journey', label: 'Journey', icon: Route },
-            { id: 'interviews', label: `Interviews (${interviews.length})`, icon: Briefcase },
-            { id: 'documents', label: 'Documents', icon: FileText },
-            { id: 'activity', label: `Activity (${timeline.length})`, icon: Layers },
-          ].map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              onClick={() => setActiveTab(id as any)}
-              className={`py-3 border-b-2 transition flex items-center gap-1.5 cursor-pointer shrink-0 ${
-                activeTab === id
-                  ? 'border-[#C99A68] text-[#8C6033] font-bold'
-                  : 'border-transparent text-[#77716B] hover:text-[#171717]'
-              }`}
-            >
-              <Icon className="w-4 h-4" />
-              <span>{label}</span>
-            </button>
-          ))}
+        {/* 7 Section Navigation Tabs */}
+        <div className="px-4 py-2 border-b border-white/6 bg-black/25 flex gap-1 overflow-x-auto shrink-0">
+          {sections.map((sec) => {
+            const Icon = sec.icon;
+            const isActive = activeSection === sec.id;
+            return (
+              <button
+                key={sec.id}
+                onClick={() => setActiveSection(sec.id)}
+                className={`relative px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
+                  isActive
+                    ? 'text-white bg-white/8 border border-white/12 shadow-sm'
+                    : 'text-slate-400 hover:text-white hover:bg-white/4'
+                }`}
+              >
+                <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-amber-400' : 'text-slate-500'}`} />
+                <span>{sec.label}</span>
+                {isActive && (
+                  <motion.div
+                    layoutId="dossier-tab-highlight"
+                    className="absolute bottom-0 left-2 right-2 h-0.5 bg-amber-400 rounded-full"
+                  />
+                )}
+              </button>
+            );
+          })}
         </div>
 
-        {/* Content Body */}
-        <div className="p-6 overflow-y-auto flex-1 space-y-6">
+        {/* Modal Body / Tab Content */}
+        <div className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-5">
+          {/* Action notice / errors */}
           {actionError && (
-            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+            <div className="p-3 bg-rose-950/40 border border-rose-500/40 rounded-xl text-rose-200 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
               <span>{actionError}</span>
             </div>
           )}
 
-          {/* TAB: OVERVIEW */}
-          {activeTab === 'overview' && !isEditing && (
-            <div className="space-y-6">
-              {/* Operational & Contact Info */}
-              <div className="space-y-3">
-                <h3 className="text-xs font-bold text-[#8C6033] uppercase tracking-wider">
-                  Operational & Contact Details
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
-                  <div className="p-3.5 bg-[#FAF9F6] rounded-xl border border-[#EFE0CC]">
-                    <span className="text-[#77716B] text-[10px] block">Mobile Phone</span>
-                    <strong className="text-[#171717]">{candidate.phone || 'N/A'}</strong>
-                  </div>
-                  <div className="p-3.5 bg-[#FAF9F6] rounded-xl border border-[#EFE0CC]">
-                    <span className="text-[#77716B] text-[10px] block">Email Address</span>
-                    <strong className="text-[#171717] truncate block">{candidate.email || 'N/A'}</strong>
-                  </div>
-                  <div className="p-3.5 bg-[#FAF9F6] rounded-xl border border-[#EFE0CC]">
-                    <span className="text-[#77716B] text-[10px] block">Current Location</span>
-                    <strong className="text-[#8C6033]">{candidate.currentLocation || 'Reception Lounge'}</strong>
-                  </div>
-                  <div className="p-3.5 bg-[#FAF9F6] rounded-xl border border-[#EFE0CC]">
-                    <span className="text-[#77716B] text-[10px] block">Visit Purpose</span>
-                    <strong className="text-[#171717]">{candidate.purpose || 'Interview / Job Application'}</strong>
-                  </div>
-                  <div className="p-3.5 bg-[#FAF9F6] rounded-xl border border-[#EFE0CC]">
-                    <span className="text-[#77716B] text-[10px] block">Department</span>
-                    <strong className="text-[#171717]">{candidate.department || 'Sales & Business Development'}</strong>
-                  </div>
-                  <div className="p-3.5 bg-[#FAF9F6] rounded-xl border border-[#EFE0CC]">
-                    <span className="text-[#77716B] text-[10px] block">Address</span>
-                    <strong className="text-[#171717] truncate block">
-                      {[candidate.city, candidate.state].filter(Boolean).join(', ') || 'N/A'}
-                    </strong>
-                  </div>
-                </div>
-              </div>
-
-              {/* Professional Background */}
-              <div className="space-y-3">
-                <h3 className="text-xs font-bold text-[#8C6033] uppercase tracking-wider">
-                  Professional Background
-                </h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
-                  <div className="p-3.5 bg-[#FAF9F6] rounded-xl border border-[#EFE0CC]">
-                    <span className="text-[#77716B] text-[10px] block">Total Experience</span>
-                    <strong className="text-[#171717]">{candidate.totalExperience || 'Fresher'}</strong>
-                  </div>
-                  <div className="p-3.5 bg-[#FAF9F6] rounded-xl border border-[#EFE0CC]">
-                    <span className="text-[#77716B] text-[10px] block">Current / Previous Company</span>
-                    <strong className="text-[#171717]">{candidate.currentCompany || 'N/A'}</strong>
-                  </div>
-                  <div className="p-3.5 bg-[#FAF9F6] rounded-xl border border-[#EFE0CC]">
-                    <span className="text-[#77716B] text-[10px] block">Qualification</span>
-                    <strong className="text-[#171717]">{candidate.qualification || 'Graduate'}</strong>
-                  </div>
-                  <div className="p-3.5 bg-[#FAF9F6] rounded-xl border border-[#EFE0CC]">
-                    <span className="text-[#77716B] text-[10px] block">Notice Period</span>
-                    <strong className="text-[#171717]">{candidate.noticePeriod || 'Immediate'}</strong>
-                  </div>
-                  <div className="p-3.5 bg-[#FAF9F6] rounded-xl border border-[#EFE0CC]">
-                    <span className="text-[#77716B] text-[10px] block">Expected Salary</span>
-                    {canViewConfidential ? (
-                      <strong className="text-[#171717]">{candidate.expectedSalary || 'Confidential'}</strong>
-                    ) : (
-                      <span className="text-[#77716B] font-mono text-[11px] flex items-center gap-1">
-                        <Lock className="w-3 h-3" /> Confidential
-                      </span>
-                    )}
-                  </div>
-                  <div className="p-3.5 bg-[#FAF9F6] rounded-xl border border-[#EFE0CC]">
-                    <span className="text-[#77716B] text-[10px] block">Key Skills</span>
-                    <strong className="text-[#8C6033] truncate block">{candidate.skills || 'Advisory'}</strong>
-                  </div>
-                </div>
-              </div>
-
-              {/* Confidential HR Notes: Signature Charcoal Inner Panel */}
-              {canViewConfidential && (
-                <div className="p-4 bg-[#171717] border border-[#2D2D2D] rounded-2xl space-y-2 text-white shadow-md">
-                  <div className="flex items-center gap-2 text-[#D6B28A] text-xs font-bold uppercase tracking-wider">
-                    <Lock className="w-3.5 h-3.5 text-[#C99A68]" />
-                    <span>Confidential HR Remarks (Authorized View)</span>
-                  </div>
-                  <p className="text-[#EFE0CC] text-xs italic leading-relaxed">
-                    {candidate.hrPrivateNotes || 'No private HR notes recorded yet.'}
+          {/* Delete Confirmation Box */}
+          {showDeleteConfirm && (
+            <div className="p-4 bg-rose-950/40 border border-rose-500/40 rounded-2xl space-y-3">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 text-rose-400 mt-0.5" />
+                <div>
+                  <h4 className="text-xs font-bold text-rose-100">Confirm Candidate Record Archive</h4>
+                  <p className="text-[11px] text-rose-300/80">
+                    This will permanently delete/archive candidate files under White Collar Realty retention policy.
                   </p>
                 </div>
-              )}
-            </div>
-          )}
-
-          {/* TAB: JOURNEY */}
-          {activeTab === 'journey' && (
-            <div className="space-y-6">
-              <WCRCandidateJourney
-                status={candidate.status}
-                interviewStage={candidate.interviewRound}
-              />
-
-              <div className="p-4 bg-[#FAF9F6] rounded-2xl border border-[#EFE0CC] space-y-3 text-xs">
-                <h4 className="font-bold text-[#171717] text-sm flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-[#C99A68]" />
-                  <span>Pipeline Milestone Log</span>
-                </h4>
-                <div className="space-y-2 text-[#77716B]">
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-white border border-[#EFE0CC]">
-                    <span className="text-[#171717]">Initial QR Self-Registration</span>
-                    <span className="text-emerald-700 font-bold">✓ Completed</span>
-                  </div>
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-white border border-[#EFE0CC]">
-                    <span className="text-[#171717]">Reception Arrival & Photo Capture</span>
-                    <span className="text-emerald-700 font-bold">
-                      {candidate.arrivalPhoto || candidate.livePhoto ? '✓ Verified' : 'Pending Desk Verification'}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-white border border-[#EFE0CC]">
-                    <span className="text-[#171717]">Room Allocation & Escort</span>
-                    <span className="text-[#8C6033] font-bold">
-                      {candidate.assignedRoomName ? `Assigned to ${candidate.assignedRoomName}` : 'Awaiting HR Room Choice'}
-                    </span>
-                  </div>
-                </div>
               </div>
-            </div>
-          )}
-
-          {/* TAB: DOCUMENTS (Resume, Gov ID, Photo) */}
-          {activeTab === 'documents' && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Resume Card */}
-                <div className="p-4 bg-[#FAF9F6] rounded-2xl border border-[#EFE0CC] space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-[#8C6033] uppercase tracking-wider flex items-center gap-1.5">
-                      <FileText className="w-4 h-4 text-[#C99A68]" />
-                      Candidate Resume
-                    </span>
-                    <span
-                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                        hasResume
-                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                          : 'bg-slate-100 text-[#77716B] border-slate-200'
-                      }`}
-                    >
-                      {hasResume ? 'Attached' : 'Missing'}
-                    </span>
-                  </div>
-
-                  <p className="text-xs text-[#77716B]">
-                    {candidate.resumeFileName || 'Official candidate curriculum vitae.'}
-                  </p>
-
-                  <div className="flex items-center gap-2 pt-2">
-                    {hasResume ? (
-                      <>
-                        <button
-                          onClick={() => setShowResumeModal(true)}
-                          className="flex-1 py-2 rounded-xl bg-[#171717] hover:bg-[#282828] text-white font-bold text-xs transition cursor-pointer flex items-center justify-center gap-1.5"
-                        >
-                          <Eye className="w-3.5 h-3.5 text-[#C99A68]" />
-                          <span>View Resume</span>
-                        </button>
-                        <button
-                          onClick={handleDownloadResume}
-                          className="px-3 py-2 rounded-xl bg-white hover:bg-[#FAF9F6] border border-[#E4CCAF] text-[#171717] text-xs font-semibold transition cursor-pointer"
-                        >
-                          <Download className="w-3.5 h-3.5" />
-                        </button>
-                      </>
-                    ) : (
-                      <span className="text-xs text-[#8A847D] italic">No document available</span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Government ID Card */}
-                <div className="p-4 bg-[#FAF9F6] rounded-2xl border border-[#EFE0CC] space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-[#8C6033] uppercase tracking-wider flex items-center gap-1.5">
-                      <ShieldCheck className="w-4 h-4 text-cyan-600" />
-                      Government ID
-                    </span>
-                    <span
-                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                        isGovIdVerified
-                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                          : hasGovId
-                          ? 'bg-amber-50 text-amber-700 border-amber-200'
-                          : 'bg-slate-100 text-[#77716B] border-slate-200'
-                      }`}
-                    >
-                      {isGovIdVerified ? 'Verified' : hasGovId ? 'Uploaded' : 'Missing'}
-                    </span>
-                  </div>
-
-                  <p className="text-xs text-[#77716B]">
-                    {govId?.idType ? `Type: ${govId.idType}` : 'Encrypted government identification doc.'}
-                  </p>
-
-                  <div className="pt-2">
-                    {hasGovId ? (
-                      <button
-                        onClick={() => setShowGovIdModal(true)}
-                        className="w-full py-2 rounded-xl bg-[#171717] hover:bg-[#282828] text-white font-bold text-xs transition cursor-pointer flex items-center justify-center gap-1.5"
-                      >
-                        <Eye className="w-3.5 h-3.5 text-cyan-400" />
-                        <span>Inspect Government ID</span>
-                      </button>
-                    ) : (
-                      <span className="text-xs text-[#8A847D] italic">Not provided</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Reception Photo Desk Verification */}
-              {canCapturePhoto && (
-                <div className="p-4 bg-[#FAF9F6] rounded-2xl border border-[#EFE0CC] flex items-center justify-between">
-                  <div>
-                    <h4 className="text-xs font-bold text-[#171717]">Reception Desk Camera Verification</h4>
-                    <p className="text-[11px] text-[#77716B]">Capture or update high-resolution photo on arrival.</p>
-                  </div>
-                  <button
-                    onClick={() => setShowPhotoModal(true)}
-                    className="px-3.5 py-2 rounded-xl bg-white hover:bg-[#FAF9F6] border border-[#E4CCAF] text-[#8C6033] font-bold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-2xs"
-                  >
-                    <Camera className="w-4 h-4 text-[#C99A68]" />
-                    <span>Open Camera</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* TAB: INTERVIEWS */}
-          {activeTab === 'interviews' && (
-            <div className="space-y-3">
-              {interviews.length === 0 ? (
-                <div className="text-center py-8 text-[#77716B] text-xs">No interview rounds scheduled yet.</div>
-              ) : (
-                interviews.map((intv) => (
-                  <div key={intv.id} className="p-4 bg-[#FAF9F6] border border-[#EFE0CC] rounded-2xl space-y-2 text-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-[#171717] text-sm">{intv.roundName}</span>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#FAF4ED] text-[#8C6033] border border-[#E4CCAF]">
-                        {intv.status}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-[11px] text-[#77716B]">
-                      <span>Interviewer: <strong className="text-[#171717]">{intv.interviewerName}</strong></span>
-                      <span>Scheduled: {intv.scheduledTime}</span>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          )}
-
-          {/* TAB: ACTIVITY / TIMELINE */}
-          {activeTab === 'activity' && (
-            <div className="space-y-3">
-              {timeline.length === 0 ? (
-                <div className="text-center py-8 text-[#77716B] text-xs">No activity logged yet.</div>
-              ) : (
-                timeline.map((event) => {
-                  const formatted = formatDateTime(event.timestamp);
-                  return (
-                    <div key={event.id} className="p-3.5 bg-[#FAF9F6] border border-[#EFE0CC] rounded-2xl flex items-start gap-3 text-xs">
-                      <div className="w-2.5 h-2.5 rounded-full bg-[#C99A68] mt-1 shrink-0" />
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-[#171717]">{event.eventType}</span>
-                          <span className="text-[10px] text-[#8A847D]">
-                            {formatted.date} at {formatted.time}
-                          </span>
-                        </div>
-                        <p className="text-[#77716B] text-[11px] mt-0.5">{event.description}</p>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          )}
-
-          {/* EDIT CANDIDATE FORM VIEW */}
-          {isEditing && (
-            <div className="space-y-4 animate-in fade-in duration-200">
-              <div className="flex items-center justify-between pb-2 border-b border-[#EFE0CC]">
-                <h3 className="text-sm font-bold text-[#8C6033] flex items-center gap-2">
-                  <Edit3 className="w-4 h-4 text-[#C99A68]" /> Editing Candidate Profile (HR / Admin)
-                </h3>
-                <span className="text-[10px] text-[#8A847D] font-mono">ID: {candidateId}</span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <div>
-                  <label className="block text-[#171717] font-semibold mb-1">Full Name *</label>
-                  <input
-                    type="text"
-                    value={editForm.fullName}
-                    onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })}
-                    className="w-full px-3 py-2 bg-white border border-[#E4CCAF] rounded-xl text-[#171717]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[#171717] font-semibold mb-1">Mobile Phone *</label>
-                  <input
-                    type="text"
-                    value={editForm.phone}
-                    onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                    className="w-full px-3 py-2 bg-white border border-[#E4CCAF] rounded-xl text-[#171717]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[#171717] font-semibold mb-1">Email Address *</label>
-                  <input
-                    type="email"
-                    value={editForm.email}
-                    onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                    className="w-full px-3 py-2 bg-white border border-[#E4CCAF] rounded-xl text-[#171717]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[#171717] font-semibold mb-1">Position Applied *</label>
-                  <input
-                    type="text"
-                    value={editForm.position}
-                    onChange={(e) => setEditForm({ ...editForm, position: e.target.value })}
-                    className="w-full px-3 py-2 bg-white border border-[#E4CCAF] rounded-xl text-[#171717]"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-2 pt-3 border-t border-[#EFE0CC]">
+              <div className="flex gap-2 justify-end pt-1">
                 <button
-                  type="button"
-                  onClick={() => setIsEditing(false)}
-                  className="px-4 py-2 bg-white border border-[#EFE0CC] text-[#77716B] hover:text-[#171717] text-xs font-semibold rounded-xl"
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="px-3 py-1.5 bg-white/6 hover:bg-white/10 text-slate-300 text-xs font-medium rounded-xl"
                 >
                   Cancel
                 </button>
                 <button
-                  type="button"
+                  onClick={handleDeleteCandidate}
+                  disabled={deleting}
+                  className="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-xl"
+                >
+                  {deleting ? 'Deleting...' : 'Confirm Archive'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* SECTION 1: IDENTITY */}
+          {activeSection === 'Identity' && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-4 glass-panel rounded-2xl space-y-3 border border-white/8">
+                  <span className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5 font-mono">
+                    <User className="w-3.5 h-3.5" />
+                    Personal Information
+                  </span>
+                  <div className="space-y-2 text-xs">
+                    <div>
+                      <span className="text-slate-400 text-[10px] block">Full Name</span>
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={editForm.fullName}
+                          onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })}
+                          className="w-full px-2.5 py-1.5 glass-input rounded-xl text-white text-xs mt-1"
+                        />
+                      ) : (
+                        <strong className="text-white text-sm">{candidate?.fullName}</strong>
+                      )}
+                    </div>
+                    <div>
+                      <span className="text-slate-400 text-[10px] block">Phone Number</span>
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={editForm.phone}
+                          onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                          className="w-full px-2.5 py-1.5 glass-input rounded-xl text-white text-xs mt-1"
+                        />
+                      ) : (
+                        <span className="text-slate-200 font-mono">{candidate?.phone}</span>
+                      )}
+                    </div>
+                    <div>
+                      <span className="text-slate-400 text-[10px] block">Email Address</span>
+                      {isEditing ? (
+                        <input
+                          type="email"
+                          value={editForm.email}
+                          onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                          className="w-full px-2.5 py-1.5 glass-input rounded-xl text-white text-xs mt-1"
+                        />
+                      ) : (
+                        <span className="text-slate-200">{candidate?.email || 'Not provided'}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 glass-panel rounded-2xl space-y-3 border border-white/8">
+                  <span className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5 font-mono">
+                    <MapPin className="w-3.5 h-3.5" />
+                    Location & Residence
+                  </span>
+                  <div className="space-y-2 text-xs">
+                    <div>
+                      <span className="text-slate-400 text-[10px] block">Current Address</span>
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={editForm.address}
+                          onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
+                          className="w-full px-2.5 py-1.5 glass-input rounded-xl text-white text-xs mt-1"
+                        />
+                      ) : (
+                        <span className="text-slate-200">{candidate?.address || 'Not specified'}</span>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <span className="text-slate-400 text-[10px] block">City</span>
+                        {isEditing ? (
+                          <input
+                            type="text"
+                            value={editForm.city}
+                            onChange={(e) => setEditForm({ ...editForm, city: e.target.value })}
+                            className="w-full px-2.5 py-1.5 glass-input rounded-xl text-white text-xs mt-1"
+                          />
+                        ) : (
+                          <span className="text-slate-200">{candidate?.city || 'Gurugram'}</span>
+                        )}
+                      </div>
+                      <div>
+                        <span className="text-slate-400 text-[10px] block">State</span>
+                        {isEditing ? (
+                          <input
+                            type="text"
+                            value={editForm.state}
+                            onChange={(e) => setEditForm({ ...editForm, state: e.target.value })}
+                            className="w-full px-2.5 py-1.5 glass-input rounded-xl text-white text-xs mt-1"
+                          />
+                        ) : (
+                          <span className="text-slate-200">{candidate?.state || 'Haryana'}</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Desk Photo Verification Block */}
+              <div className="p-4 glass-panel rounded-2xl border border-white/8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center">
+                    <Camera className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-white">Desk Live Photo Verification</h4>
+                    <p className="text-[11px] text-slate-400">
+                      {candidate?.receptionPhotoUrl
+                        ? `Captured: ${formatDateTime(candidate.receptionPhotoCapturedAt || candidate.checkedInAt)}`
+                        : 'No desk verification photo captured yet'}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowPhotoModal(true)}
+                  className="px-3.5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs rounded-xl transition cursor-pointer flex items-center gap-1.5"
+                >
+                  <Camera className="w-3.5 h-3.5" />
+                  <span>{candidate?.receptionPhotoUrl ? 'Recapture Desk Photo' : 'Capture Desk Photo'}</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* SECTION 2: APPLICATION */}
+          {activeSection === 'Application' && (
+            <div className="p-4 glass-panel rounded-2xl space-y-4 border border-white/8">
+              <span className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5 font-mono">
+                <Briefcase className="w-3.5 h-3.5" />
+                Job Application & Terms
+              </span>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+                <div className="p-3 bg-white/4 rounded-xl border border-white/6">
+                  <span className="text-slate-400 text-[10px] block">Target Role</span>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editForm.position}
+                      onChange={(e) => setEditForm({ ...editForm, position: e.target.value })}
+                      className="w-full px-2 py-1 glass-input rounded-lg text-white text-xs mt-1"
+                    />
+                  ) : (
+                    <strong className="text-white text-xs">{candidate?.position}</strong>
+                  )}
+                </div>
+
+                <div className="p-3 bg-white/4 rounded-xl border border-white/6">
+                  <span className="text-slate-400 text-[10px] block">Department</span>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editForm.department}
+                      onChange={(e) => setEditForm({ ...editForm, department: e.target.value })}
+                      className="w-full px-2 py-1 glass-input rounded-lg text-white text-xs mt-1"
+                    />
+                  ) : (
+                    <span className="text-slate-200">{candidate?.department || 'Operations'}</span>
+                  )}
+                </div>
+
+                <div className="p-3 bg-white/4 rounded-xl border border-white/6">
+                  <span className="text-slate-400 text-[10px] block">Expected CTC / Salary</span>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editForm.expectedSalary}
+                      onChange={(e) => setEditForm({ ...editForm, expectedSalary: e.target.value })}
+                      className="w-full px-2 py-1 glass-input rounded-lg text-white text-xs mt-1"
+                    />
+                  ) : (
+                    <span className="text-amber-300 font-mono font-bold">{candidate?.expectedSalary || 'Negotiable'}</span>
+                  )}
+                </div>
+
+                <div className="p-3 bg-white/4 rounded-xl border border-white/6">
+                  <span className="text-slate-400 text-[10px] block">Notice Period</span>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editForm.noticePeriod}
+                      onChange={(e) => setEditForm({ ...editForm, noticePeriod: e.target.value })}
+                      className="w-full px-2 py-1 glass-input rounded-lg text-white text-xs mt-1"
+                    />
+                  ) : (
+                    <span className="text-slate-200">{candidate?.noticePeriod || 'Immediate'}</span>
+                  )}
+                </div>
+
+                <div className="p-3 bg-white/4 rounded-xl border border-white/6">
+                  <span className="text-slate-400 text-[10px] block">Highest Qualification</span>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editForm.qualification}
+                      onChange={(e) => setEditForm({ ...editForm, qualification: e.target.value })}
+                      className="w-full px-2 py-1 glass-input rounded-lg text-white text-xs mt-1"
+                    />
+                  ) : (
+                    <span className="text-slate-200">{candidate?.qualification || 'Graduate'}</span>
+                  )}
+                </div>
+
+                <div className="p-3 bg-white/4 rounded-xl border border-white/6">
+                  <span className="text-slate-400 text-[10px] block">Host / Person to Meet</span>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editForm.personToMeet}
+                      onChange={(e) => setEditForm({ ...editForm, personToMeet: e.target.value })}
+                      className="w-full px-2 py-1 glass-input rounded-lg text-white text-xs mt-1"
+                    />
+                  ) : (
+                    <span className="text-slate-200">{candidate?.personToMeet || 'HR Coordinator'}</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* SECTION 3: EXPERIENCE */}
+          {activeSection === 'Experience' && (
+            <div className="p-4 glass-panel rounded-2xl space-y-4 border border-white/8">
+              <span className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5 font-mono">
+                <Layers className="w-3.5 h-3.5" />
+                Work History & Skillset
+              </span>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                <div className="p-3 bg-white/4 rounded-xl border border-white/6">
+                  <span className="text-slate-400 text-[10px] block">Current / Last Company</span>
+                  <strong className="text-white text-xs">{candidate?.currentCompany || 'Not disclosed'}</strong>
+                </div>
+
+                <div className="p-3 bg-white/4 rounded-xl border border-white/6">
+                  <span className="text-slate-400 text-[10px] block">Total Experience</span>
+                  <span className="text-amber-300 font-mono font-bold">{candidate?.totalExperience || '0'} Years</span>
+                </div>
+
+                <div className="p-3 bg-white/4 rounded-xl border border-white/6">
+                  <span className="text-slate-400 text-[10px] block">Relevant Experience</span>
+                  <span className="text-amber-300 font-mono font-bold">{candidate?.relevantExperience || '0'} Years</span>
+                </div>
+              </div>
+
+              <div>
+                <span className="text-slate-400 text-[10px] block mb-1">Key Professional Skills</span>
+                <div className="p-3 bg-white/4 rounded-xl border border-white/6 text-xs text-slate-200">
+                  {candidate?.skills || 'Real Estate Sales, Negotiation, CRM Operations, Client Relations'}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* SECTION 4: INTERVIEW */}
+          {activeSection === 'Interview' && (
+            <div className="space-y-4">
+              <div className="p-4 glass-panel rounded-2xl space-y-3 border border-white/8">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5 font-mono">
+                    <Calendar className="w-3.5 h-3.5" />
+                    Interview Allocation & Cabin
+                  </span>
+                  {onAssignRoom && (
+                    <button
+                      onClick={() => onAssignRoom(candidateId)}
+                      className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl transition cursor-pointer flex items-center gap-1.5"
+                    >
+                      <DoorOpen className="w-3.5 h-3.5" />
+                      <span>Allocate / Change Room</span>
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs pt-1">
+                  <div className="p-3 bg-white/4 rounded-xl border border-white/6">
+                    <span className="text-slate-400 text-[10px] block">Assigned Cabin / Room</span>
+                    <strong className="text-emerald-400 text-xs">
+                      {candidate?.assignedRoomName || 'Not Assigned (Lobby)'}
+                    </strong>
+                  </div>
+
+                  <div className="p-3 bg-white/4 rounded-xl border border-white/6">
+                    <span className="text-slate-400 text-[10px] block">Assigned Interviewer</span>
+                    <strong className="text-white text-xs">
+                      {candidate?.assignedInterviewerName || 'Pending Allocation'}
+                    </strong>
+                  </div>
+
+                  <div className="p-3 bg-white/4 rounded-xl border border-white/6">
+                    <span className="text-slate-400 text-[10px] block">Current Stage</span>
+                    <span className="text-amber-400 font-semibold">{candidate?.status}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Rounds List */}
+              {interviews.length > 0 && (
+                <div className="p-4 glass-panel rounded-2xl space-y-3 border border-white/8">
+                  <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    Scheduled Interview Rounds ({interviews.length})
+                  </span>
+                  <div className="space-y-2">
+                    {interviews.map((intv) => (
+                      <div
+                        key={intv.id}
+                        className="p-3 bg-white/4 rounded-xl border border-white/6 flex items-center justify-between text-xs"
+                      >
+                        <div>
+                          <strong className="text-white block">{intv.roundName}</strong>
+                          <span className="text-[11px] text-slate-400">
+                            Interviewer: {intv.interviewerName} &bull; Room: {intv.roomName || 'TBD'}
+                          </span>
+                        </div>
+                        <span className="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 font-mono text-[10px]">
+                          {intv.status}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* SECTION 5: DOCUMENTS */}
+          {activeSection === 'Documents' && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Resume Card */}
+                <div className="p-5 glass-panel rounded-2xl border border-white/8 space-y-3 flex flex-col justify-between">
+                  <div className="space-y-1.5">
+                    <div className="w-9 h-9 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/30 flex items-center justify-center">
+                      <FileText className="w-5 h-5" />
+                    </div>
+                    <h4 className="text-sm font-bold text-white">Curriculum Vitae / Resume</h4>
+                    <p className="text-[11px] text-slate-400">
+                      {candidate?.resumeUrl || candidate?.resumeFileName
+                        ? `File: ${candidate.resumeFileName || 'Resume.pdf'}`
+                        : 'No resume file uploaded yet'}
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() => setShowResumeModal(true)}
+                    className="w-full py-2.5 px-3 bg-white/6 hover:bg-white/10 text-white font-semibold text-xs rounded-xl border border-white/10 transition cursor-pointer flex items-center justify-center gap-1.5"
+                  >
+                    <Eye className="w-3.5 h-3.5 text-blue-400" />
+                    <span>View Resume in Secure Viewer</span>
+                  </button>
+                </div>
+
+                {/* Government ID Card */}
+                <div className="p-5 glass-panel rounded-2xl border border-white/8 space-y-3 flex flex-col justify-between">
+                  <div className="space-y-1.5">
+                    <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center">
+                      <IdCard className="w-5 h-5" />
+                    </div>
+                    <h4 className="text-sm font-bold text-white">Government ID Document</h4>
+                    <p className="text-[11px] text-slate-400">
+                      {candidate?.governmentIdDocument
+                        ? `Type: ${candidate.governmentIdDocument.type || 'ID Card'}`
+                        : 'No government ID uploaded yet'}
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() => setShowGovIdModal(true)}
+                    className="w-full py-2.5 px-3 bg-white/6 hover:bg-white/10 text-white font-semibold text-xs rounded-xl border border-white/10 transition cursor-pointer flex items-center justify-center gap-1.5"
+                  >
+                    <Eye className="w-3.5 h-3.5 text-amber-400" />
+                    <span>View Government ID Document</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* SECTION 6: STATUS & LIFECYCLE */}
+          {activeSection === 'Status' && (
+            <div className="space-y-4">
+              {/* Animated Progress Timeline */}
+              {candidate && <VisitorArrivalTimeline candidate={candidate} />}
+
+              {/* Event Timeline History */}
+              <div className="p-4 glass-panel rounded-2xl space-y-3 border border-white/8">
+                <span className="text-xs font-bold text-slate-300 uppercase tracking-wider block">
+                  Authoritative Audit Log & Event Trail ({timeline.length})
+                </span>
+
+                {timeline.length > 0 ? (
+                  <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                    {timeline.map((evt) => (
+                      <div
+                        key={evt.id}
+                        className="p-2.5 bg-white/4 rounded-xl border border-white/6 text-xs flex items-center justify-between"
+                      >
+                        <div className="space-y-0.5">
+                          <strong className="text-white block">{evt.action}</strong>
+                          <p className="text-[11px] text-slate-400">{evt.details}</p>
+                        </div>
+                        <span className="text-[10px] text-slate-500 font-mono shrink-0 ml-2">
+                          {formatDateTime(evt.timestamp).full}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-500">No events logged yet.</p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* SECTION 7: NOTES */}
+          {activeSection === 'Notes' && (
+            <div className="space-y-4">
+              <div className="p-4 glass-panel rounded-2xl space-y-3 border border-white/8">
+                <span className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5 font-mono">
+                  <Lock className="w-3.5 h-3.5" />
+                  Private HR & Interviewer Notes
+                </span>
+                <p className="text-[11px] text-slate-400">
+                  Visible only to HR, Senior HR, Admin, and CEO suites. Not exposed to candidates.
+                </p>
+
+                {isEditing ? (
+                  <textarea
+                    rows={4}
+                    value={editForm.hrPrivateNotes}
+                    onChange={(e) => setEditForm({ ...editForm, hrPrivateNotes: e.target.value })}
+                    className="w-full p-3 glass-input rounded-xl text-white text-xs"
+                    placeholder="Enter confidential interview notes, salary feedback, or observations..."
+                  />
+                ) : (
+                  <div className="p-3 bg-white/4 rounded-xl border border-white/6 text-xs text-slate-200 whitespace-pre-wrap min-h-[80px]">
+                    {candidate?.hrPrivateNotes || 'No private HR notes recorded yet.'}
+                  </div>
+                )}
+              </div>
+
+              {/* Validation Engine Results if available */}
+              {candidate?.validationResult && (
+                <div className="p-4 glass-panel rounded-2xl space-y-2 border border-white/8 text-xs">
+                  <span className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                    Automated Validation Engine Checks
+                  </span>
+                  <div className="p-3 bg-white/4 rounded-xl border border-white/6 font-mono text-[11px] text-slate-300">
+                    Confidence: {candidate.validationResult.confidenceScore || 100}% &bull; Passed
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Save Edit Toolbar (when in editing mode) */}
+          {isEditing && (
+            <div className="p-3 glass-panel-elevated rounded-2xl flex items-center justify-between gap-3 border border-amber-500/40">
+              <span className="text-xs font-bold text-amber-300">Unsaved changes in profile</span>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setIsEditing(false)}
+                  className="px-3 py-1.5 bg-white/6 hover:bg-white/10 text-slate-300 text-xs font-medium rounded-xl"
+                >
+                  Discard
+                </button>
+                <button
                   onClick={handleSaveEdit}
                   disabled={savingEdit}
-                  className="px-5 py-2 bg-[#171717] hover:bg-[#282828] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm cursor-pointer"
+                  className="px-4 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded-xl flex items-center gap-1.5 shadow"
                 >
-                  <Save className="w-4 h-4 text-[#C99A68]" />
-                  {savingEdit ? 'Saving...' : 'Save Changes'}
+                  <Save className="w-3.5 h-3.5" />
+                  <span>{savingEdit ? 'Saving...' : 'Save Changes'}</span>
                 </button>
               </div>
             </div>
           )}
         </div>
 
-        {/* Footer Actions */}
-        <div className="p-4 border-t border-[#EFE0CC] bg-white flex items-center justify-between">
-          <span className="text-xs text-[#8A847D]">Security: Role-based authenticated access</span>
-          <div className="flex gap-2">
-            {onAssignRoom && (currentRole === 'HR' || currentRole === 'ADMIN') && candidate.status !== 'CHECKED_OUT' && candidate.status !== 'DELETED' && (
-              <button
-                onClick={() => {
-                  onClose();
-                  onAssignRoom(candidate.id, candidate.currentInterviewId);
-                }}
-                className="px-4 py-2 bg-[#171717] hover:bg-[#282828] text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer flex items-center gap-1.5"
-                title="HR / Admin Room Control: Assign or change room"
-              >
-                <DoorOpen className="w-3.5 h-3.5 text-[#C99A68]" />
-                <span>{candidate.assignedRoomId ? 'Change / Reassign Room' : 'Assign Room Now'}</span>
-              </button>
-            )}
-            <button
-              onClick={onClose}
-              className="px-4 py-2 bg-white hover:bg-[#FAF9F6] text-[#171717] text-xs font-semibold rounded-xl border border-[#EFE0CC] transition cursor-pointer"
-            >
-              Close Dossier
-            </button>
-          </div>
+        {/* Modal Footer */}
+        <div className="p-4 border-t border-white/8 bg-black/30 flex items-center justify-between text-xs shrink-0">
+          <span className="text-slate-400 text-[11px]">
+            WCR Protected Record &bull; Encrypted
+          </span>
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-white/6 hover:bg-white/10 text-slate-200 text-xs font-semibold rounded-xl border border-white/8 transition cursor-pointer"
+          >
+            Close Dossier
+          </button>
         </div>
-      </div>
+      </motion.div>
 
-      {/* DELETE CONFIRMATION MODAL */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="bg-white/98 border border-rose-200 rounded-3xl p-6 max-w-md w-full space-y-4 text-[#111111] shadow-[0_24px_60px_rgba(0,0,0,0.12)]">
-            <div className="w-12 h-12 bg-rose-50 text-rose-700 border border-rose-200 rounded-full flex items-center justify-center mx-auto">
-              <Trash2 className="w-6 h-6" />
-            </div>
-            <div className="text-center space-y-1.5">
-              <h3 className="text-lg font-bold text-[#111111]">Delete Candidate?</h3>
-              <p className="text-xs text-[#77716B] font-medium">
-                Candidate: <strong className="text-[#8C6033]">{candidate.fullName}</strong>
-              </p>
-              <p className="text-xs text-[#77716B] leading-relaxed">
-                This action will remove/archive the candidate record according to retention policy.
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-[#111111] mb-1">Reason for Archival</label>
-              <input
-                type="text"
-                value={deleteReason}
-                onChange={(e) => setDeleteReason(e.target.value)}
-                placeholder="e.g. Withdrawn by candidate / Duplicate application"
-                className="w-full px-3 py-2 bg-white border border-[#E4CCAF] rounded-xl text-xs text-[#111111] focus:outline-hidden focus:border-[#C99A68]"
-              />
-            </div>
-
-            <div className="flex gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => setShowDeleteConfirm(false)}
-                className="flex-1 py-2.5 bg-white hover:bg-[#FAF9F6] text-[#77716B] hover:text-[#111111] font-semibold text-xs rounded-xl border border-[#EFE0CC] transition cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleDeleteCandidate}
-                disabled={deleting}
-                className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-md transition cursor-pointer"
-              >
-                {deleting ? 'Archiving...' : 'Delete Candidate'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Resume Modal */}
-      {showResumeModal && (
+      {/* Sub-Modals for in-app document viewing */}
+      {showResumeModal && candidate && (
         <ResumeDocumentModal
           candidate={candidate}
           currentRole={currentRole}
@@ -931,8 +945,7 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
         />
       )}
 
-      {/* Government ID Modal */}
-      {showGovIdModal && (
+      {showGovIdModal && candidate && (
         <GovernmentIdModal
           candidate={candidate}
           currentRole={currentRole}
@@ -940,16 +953,15 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
         />
       )}
 
-      {/* Reception Photo Modal */}
-      {showPhotoModal && (
+      {showPhotoModal && candidate && (
         <ReceptionPhotoModal
           candidate={candidate}
           receptionistId="usr-rec-1"
-          receptionistName="Ananya Sen (Reception)"
+          receptionistName="Receptionist"
           onClose={() => setShowPhotoModal(false)}
           onSuccess={(updated) => {
-            setShowPhotoModal(false);
             setCandidate(updated);
+            setShowPhotoModal(false);
             if (onPhotoCaptured) onPhotoCaptured(updated);
           }}
         />

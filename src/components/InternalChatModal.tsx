@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   X,
   Send,
@@ -404,56 +405,71 @@ export const InternalChatModal: React.FC<InternalChatModalProps> = ({
     'Please escort candidate to cabin',
   ];
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-2 sm:p-4">
-      <div className="bg-white/98 border border-[#EFE0CC] rounded-3xl max-w-5xl w-full h-[90vh] sm:h-[84vh] shadow-[0_25px_70px_rgba(0,0,0,0.15)] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200 text-[#171717]">
-        {/* Top Header Bar */}
-        <div className="px-5 py-3.5 border-b border-[#EFE0CC] bg-white flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#FAF4ED] text-[#8C6033] border border-[#E4CCAF] flex items-center justify-center font-black shadow-xs">
-              <MessageSquare className="w-5 h-5 text-[#C99A68]" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-sm sm:text-base font-bold text-[#171717] tracking-tight">
-                  WCR Internal Office Command Chat
-                </h2>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Live Sync
-                </span>
-              </div>
-              <p className="text-[11px] text-[#77716B]">
-                Logged in as: <strong className="text-[#171717]">{currentUser?.name || 'Staff'}</strong> ({currentUser?.role || currentRole})
-              </p>
-            </div>
-          </div>
-
-          <button
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             onClick={onClose}
-            className="p-2 rounded-xl text-[#77716B] hover:text-[#171717] hover:bg-[#F3EFE9] transition cursor-pointer"
-            title="Close Internal Chat"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+            className="fixed inset-0 bg-black/80 backdrop-blur-md"
+          />
 
-        {/* Main Split Layout */}
-        <div className="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: 10 }}
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            className="glass-panel-elevated border border-white/10 rounded-3xl max-w-5xl w-full h-[90vh] sm:h-[84vh] shadow-2xl overflow-hidden flex flex-col relative z-10 backdrop-blur-2xl"
+          >
+            {/* Top Header Bar */}
+            <div className="px-5 py-3.5 border-b border-white/8 bg-black/30 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center justify-center font-black shadow-inner">
+                  <MessageSquare className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-sm sm:text-base font-bold text-white tracking-tight">
+                      WCR Internal Office Chat
+                    </h2>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1 font-mono">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      Live Real-Time
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-400">
+                    Logged in as: <strong className="text-white">{currentUser?.name || 'Staff'}</strong> ({currentUser?.role || currentRole})
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={onClose}
+                className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/6 transition cursor-pointer"
+                title="Close Internal Chat"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Main Split Layout */}
+            <div className="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
           {/* Left Sidebar: Channels & Staff List */}
-          <div className="w-full md:w-72 lg:w-80 bg-[#FAF9F6] border-r border-[#EFE0CC] flex flex-col shrink-0">
+          <div className="w-full md:w-72 lg:w-80 bg-slate-950/60 border-r border-slate-800 flex flex-col shrink-0">
             {/* Search */}
-            <div className="p-3 border-b border-[#EFE0CC]">
+            <div className="p-3 border-b border-slate-800/80">
               <div className="relative">
-                <Search className="w-3.5 h-3.5 text-[#8A847D] absolute left-3 top-1/2 -translate-y-1/2" />
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search channels or staff..."
-                  className="w-full pl-8 pr-3 py-1.5 bg-white border border-[#E4CCAF] rounded-xl text-xs text-[#171717] placeholder-[#8A847D] focus:outline-hidden focus:border-[#C99A68]"
+                  className="w-full pl-8 pr-3 py-1.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-amber-400"
                 />
               </div>
             </div>
@@ -462,9 +478,9 @@ export const InternalChatModal: React.FC<InternalChatModalProps> = ({
             <div className="flex-1 overflow-y-auto p-2 space-y-4">
               {/* Channels Section */}
               <div>
-                <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-[#77716B] flex items-center justify-between">
+                <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
                   <span>Office Channels</span>
-                  <span className="text-[10px] text-[#8A847D] font-mono">#{channels.length}</span>
+                  <span className="text-[10px] text-slate-500 font-mono">#{channels.length}</span>
                 </div>
                 <div className="space-y-1 mt-1">
                   {filteredChannels.map((c) => {
@@ -480,16 +496,16 @@ export const InternalChatModal: React.FC<InternalChatModalProps> = ({
                         }}
                         className={`w-full px-3 py-2 rounded-xl text-left text-xs transition flex items-center justify-between cursor-pointer ${
                           isActive
-                            ? 'bg-[#FAF4ED] border border-[#E4CCAF] text-[#171717] font-bold shadow-2xs'
-                            : 'text-[#77716B] hover:bg-[#F3EFE9] hover:text-[#171717]'
+                            ? 'bg-amber-500/15 border border-amber-500/40 text-amber-300 font-bold'
+                            : 'text-slate-300 hover:bg-slate-900 hover:text-white'
                         }`}
                       >
                         <div className="flex items-center gap-2 truncate">
-                          <Hash className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-[#C99A68]' : 'text-[#8A847D]'}`} />
+                          <Hash className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-amber-400' : 'text-slate-500'}`} />
                           <span className="truncate">{c.name}</span>
                         </div>
                         {unread > 0 && (
-                          <span className="px-1.5 py-0.2 rounded-full bg-[#C99A68] text-white text-[10px] font-black shrink-0">
+                          <span className="px-1.5 py-0.2 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black shrink-0">
                             {unread}
                           </span>
                         )}
@@ -501,9 +517,9 @@ export const InternalChatModal: React.FC<InternalChatModalProps> = ({
 
               {/* Direct Messages Section */}
               <div>
-                <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-[#77716B] flex items-center justify-between">
+                <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
                   <span>Direct Messages</span>
-                  <span className="text-[10px] text-[#8A847D] font-mono">{filteredStaff.length}</span>
+                  <span className="text-[10px] text-slate-500 font-mono">{filteredStaff.length}</span>
                 </div>
                 <div className="space-y-1 mt-1">
                   {filteredStaff.map((u) => {
@@ -519,23 +535,23 @@ export const InternalChatModal: React.FC<InternalChatModalProps> = ({
                         }}
                         className={`w-full px-3 py-2 rounded-xl text-left text-xs transition flex items-center justify-between cursor-pointer ${
                           isActive
-                            ? 'bg-[#FAF4ED] border border-[#E4CCAF] text-[#171717] font-bold shadow-2xs'
-                            : 'text-[#77716B] hover:bg-[#F3EFE9] hover:text-[#171717]'
+                            ? 'bg-amber-500/15 border border-amber-500/40 text-amber-300 font-bold'
+                            : 'text-slate-300 hover:bg-slate-900 hover:text-white'
                         }`}
                       >
                         <div className="flex items-center gap-2.5 truncate">
-                          <div className="w-6 h-6 rounded-lg bg-[#FAF4ED] border border-[#E4CCAF] flex items-center justify-center text-[10px] font-bold text-[#8C6033] shrink-0">
+                          <div className="w-6 h-6 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-[10px] font-bold text-slate-200 shrink-0">
                             {u.name.substring(0, 2).toUpperCase()}
                           </div>
                           <div className="truncate">
-                            <span className="block truncate font-medium text-[#171717]">{u.name}</span>
-                            <span className="text-[10px] text-[#77716B] block truncate">
+                            <span className="block truncate font-medium text-white">{u.name}</span>
+                            <span className="text-[10px] text-slate-500 block truncate">
                               {u.role} • {u.department || 'Operations'}
                             </span>
                           </div>
                         </div>
                         {unread > 0 && (
-                          <span className="px-1.5 py-0.2 rounded-full bg-[#C99A68] text-white text-[10px] font-black shrink-0">
+                          <span className="px-1.5 py-0.2 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black shrink-0">
                             {unread}
                           </span>
                         )}
@@ -548,39 +564,39 @@ export const InternalChatModal: React.FC<InternalChatModalProps> = ({
           </div>
 
           {/* Right Main Chat Pane */}
-          <div className="flex-1 flex flex-col bg-[#FDFCF9] overflow-hidden">
+          <div className="flex-1 flex flex-col bg-slate-900/40 overflow-hidden">
             {/* Conversation Header */}
-            <div className="px-5 py-3 border-b border-[#EFE0CC] bg-white flex items-center justify-between">
+            <div className="px-5 py-3 border-b border-slate-800 bg-slate-950/40 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 {activeChatType === 'channel' ? (
                   <>
-                    <div className="w-8 h-8 rounded-xl bg-[#FAF4ED] border border-[#E4CCAF] flex items-center justify-center text-[#8C6033] font-bold">
-                      <Hash className="w-4 h-4 text-[#C99A68]" />
+                    <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 font-bold">
+                      <Hash className="w-4 h-4" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold text-[#171717] flex items-center gap-2">
+                      <h3 className="text-sm font-bold text-white flex items-center gap-2">
                         #{activeChannel?.name || activeChannelId}
                       </h3>
-                      <p className="text-[11px] text-[#77716B]">
+                      <p className="text-[11px] text-slate-400">
                         {activeChannel?.description || 'Office coordination channel'}
                       </p>
                     </div>
                   </>
                 ) : (
                   <>
-                    <div className="w-8 h-8 rounded-xl bg-[#FAF4ED] border border-[#E4CCAF] flex items-center justify-center text-[#8C6033] font-bold text-xs">
+                    <div className="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 font-bold text-xs">
                       {activeRecipient?.name.substring(0, 2).toUpperCase() || 'DM'}
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="text-sm font-bold text-[#171717]">
+                        <h3 className="text-sm font-bold text-white">
                           {activeRecipient?.name || 'Staff Member'}
                         </h3>
-                        <span className="px-2 py-0.2 rounded-full text-[9px] font-bold bg-[#FAF4ED] text-[#8C6033] border border-[#E4CCAF]">
+                        <span className="px-2 py-0.2 rounded-full text-[9px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
                           {activeRecipient?.role || 'Staff'}
                         </span>
                       </div>
-                      <p className="text-[11px] text-[#77716B]">
+                      <p className="text-[11px] text-slate-400">
                         {activeRecipient?.designation || activeRecipient?.department || 'WCR Team Member'} {activeRecipient?.phone ? `• ${activeRecipient.phone}` : ''}
                       </p>
                     </div>
@@ -590,7 +606,7 @@ export const InternalChatModal: React.FC<InternalChatModalProps> = ({
 
               <button
                 onClick={fetchConversationMessages}
-                className="p-1.5 rounded-lg text-[#77716B] hover:text-[#171717] hover:bg-[#F3EFE9] transition cursor-pointer"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
                 title="Refresh messages"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
@@ -600,63 +616,60 @@ export const InternalChatModal: React.FC<InternalChatModalProps> = ({
             {/* Messages Scroll Area */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3.5">
               {loadingMessages ? (
-                <div className="flex items-center justify-center h-full text-xs text-[#77716B]">
-                  <RefreshCw className="w-4 h-4 animate-spin mr-2 text-[#C99A68]" />
+                <div className="flex items-center justify-center h-full text-xs text-slate-500">
+                  <RefreshCw className="w-4 h-4 animate-spin mr-2" />
                   Loading message stream...
                 </div>
               ) : messages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-center p-6 text-[#77716B] space-y-2">
-                  <div className="w-12 h-12 rounded-2xl bg-[#FAF4ED] border border-[#E4CCAF] flex items-center justify-center text-[#C99A68]">
-                    <MessageSquare className="w-6 h-6" />
-                  </div>
-                  <p className="text-xs font-semibold text-[#171717]">No messages yet in this conversation.</p>
-                  <p className="text-[11px] text-[#77716B] max-w-xs">
+                <div className="flex flex-col items-center justify-center h-full text-center p-6 text-slate-500 space-y-2">
+                  <MessageSquare className="w-8 h-8 text-slate-600" />
+                  <p className="text-xs font-medium">No messages yet in this conversation.</p>
+                  <p className="text-[11px] text-slate-600 max-w-xs">
                     Start communication with your colleagues. All staff receive updates in real time.
                   </p>
                 </div>
               ) : (
                 messages.map((msg) => {
                   const isMine = msg.senderId === currentUser?.id;
-                  const isOperationalImportant = !isMine && msg.isPriority;
 
                   return (
                     <div
                       key={msg.id}
                       className={`flex flex-col ${isMine ? 'items-end' : 'items-start'} space-y-1`}
                     >
-                      <div className="flex items-center gap-2 text-[10px] text-[#77716B] px-1">
-                        <span className="font-bold text-[#171717]">{isMine ? 'You' : msg.senderName}</span>
+                      <div className="flex items-center gap-2 text-[10px] text-slate-400 px-1">
+                        <span className="font-bold text-slate-300">{isMine ? 'You' : msg.senderName}</span>
                         {!isMine && (
-                          <span className="px-1.5 py-0.2 rounded-sm bg-[#FAF4ED] text-[9px] font-semibold text-[#8C6033] border border-[#E4CCAF]">
+                          <span className="px-1.5 py-0.2 rounded-sm bg-slate-800 text-[9px] font-semibold text-amber-400 border border-slate-700">
                             {msg.senderRole}
                           </span>
                         )}
-                        <span className="text-[#8C6033]">
+                        <span>
                           {new Date(msg.timestamp).toLocaleTimeString([], {
                             hour: '2-digit',
                             minute: '2-digit',
                           })}
                         </span>
                         {msg.isPriority && (
-                          <span className="px-1.5 py-0.2 rounded-sm bg-rose-50 text-rose-700 border border-rose-200 text-[9px] font-bold">
+                          <span className="px-1.5 py-0.2 rounded-sm bg-rose-500/20 text-rose-400 border border-rose-500/40 text-[9px] font-bold">
                             PRIORITY
                           </span>
                         )}
                       </div>
 
-                      {/* Bubble: user's message is soft caramel/beige, operational important is dark charcoal panel, others are white/light cream */}
+                      {/* Bubble */}
                       <div
-                        className={`max-w-md sm:max-w-lg p-3 rounded-2xl text-xs space-y-2 shadow-xs ${
+                        className={`max-w-md sm:max-w-lg p-3 rounded-2xl text-xs space-y-2 ${
                           isMine
-                            ? 'bg-[#F5E6D3] border border-[#E4CCAF] text-[#171717] font-medium rounded-tr-xs'
-                            : isOperationalImportant
-                            ? 'bg-[#171717] text-white border border-[#2D2D2D] rounded-tl-xs shadow-md'
-                            : 'bg-white border border-[#EFE0CC] text-[#171717] rounded-tl-xs'
+                            ? 'bg-amber-500 text-slate-950 font-medium rounded-tr-xs shadow-md shadow-amber-500/10'
+                            : msg.isPriority
+                            ? 'bg-rose-950/40 border border-rose-500/40 text-rose-100 rounded-tl-xs'
+                            : 'bg-slate-800/90 border border-slate-700/80 text-slate-100 rounded-tl-xs'
                         }`}
                       >
                         {/* Context Pills (Candidate / Room) */}
                         {(msg.candidateName || msg.roomName) && (
-                          <div className={`flex flex-wrap items-center gap-1.5 pb-1 border-b ${isOperationalImportant ? 'border-white/10' : 'border-[#EFE0CC]'}`}>
+                          <div className="flex flex-wrap items-center gap-1.5 pb-1 border-b border-black/10 dark:border-white/10">
                             {msg.candidateName && (
                               <button
                                 type="button"
@@ -667,13 +680,13 @@ export const InternalChatModal: React.FC<InternalChatModalProps> = ({
                                   }
                                 }}
                                 className={`px-2 py-0.5 rounded-lg text-[10px] flex items-center gap-1 font-bold transition cursor-pointer ${
-                                  isOperationalImportant
-                                    ? 'bg-[#242424] text-[#D6B28A] border border-[#3A3A3A] hover:bg-[#2F2F2F]'
-                                    : 'bg-[#FAF4ED] text-[#8C6033] border border-[#E4CCAF] hover:bg-[#F3EFE9]'
+                                  isMine
+                                    ? 'bg-amber-600/30 text-slate-950 border border-amber-700/40 hover:bg-amber-600/50'
+                                    : 'bg-slate-900/90 border border-slate-700 text-amber-300 hover:bg-slate-800 hover:border-amber-400'
                                 }`}
                                 title="Click to open candidate dossier"
                               >
-                                <UserIcon className="w-3 h-3 text-[#C99A68]" />
+                                <UserIcon className="w-3 h-3 text-amber-400" />
                                 <span>Candidate: <u>{msg.candidateName}</u></span>
                               </button>
                             )}
@@ -688,13 +701,13 @@ export const InternalChatModal: React.FC<InternalChatModalProps> = ({
                                   }
                                 }}
                                 className={`px-2 py-0.5 rounded-lg text-[10px] flex items-center gap-1 font-bold transition cursor-pointer ${
-                                  isOperationalImportant
-                                    ? 'bg-[#242424] text-sky-300 border border-[#3A3A3A] hover:bg-[#2F2F2F]'
-                                    : 'bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100'
+                                  isMine
+                                    ? 'bg-amber-600/30 text-slate-950 border border-amber-700/40 hover:bg-amber-600/50'
+                                    : 'bg-slate-900/90 border border-slate-700 text-sky-300 hover:bg-slate-800 hover:border-sky-400'
                                 }`}
                                 title="Click to view room context"
                               >
-                                <DoorOpen className="w-3 h-3 text-sky-500" />
+                                <DoorOpen className="w-3 h-3 text-sky-400" />
                                 <span>Room: <u>{msg.roomName}</u></span>
                               </button>
                             )}
@@ -706,18 +719,18 @@ export const InternalChatModal: React.FC<InternalChatModalProps> = ({
                         {/* Action Task Synchronized Badge */}
                         {/\b(bring|send|escort|ready|prepare|clean|water|refreshments)\b/i.test(msg.content) && (
                           <div className={`text-[9px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1 ${
-                            isOperationalImportant
-                              ? 'bg-[#242424] text-[#D6B28A] border border-[#3A3A3A]'
-                              : 'bg-[#FAF4ED] text-[#8C6033] border border-[#E4CCAF]'
+                            isMine
+                              ? 'bg-amber-600/30 text-slate-950 border border-amber-700/30'
+                              : 'bg-slate-950/60 text-amber-300 border border-amber-500/30'
                           }`}>
-                            <Sparkles className="w-2.5 h-2.5 text-[#C99A68]" />
+                            <Sparkles className="w-2.5 h-2.5 text-amber-400" />
                             <span>⚡ Dashboard Action Alert created & synchronized</span>
                           </div>
                         )}
 
                         {/* Delivery / Read confirmation status */}
-                        <div className={`flex items-center justify-between text-[9px] pt-1 border-t ${isOperationalImportant ? 'border-white/10 text-[#8A847D]' : 'border-[#EFE0CC]/70 text-[#77716B]'}`}>
-                          <span className="text-[#8C6033]">
+                        <div className="flex items-center justify-between text-[9px] opacity-75 pt-1 border-t border-black/10 dark:border-white/10">
+                          <span>
                             {new Date(msg.timestamp).toLocaleTimeString([], {
                               hour: '2-digit',
                               minute: '2-digit',
@@ -726,11 +739,11 @@ export const InternalChatModal: React.FC<InternalChatModalProps> = ({
                           {isMine && (
                             <span className="flex items-center gap-0.5">
                               {msg.readBy && msg.readBy.length > 1 ? (
-                                <span className="flex items-center gap-0.5 text-sky-700 font-semibold" title="Read by colleagues">
-                                  <CheckCheck className="w-3 h-3" /> Read
+                                <span className="flex items-center gap-0.5 text-sky-950 dark:text-sky-300 font-semibold" title="Read by colleagues">
+                                  <CheckCheck className="w-3 h-3 text-sky-900 dark:text-sky-300" /> Read
                                 </span>
                               ) : (
-                                <span className="flex items-center gap-0.5 text-[#77716B] font-medium" title="Delivered to office">
+                                <span className="flex items-center gap-0.5 text-slate-800 dark:text-slate-400 font-medium" title="Delivered to office">
                                   <CheckCircle2 className="w-3 h-3" /> Delivered
                                 </span>
                               )}
@@ -746,15 +759,15 @@ export const InternalChatModal: React.FC<InternalChatModalProps> = ({
             </div>
 
             {/* Quick Context Templates Bar */}
-            <div className="px-4 py-2 border-t border-[#EFE0CC] bg-white flex items-center gap-2 overflow-x-auto text-[11px]">
-              <span className="text-[#77716B] text-[10px] font-bold shrink-0 flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-[#C99A68]" />
+            <div className="px-4 py-2 border-t border-slate-800/60 bg-slate-950/60 flex items-center gap-2 overflow-x-auto text-[11px]">
+              <span className="text-slate-400 text-[10px] font-bold shrink-0 flex items-center gap-1">
+                <Sparkles className="w-3 h-3 text-amber-400" />
                 Quick Actions:
               </span>
               <button
                 type="button"
                 onClick={() => applyQuickTemplate('bring')}
-                className="px-2.5 py-1 rounded-lg bg-[#FAF9F6] hover:bg-[#FAF4ED] text-[#171717] hover:text-[#8C6033] border border-[#EFE0CC] hover:border-[#E4CCAF] text-[10px] font-medium whitespace-nowrap transition cursor-pointer flex items-center gap-1"
+                className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-amber-500/20 text-slate-300 hover:text-amber-300 border border-slate-800 hover:border-amber-500/40 text-[10px] font-medium whitespace-nowrap transition cursor-pointer flex items-center gap-1"
                 title="Send escort request to Reception Dashboard"
               >
                 <span>🚶 “Bring [Candidate] to [Room]”</span>
@@ -762,7 +775,7 @@ export const InternalChatModal: React.FC<InternalChatModalProps> = ({
               <button
                 type="button"
                 onClick={() => applyQuickTemplate('send')}
-                className="px-2.5 py-1 rounded-lg bg-[#FAF9F6] hover:bg-[#FAF4ED] text-[#171717] hover:text-[#8C6033] border border-[#EFE0CC] hover:border-[#E4CCAF] text-[10px] font-medium whitespace-nowrap transition cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-[10px] font-medium whitespace-nowrap transition cursor-pointer"
                 title="Send candidate escort instruction"
               >
                 <span>🚀 “Send [Candidate] to [Room]”</span>
@@ -770,7 +783,7 @@ export const InternalChatModal: React.FC<InternalChatModalProps> = ({
               <button
                 type="button"
                 onClick={() => applyQuickTemplate('ready')}
-                className="px-2.5 py-1 rounded-lg bg-[#FAF9F6] hover:bg-[#FAF4ED] text-[#171717] hover:text-[#8C6033] border border-[#EFE0CC] hover:border-[#E4CCAF] text-[10px] font-medium whitespace-nowrap transition cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-[10px] font-medium whitespace-nowrap transition cursor-pointer"
                 title="Candidate is ready alert"
               >
                 <span>🛎️ “Candidate is ready”</span>
@@ -778,7 +791,7 @@ export const InternalChatModal: React.FC<InternalChatModalProps> = ({
               <button
                 type="button"
                 onClick={() => applyQuickTemplate('prepare')}
-                className="px-2.5 py-1 rounded-lg bg-[#FAF9F6] hover:bg-[#FAF4ED] text-[#171717] hover:text-[#8C6033] border border-[#EFE0CC] hover:border-[#E4CCAF] text-[10px] font-medium whitespace-nowrap transition cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-[10px] font-medium whitespace-nowrap transition cursor-pointer"
                 title="Pantry room prep alert"
               >
                 <span>🚪 “Prepare [Room]”</span>
@@ -786,7 +799,7 @@ export const InternalChatModal: React.FC<InternalChatModalProps> = ({
               <button
                 type="button"
                 onClick={() => applyQuickTemplate('clean')}
-                className="px-2.5 py-1 rounded-lg bg-[#FAF9F6] hover:bg-[#FAF4ED] text-[#171717] hover:text-[#8C6033] border border-[#EFE0CC] hover:border-[#E4CCAF] text-[10px] font-medium whitespace-nowrap transition cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-[10px] font-medium whitespace-nowrap transition cursor-pointer"
                 title="Pantry clean & reset request"
               >
                 <span>🧹 Clean Room</span>
@@ -794,24 +807,24 @@ export const InternalChatModal: React.FC<InternalChatModalProps> = ({
               <button
                 type="button"
                 onClick={() => applyQuickTemplate('water')}
-                className="px-2.5 py-1 rounded-lg bg-[#FAF9F6] hover:bg-[#FAF4ED] text-[#171717] hover:text-[#8C6033] border border-[#EFE0CC] hover:border-[#E4CCAF] text-[10px] font-medium whitespace-nowrap transition cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-[10px] font-medium whitespace-nowrap transition cursor-pointer"
               >
                 <span>☕ Serve Refreshments</span>
               </button>
             </div>
 
             {/* Input & Form Area */}
-            <form onSubmit={handleSendMessage} className="p-3 sm:p-4 border-t border-[#EFE0CC] bg-white space-y-2">
+            <form onSubmit={handleSendMessage} className="p-3 sm:p-4 border-t border-slate-800 bg-slate-950/80 space-y-2">
               <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
                 {/* Candidate & Room Tags Selector Row */}
                 <div className="flex flex-wrap items-center gap-2">
                   {/* Candidate Tag Option */}
                   <div className="flex items-center gap-1.5">
-                    <Tag className="w-3.5 h-3.5 text-[#C99A68]" />
+                    <Tag className="w-3.5 h-3.5 text-amber-400" />
                     <select
                       value={selectedCandidateId}
                       onChange={(e) => setSelectedCandidateId(e.target.value)}
-                      className="px-2 py-1 bg-[#FAF9F6] border border-[#EFE0CC] rounded-lg text-[11px] text-[#171717] focus:outline-hidden focus:border-[#C99A68] max-w-[170px] truncate"
+                      className="px-2 py-1 bg-slate-900 border border-slate-800 rounded-lg text-[11px] text-slate-200 focus:outline-hidden focus:border-amber-400 max-w-[170px] truncate"
                     >
                       <option value="">Attach candidate (optional)</option>
                       {candidates.map((c) => (
@@ -824,11 +837,11 @@ export const InternalChatModal: React.FC<InternalChatModalProps> = ({
 
                   {/* Room Tag Option */}
                   <div className="flex items-center gap-1.5">
-                    <DoorOpen className="w-3.5 h-3.5 text-sky-600" />
+                    <DoorOpen className="w-3.5 h-3.5 text-sky-400" />
                     <select
                       value={selectedRoomId}
                       onChange={(e) => setSelectedRoomId(e.target.value)}
-                      className="px-2 py-1 bg-[#FAF9F6] border border-[#EFE0CC] rounded-lg text-[11px] text-[#171717] focus:outline-hidden focus:border-sky-500 max-w-[170px] truncate"
+                      className="px-2 py-1 bg-slate-900 border border-slate-800 rounded-lg text-[11px] text-slate-200 focus:outline-hidden focus:border-sky-400 max-w-[170px] truncate"
                     >
                       <option value="">Attach room (optional)</option>
                       {rooms.map((r) => (
@@ -846,11 +859,11 @@ export const InternalChatModal: React.FC<InternalChatModalProps> = ({
                   onClick={() => setIsPriority(!isPriority)}
                   className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition cursor-pointer flex items-center gap-1 ${
                     isPriority
-                      ? 'bg-rose-50 text-rose-700 border border-rose-200 shadow-2xs'
-                      : 'bg-[#FAF9F6] border border-[#EFE0CC] text-[#77716B] hover:text-[#171717]'
+                      ? 'bg-rose-500 text-white shadow-sm'
+                      : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-white'
                   }`}
                 >
-                  <AlertCircle className="w-3 h-3 text-rose-500" />
+                  <AlertCircle className="w-3 h-3" />
                   <span>{isPriority ? 'High Priority Alert' : 'Normal'}</span>
                 </button>
               </div>
@@ -864,26 +877,28 @@ export const InternalChatModal: React.FC<InternalChatModalProps> = ({
                   onChange={(e) => setMessageInput(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder={`Message ${activeChatType === 'channel' ? `#${activeChannel?.name || activeChannelId}` : activeRecipient?.name || 'staff member'}... (Enter = send, Shift+Enter = new line)`}
-                  className="flex-1 px-3.5 py-2.5 bg-[#FAF9F6] border border-[#E4CCAF] rounded-2xl text-xs text-[#171717] placeholder-[#8A847D] focus:outline-hidden focus:border-[#C99A68] resize-none"
+                  className="flex-1 px-3.5 py-2.5 bg-slate-900 border border-slate-800 rounded-2xl text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-amber-400 resize-none"
                 />
 
                 <button
                   type="submit"
                   disabled={!messageInput.trim() || sending}
-                  className="px-4 py-3 rounded-2xl bg-[#171717] hover:bg-[#282828] disabled:opacity-40 text-white font-bold transition shadow-xs cursor-pointer shrink-0 flex items-center justify-center active:scale-95"
+                  className="px-4 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 disabled:opacity-40 text-slate-950 font-bold transition shadow-lg shadow-amber-500/10 cursor-pointer shrink-0 flex items-center justify-center"
                   title="Send message"
                 >
                   {sending ? (
-                    <RefreshCw className="w-4 h-4 animate-spin text-[#C99A68]" />
+                    <RefreshCw className="w-4 h-4 animate-spin" />
                   ) : (
-                    <Send className="w-4 h-4 text-[#C99A68]" />
+                    <Send className="w-4 h-4" />
                   )}
                 </button>
               </div>
             </form>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
-  );
+  )}
+</AnimatePresence>
+);
 };

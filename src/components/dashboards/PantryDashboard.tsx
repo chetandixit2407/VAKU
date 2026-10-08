@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   Coffee,
   CheckCircle2,
@@ -16,8 +17,17 @@ import {
   CupSoda,
   CheckSquare,
   MessageSquare,
+  Check,
 } from 'lucide-react';
-import type { PantryTask, Room, Candidate, PantryTaskType, NotificationPriority, ActionTask } from '../../types/index.ts';
+import type {
+  PantryTask,
+  Room,
+  Candidate,
+  PantryTaskType,
+  NotificationPriority,
+  ActionTask,
+} from '../../types/index.ts';
+import { OperationsCommandHeader } from '../OperationsCommandHeader.tsx';
 
 interface PantryDashboardProps {
   tasks: PantryTask[];
@@ -50,7 +60,9 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
 
   // Filter real-time operational action alerts for Pantry
   const pantryActionTasks = actionTasks.filter(
-    (t) => (t.targetRole === 'PANTRY' || t.taskType === 'PREPARE_ROOM' || t.taskType === 'CLEAN_ROOM') && t.status !== 'DISMISSED'
+    (t) =>
+      (t.targetRole === 'PANTRY' || t.taskType === 'PREPARE_ROOM' || t.taskType === 'CLEAN_ROOM') &&
+      t.status !== 'DISMISSED'
   );
 
   // Assign Task Modal State
@@ -68,30 +80,23 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
   const [submittingTask, setSubmittingTask] = useState(false);
   const [assignError, setAssignError] = useState<string | null>(null);
 
-  // Filter active rooms from Room Management (Single Source of Truth)
   const activeRooms = rooms.filter((r) => r.isActive !== false);
 
-  // Operational rooms strictly exclude reserved Next Round cabins (Lalit Sir Cabin & Elegance Suite)
   const operationalRooms = activeRooms.filter(
     (r) =>
       r.id !== 'room-lalit-cabin' &&
       r.id !== 'room-kimmi-cabin' &&
-      r.roomId !== 'room-lalit-cabin' &&
-      r.roomId !== 'room-kimmi-cabin' &&
       r.name !== 'Lalit Sir Cabin' &&
       r.name !== 'Elegance Suite' &&
       !r.isReservedNextRound
   );
 
-  // Single authoritative source of truth for resolving current room names from Room records
   const resolveRoomName = (roomId?: string, fallbackName?: string, candidateId?: string): string => {
-    // 1. Primary lookup by stable roomId against Room Management
     if (roomId) {
       const matched = rooms.find((r) => r.id === roomId || r.roomId === roomId);
       if (matched) return matched.name;
     }
 
-    // 2. Candidate room assignment lookup if candidateId or candidate is found
     if (candidateId) {
       const cand = candidates.find((c) => c.id === candidateId);
       if (cand?.assignedRoomId) {
@@ -100,7 +105,6 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
       }
     }
 
-    // 3. Fallback name ONLY if it matches a valid current room in Room Management
     if (fallbackName && fallbackName.trim()) {
       const matchedByName = rooms.find((r) => r.name.toLowerCase() === fallbackName.trim().toLowerCase());
       if (matchedByName) return matchedByName.name;
@@ -118,15 +122,9 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
     return 'Room Not Assigned';
   };
 
-  const getTaskDescription = (task: PantryTask, resolvedRoomName: string) => {
-    if (!task.description) {
-      return `Hospitality preparation for ${resolvedRoomName}`;
-    }
-    let desc = task.description;
-    if (task.roomName && task.roomName !== resolvedRoomName && desc.includes(task.roomName)) {
-      desc = desc.split(task.roomName).join(resolvedRoomName);
-    }
-    const legacyDemoNames = ['Boardroom Alpha', 'Meeting Room 1', 'Meeting Room 2', 'Interview Pod A', 'Interview Pod B'];
+  const getTaskDescription = (task: PantryTask, resolvedRoomName: string): string => {
+    let desc = task.description || '';
+    const legacyDemoNames = ['Boardroom Alpha', 'Executive Pod 1', 'Conference Room B', 'Interview Room A'];
     legacyDemoNames.forEach((demo) => {
       if (desc.includes(demo)) {
         desc = desc.split(demo).join(resolvedRoomName);
@@ -135,7 +133,6 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
     return desc;
   };
 
-  // When room is selected in Assign Task modal, auto-detect candidate occupant if any
   const handleRoomSelectChange = (roomId: string) => {
     setSelectedRoomId(roomId);
     const room = rooms.find((r) => r.id === roomId || r.roomId === roomId);
@@ -179,7 +176,7 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
     const generatedDesc =
       taskDescription.trim() ||
       (selectedTaskType === 'WATER_BEVERAGE'
-        ? `Serve beverages and water in ${room?.name || 'room'}`
+        ? `Serve beverages and mineral water in ${room?.name || 'room'}`
         : selectedTaskType === 'ROOM_RESET'
         ? `Sanitize and reset ${room?.name || 'room'} for next session`
         : `Prepare hospitality setup in ${room?.name || 'room'}`);
@@ -206,7 +203,6 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
         throw new Error(data.error || 'Failed to create pantry task');
       }
 
-      // Reset modal state
       setShowAssignModal(false);
       setSelectedRoomId('');
       setTaskDescription('');
@@ -241,7 +237,6 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
     }
   };
 
-  // Get active candidates currently assigned to rooms for hospitality
   const roomAssignedCandidates = candidates.filter(
     (c) =>
       !c.isDeleted &&
@@ -251,18 +246,20 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
   );
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
-      {/* Steward Banner */}
-      <div className="p-6 bg-white/95 border border-[#EFE0CC] rounded-3xl shadow-[0_14px_45px_rgba(0,0,0,0.05)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div className="space-y-6">
+      {/* Hospitality Header */}
+      <div className="p-6 glass-panel rounded-3xl border border-white/8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <Coffee className="w-5 h-5 text-[#C99A68]" />
-            <h1 className="text-xl font-black text-[#111111] tracking-tight">
-              Pantry & Hospitality Operations
+            <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center justify-center">
+              <Coffee className="w-4 h-4" />
+            </div>
+            <h1 className="text-xl font-bold text-white tracking-tight">
+              Hospitality & Pantry Operations Desk
             </h1>
           </div>
-          <p className="text-xs text-[#77716B] mt-0.5">
-            Logged-in steward: <strong className="text-[#171717]">Suresh Kumar</strong> • Central Hospitality Station
+          <p className="text-xs text-slate-400 mt-1">
+            Dynamic room preparation, mineral water & beverage service, sanitization reset queue.
           </p>
         </div>
 
@@ -275,367 +272,211 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
               }
               setShowAssignModal(true);
             }}
-            className="px-4 py-2 bg-[#171717] hover:bg-[#24211E] text-white text-xs font-bold rounded-xl shadow-sm hover:border-[#C99A68] transition flex items-center gap-1.5 cursor-pointer"
+            className="px-3.5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs rounded-xl shadow-lg transition cursor-pointer flex items-center gap-1.5"
           >
-            <Plus className="w-4 h-4 text-[#C99A68]" />
-            <span>Assign Task</span>
+            <Plus className="w-3.5 h-3.5" />
+            <span>Create Hospitality Task</span>
           </button>
-          <span className="px-3 py-1.5 rounded-xl bg-[#FAF9F6] border border-[#EFE0CC] text-[#C99A68] text-xs font-semibold">
-            {pendingTasks.length} Active Tasks
-          </span>
-          <span className="px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold">
-            {completedTasks.length} Done Today
-          </span>
+          {onOpenChat && (
+            <button
+              onClick={onOpenChat}
+              className="px-3 py-2 bg-white/6 hover:bg-white/10 text-slate-200 text-xs font-semibold rounded-xl border border-white/8 transition flex items-center gap-1.5 cursor-pointer"
+            >
+              <MessageSquare className="w-3.5 h-3.5 text-amber-400" />
+              <span>Office Chat</span>
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Strict Information Rule Alert */}
-      <div className="p-3.5 bg-white/80 border border-[#EFE0CC] rounded-2xl flex items-center justify-between text-xs text-[#77716B]">
-        <div className="flex items-center gap-2">
-          <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-          <span>
-            <strong className="text-[#171717]">Confidentiality Enforced:</strong> Pantry display strictly contains{' '}
-            <strong className="text-[#C99A68]">WHAT, WHERE, and WHEN</strong>. Candidate resumes, contact details, and compensation remarks are suppressed.
-          </span>
-        </div>
-      </div>
-
-      {/* 🚨 PROMINENT REAL-TIME ACTION ALERTS & ROOM SERVICE TASKS */}
+      {/* Realtime Action Tasks Queue */}
       {pantryActionTasks.length > 0 && (
-        <div className="p-5 bg-white/95 border-2 border-[#C99A68]/40 rounded-3xl space-y-3 shadow-[0_14px_45px_rgba(0,0,0,0.05)] animate-in fade-in duration-300">
-          <div className="flex items-center justify-between gap-2 flex-wrap pb-2 border-b border-[#EFE0CC]">
-            <div className="flex items-center gap-2.5">
-              <span className="relative flex h-3.5 w-3.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#C99A68] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-[#C99A68]"></span>
-              </span>
-              <div>
-                <h2 className="text-sm font-black text-[#111111] tracking-wide uppercase flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4 text-[#C99A68]" />
-                  <span>Immediate Pantry Action Alerts ({pantryActionTasks.length})</span>
-                </h2>
-                <p className="text-[11px] text-[#77716B]">
-                  Room preparation, beverage service & cleaning requests synchronized in real time from Staff Chat.
-                </p>
-              </div>
-            </div>
-
-            {onOpenChat && (
-              <button
-                onClick={onOpenChat}
-                className="px-2.5 py-1 rounded-lg bg-[#FAF9F6] hover:bg-[#F8F6F2] text-[#171717] border border-[#EFE0CC] text-[11px] font-bold transition flex items-center gap-1 cursor-pointer"
-              >
-                <MessageSquare className="w-3.5 h-3.5 text-[#C99A68]" />
-                <span>Open Pantry Chat</span>
-              </button>
-            )}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-5 glass-panel-elevated rounded-3xl space-y-3 border border-amber-500/40 shadow-xl"
+        >
+          <div className="flex items-center justify-between pb-2 border-b border-white/8">
+            <h2 className="text-xs font-black text-amber-300 tracking-wide uppercase flex items-center gap-1.5 font-mono">
+              <Sparkles className="w-4 h-4 text-amber-400" />
+              <span>Urgent Service Requests ({pantryActionTasks.length})</span>
+            </h2>
+            <span className="text-[10px] text-slate-400">Live request channel</span>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5 pt-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
             {pantryActionTasks.map((task) => {
               const isPending = task.status === 'PENDING';
-              const isAcknowledged = task.status === 'ACKNOWLEDGED' || task.status === 'IN_PROGRESS';
-              const isCompleted = task.status === 'COMPLETED';
-              const resolvedRoom = task.destinationRoomName || task.roomName || 'Meeting Room';
+              const resolvedRoom = resolveRoomName(task.destinationRoomId || task.roomId, task.destinationRoomName);
 
               return (
                 <div
                   key={task.id}
-                  className={`p-4 rounded-2xl border transition shadow-sm relative flex flex-col justify-between ${
-                    isPending
-                      ? 'bg-white border-[#C99A68] ring-2 ring-[#C99A68]/20'
-                      : isAcknowledged
-                      ? 'bg-white border-sky-300 ring-1 ring-sky-200'
-                      : 'bg-[#FAF9F6] border-[#EFE0CC] opacity-80'
-                  }`}
+                  className="p-4 glass-panel rounded-2xl border border-amber-400/60 flex flex-col justify-between space-y-3"
                 >
-                  {/* Top Header: Sender, Time & Status */}
-                  <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-[#EFE0CC]">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg bg-[#FAF9F6] text-[#C99A68] flex items-center justify-center font-black text-xs border border-[#EFE0CC] shrink-0">
-                        <Coffee className="w-4 h-4" />
-                      </div>
-                      <div className="min-w-0">
-                        <div className="text-xs font-bold text-[#111111] truncate flex items-center gap-1.5">
-                          <span>Requested by: {task.senderName}</span>
-                          <span className="px-1.5 py-0.2 rounded text-[9px] font-semibold bg-[#FAF9F6] text-[#77716B] border border-[#EFE0CC]">
-                            {task.senderRole}
-                          </span>
-                        </div>
-                        <div className="text-[10px] text-[#8A847D] flex items-center gap-1">
-                          <Clock className="w-3 h-3 text-[#C99A68]" />
-                          <span>{new Date(task.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div>
-                      {isPending && (
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#C99A68]/15 text-[#171717] border border-[#C99A68]/40 flex items-center gap-1">
-                          <AlertCircle className="w-3 h-3 text-[#C99A68]" />
-                          ACTION REQUIRED
-                        </span>
-                      )}
-                      {isAcknowledged && (
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-sky-50 text-sky-800 border border-sky-200 flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3 text-sky-600" />
-                          IN PROGRESS
-                        </span>
-                      )}
-                      {isCompleted && (
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                          COMPLETED
-                        </span>
-                      )}
-                    </div>
+                  <div className="flex items-center justify-between text-xs pb-2 border-b border-white/8">
+                    <span className="font-bold text-white truncate">{task.title}</span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-300 font-mono">
+                      {task.status}
+                    </span>
                   </div>
 
-                  {/* Body Content */}
-                  <div className="py-3 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <DoorOpen className="w-4 h-4 text-[#C99A68] shrink-0" />
-                      <span className="text-xs sm:text-sm font-bold text-[#111111]">
-                        Room: <strong className="text-[#171717]">{resolvedRoom}</strong>
-                      </span>
-                    </div>
-
-                    {/* Dark Charcoal Inner Panel for Action */}
-                    <div className="p-3 rounded-xl bg-[#171717] text-white border border-[#24211E] space-y-1">
-                      <span className="text-[10px] font-bold text-[#D6B28A] uppercase tracking-wider block">
-                        Required Action
-                      </span>
-                      <p className="text-xs text-white font-medium leading-relaxed">
-                        {task.instruction || task.title || 'Prepare room for meeting'}
-                      </p>
-                    </div>
+                  <div className="space-y-1 text-xs">
+                    <span className="text-[11px] text-slate-400">Target Room:</span>
+                    <strong className="text-amber-400 block font-mono text-sm">{resolvedRoom}</strong>
+                    <p className="text-xs text-slate-200 mt-1">{task.instruction || 'Serve refreshments'}</p>
                   </div>
 
-                  {/* Actions Footer */}
-                  <div className="pt-2.5 border-t border-[#EFE0CC] flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      {isPending && (
-                        <button
-                          onClick={() => onAcknowledgeTask && onAcknowledgeTask(task.id)}
-                          className="px-3.5 py-1.5 rounded-xl bg-[#171717] hover:bg-[#24211E] text-white font-bold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-sm"
-                        >
-                          <CheckCircle2 className="w-3.5 h-3.5 text-[#C99A68]" />
-                          <span>ACKNOWLEDGE</span>
-                        </button>
-                      )}
-
-                      {!isCompleted && (
-                        <button
-                          onClick={() => {
-                            if (onCompleteActionTask) {
-                              onCompleteActionTask(task.id);
-                            } else if (onAcknowledgeTask) {
-                              onAcknowledgeTask(task.id);
-                            }
-                            if (task.roomId && onMarkRoomCleaned) {
-                              onMarkRoomCleaned(task.roomId);
-                            }
-                          }}
-                          className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-sm"
-                        >
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          <span>MARK COMPLETED</span>
-                        </button>
-                      )}
-
-                      {isCompleted && (
-                        <span className="text-[11px] text-emerald-700 font-semibold flex items-center gap-1">
-                          <CheckCircle2 className="w-3.5 h-3.5" /> Serviced at {task.completedAt ? new Date(task.completedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'recently'}
-                        </span>
-                      )}
-                    </div>
+                  <div className="pt-2 border-t border-white/8 flex justify-end gap-2">
+                    {isPending && onAcknowledgeTask && (
+                      <button
+                        onClick={() => onAcknowledgeTask(task.id)}
+                        className="px-3 py-1.5 bg-white/10 hover:bg-white/15 text-white font-semibold text-xs rounded-xl"
+                      >
+                        Acknowledge
+                      </button>
+                    )}
+                    <button
+                      onClick={() => {
+                        if (onCompleteActionTask) onCompleteActionTask(task.id);
+                        if (task.roomId && onMarkRoomCleaned) onMarkRoomCleaned(task.roomId);
+                      }}
+                      className="px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1 shadow"
+                    >
+                      <Check className="w-3.5 h-3.5 stroke-[3]" />
+                      <span>Mark Completed</span>
+                    </button>
                   </div>
                 </div>
               );
             })}
           </div>
-        </div>
+        </motion.div>
       )}
 
-      {/* Main Grid */}
+      {/* Main Hospitality Task Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left 2 Cols: Active Preparation & Reset Tasks */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Active Tasks Queue */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-base font-bold text-[#111111] flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#C99A68] animate-ping" />
-                Hospitality Tasks Queue ({pendingTasks.length})
-              </h2>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => {
-                    setAssignError(null);
-                    if (activeRooms.length > 0 && !selectedRoomId) {
-                      setSelectedRoomId(activeRooms[0].id);
-                    }
-                    setShowAssignModal(true);
-                  }}
-                  className="px-3 py-1.5 bg-[#FAF9F6] hover:bg-[#F8F6F2] text-[#171717] text-xs font-bold rounded-xl border border-[#EFE0CC] flex items-center gap-1 cursor-pointer transition"
-                >
-                  <Plus className="w-3.5 h-3.5 text-[#C99A68]" />
-                  <span>Assign Task</span>
-                </button>
-                <button
-                  onClick={onRefresh}
-                  className="text-xs text-[#77716B] hover:text-[#171717] flex items-center gap-1 cursor-pointer p-1.5"
-                >
-                  <RefreshCw className="w-3.5 h-3.5 text-[#C99A68]" />
-                  <span>Sync</span>
-                </button>
-              </div>
-            </div>
-
-            {pendingTasks.length === 0 ? (
-              <div className="p-10 text-center bg-white/90 border border-[#EFE0CC] rounded-3xl shadow-[0_10px_35px_rgba(0,0,0,0.03)] space-y-2">
-                <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto" />
-                <h3 className="text-sm font-bold text-[#111111]">All rooms prepped & serviced</h3>
-                <p className="text-xs text-[#77716B] max-w-sm mx-auto">
-                  Hospitality tasks are generated dynamically when HR assigns candidates to rooms, or you can manually assign a task using the "Assign Task" button.
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {pendingTasks.map((task) => {
-                  const resolvedName = resolveRoomName(task.roomId, task.roomName, task.candidateId);
-                  const displayDesc = getTaskDescription(task, resolvedName);
-
-                  return (
-                    <div
-                      key={task.id}
-                      className="p-5 bg-white/95 border border-[#EFE0CC] hover:border-[#C99A68] rounded-2xl shadow-[0_10px_35px_rgba(0,0,0,0.04)] space-y-3.5 transition"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-11 h-11 rounded-2xl bg-[#FAF9F6] border border-[#EFE0CC] flex items-center justify-center text-[#C99A68]">
-                            {task.taskType === 'ROOM_RESET' ? (
-                              <RefreshCw className="w-5 h-5" />
-                            ) : task.taskType === 'WATER_BEVERAGE' ? (
-                              <CupSoda className="w-5 h-5" />
-                            ) : (
-                              <Droplet className="w-5 h-5" />
-                            )}
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-[10px] uppercase font-bold text-[#C99A68] tracking-wider">
-                                {task.taskType === 'ROOM_RESET'
-                                  ? 'Sanitization Reset'
-                                  : task.taskType === 'WATER_BEVERAGE'
-                                  ? 'Beverage Delivery'
-                                  : 'Hospitality Setup'}
-                              </span>
-                              <span className="text-[10px] text-[#8A847D]">•</span>
-                              <span className="text-[11px] text-[#77716B] font-mono">
-                                {new Date(task.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                              </span>
-                            </div>
-                            <h3 className="text-lg font-black text-[#111111]">{resolvedName}</h3>
-                            {task.candidateName && (
-                              <p className="text-xs text-[#77716B] font-medium">
-                                For: <strong className="text-[#171717]">{task.candidateName}</strong>
-                              </p>
-                            )}
-                          </div>
-                        </div>
-
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#FAF9F6] text-[#C99A68] border border-[#EFE0CC]">
-                          Pending Action
-                        </span>
-                      </div>
-
-                      <p className="text-xs text-[#77716B]">{displayDesc}</p>
-
-                      {/* Checklist of required items */}
-                      <div className="p-3 bg-[#FAF9F6] border border-[#EFE0CC] rounded-xl space-y-1.5 text-xs">
-                        <span className="text-[10px] font-bold text-[#77716B] uppercase tracking-wider block">
-                          Required Hospitality Checklist:
-                        </span>
-                        <ul className="space-y-1 text-[#171717] pl-4 list-disc text-[11px]">
-                          {task.requiredItems?.map((item, idx) => (
-                            <li key={idx}>{item}</li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      {/* Complete Action Button */}
-                      <div className="pt-2 flex justify-end">
-                        <button
-                          onClick={() => onCompleteTask(task.id)}
-                          className="w-full sm:w-auto px-6 py-2.5 bg-[#171717] hover:bg-[#24211E] text-white font-bold text-xs rounded-xl shadow-sm hover:border-[#C99A68] transition cursor-pointer flex items-center justify-center gap-2"
-                        >
-                          <CheckCircle2 className="w-4 h-4 text-[#C99A68]" />
-                          <span>
-                            {task.taskType === 'ROOM_RESET'
-                              ? 'Mark Cleaned & Ready (Make Available)'
-                              : 'Confirm Ready & Mark Completed'}
-                          </span>
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+        {/* Left 2 Cols: Task Queue */}
+        <div className="lg:col-span-2 space-y-4">
+          <div className="flex items-center justify-between pb-1 border-b border-white/6">
+            <h2 className="text-base font-bold text-white flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+              <span>Hospitality Task Queue ({pendingTasks.length})</span>
+            </h2>
+            <button
+              onClick={onRefresh}
+              className="text-xs text-slate-400 hover:text-amber-400 flex items-center gap-1 cursor-pointer"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Sync</span>
+            </button>
           </div>
 
-          {/* Real-time Candidate Room Allocation Live Status */}
-          {roomAssignedCandidates.length > 0 && (
-            <div className="space-y-3 pt-2">
-              <h3 className="text-sm font-bold text-[#111111] flex items-center gap-2">
-                <Users className="w-4 h-4 text-[#C99A68]" />
-                Active Candidates In Assigned Rooms ({roomAssignedCandidates.length})
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {roomAssignedCandidates.map((cand) => {
-                  const assignedRoom = rooms.find(
-                    (r) =>
-                      r.currentCandidateId === cand.id ||
-                      (cand.assignedRoomId && (r.id === cand.assignedRoomId || r.roomId === cand.assignedRoomId))
-                  );
+          {pendingTasks.length === 0 ? (
+            <div className="p-12 text-center glass-panel-subtle rounded-3xl space-y-2 border border-white/6">
+              <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" />
+              <h3 className="text-sm font-bold text-white">All meeting cabins prepped & sanitized</h3>
+              <p className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
+                Hospitality tasks generate automatically when HR assigns candidates to cabins.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3.5">
+              {pendingTasks.map((task) => {
+                const resolvedName = resolveRoomName(task.roomId, task.roomName, task.candidateId);
+                const displayDesc = getTaskDescription(task, resolvedName);
 
-                  const displayRoomName = assignedRoom
-                    ? assignedRoom.name
-                    : resolveRoomName(cand.assignedRoomId, cand.currentLocation);
+                return (
+                  <motion.div
+                    key={task.id}
+                    whileHover={{ y: -2 }}
+                    className="p-5 glass-panel rounded-2xl border border-amber-500/40 hover:border-amber-400 shadow-xl space-y-3.5 transition"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                          {task.taskType === 'ROOM_RESET' ? (
+                            <RefreshCw className="w-5 h-5" />
+                          ) : task.taskType === 'WATER_BEVERAGE' ? (
+                            <CupSoda className="w-5 h-5" />
+                          ) : (
+                            <Coffee className="w-5 h-5" />
+                          )}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] uppercase font-bold text-amber-400 tracking-wider font-mono">
+                              {task.taskType === 'ROOM_RESET'
+                                ? 'Sanitization Reset'
+                                : task.taskType === 'WATER_BEVERAGE'
+                                ? 'Beverage Delivery'
+                                : 'Hospitality Setup'}
+                            </span>
+                            <span className="text-slate-600">&bull;</span>
+                            <span className="text-[11px] text-slate-400 font-mono">
+                              {new Date(task.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                          <h3 className="text-lg font-bold text-white tracking-tight">{resolvedName}</h3>
+                          {task.candidateName && (
+                            <p className="text-xs text-slate-300 font-medium">
+                              For: <strong className="text-amber-400">{task.candidateName}</strong>
+                            </p>
+                          )}
+                        </div>
+                      </div>
 
-                  return (
-                    <div
-                      key={cand.id}
-                      className="p-3.5 bg-white/95 border border-[#EFE0CC] rounded-2xl flex items-center justify-between text-xs shadow-sm"
-                    >
-                      <div className="space-y-0.5">
-                        <h4 className="font-bold text-[#111111]">{cand.fullName}</h4>
-                        <span className="text-[10px] text-[#77716B]">{cand.position}</span>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-[10px] text-[#77716B] block">Assigned Room:</span>
-                        <span className="font-bold text-[#171717] text-xs flex items-center gap-1 justify-end">
-                          <DoorOpen className="w-3.5 h-3.5 text-[#C99A68]" />
-                          {displayRoomName}
-                        </span>
-                      </div>
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 font-mono animate-pulse">
+                        Pending Action
+                      </span>
                     </div>
-                  );
-                })}
-              </div>
+
+                    <p className="text-xs text-slate-200">{displayDesc}</p>
+
+                    {/* Checklist of required items */}
+                    <div className="p-3 bg-black/40 border border-white/6 rounded-xl space-y-1.5 text-xs">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block font-mono">
+                        Hospitality Checklist:
+                      </span>
+                      <ul className="space-y-1 text-slate-300 pl-4 list-disc text-[11px]">
+                        {task.requiredItems?.map((item, idx) => (
+                          <li key={idx}>{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Complete Action Button */}
+                    <div className="pt-2 flex justify-end">
+                      <button
+                        onClick={() => onCompleteTask(task.id)}
+                        className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-black text-xs rounded-xl shadow-lg transition cursor-pointer flex items-center justify-center gap-2"
+                      >
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>
+                          {task.taskType === 'ROOM_RESET'
+                            ? 'Mark Cleaned & Available'
+                            : 'Confirm Ready & Mark Completed'}
+                        </span>
+                      </button>
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
           )}
         </div>
 
-        {/* Right Col: Office Rooms Live Status Grid */}
+        {/* Right Col: Live Rooms Status Grid */}
         <div className="space-y-4">
-          <h2 className="text-base font-bold text-[#111111] flex items-center gap-2">
-            <DoorOpen className="w-4 h-4 text-[#C99A68]" />
-            Office Meeting Rooms & Pods
-          </h2>
+          <div className="pb-1 border-b border-white/6">
+            <h2 className="text-base font-bold text-white flex items-center gap-2">
+              <DoorOpen className="w-4 h-4 text-amber-400" />
+              Office Cabins & Pods
+            </h2>
+            <p className="text-xs text-slate-400 mt-0.5">Real-time room occupancy and cleanliness.</p>
+          </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             {operationalRooms.map((room) => {
               const isAvailable = room.status === 'AVAILABLE';
               const isAssigned = room.status === 'ASSIGNED';
@@ -645,50 +486,44 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
               return (
                 <div
                   key={room.id}
-                  className="p-3.5 bg-white/95 border border-[#EFE0CC] rounded-2xl flex items-center justify-between text-xs shadow-sm"
+                  className="p-3.5 glass-panel rounded-2xl flex items-center justify-between text-xs border border-white/8"
                 >
                   <div className="space-y-0.5">
-                    <h4 className="font-bold text-[#111111]">{room.name}</h4>
+                    <h4 className="font-bold text-white">{room.name}</h4>
                     {room.currentCandidateName ? (
-                      <p className="text-[11px] text-[#C99A68] font-semibold">
+                      <p className="text-[11px] text-amber-400 font-semibold truncate max-w-[140px]">
                         Occupant: {room.currentCandidateName}
                       </p>
                     ) : (
-                      <p className="text-[10px] text-[#77716B] uppercase tracking-wider">
+                      <p className="text-[10px] text-slate-400 uppercase tracking-wider">
                         {room.type?.replace('_', ' ') || 'Room'}
-                      </p>
-                    )}
-                    {room.lastCleanedAt && !isCleaning && (
-                      <p className="text-[9px] text-[#8A847D]">
-                        Cleaned: {new Date(room.lastCleanedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </p>
                     )}
                   </div>
                   <div className="flex items-center gap-2">
                     <span
-                      className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                      className={`px-2.5 py-1 rounded-full text-[10px] font-bold font-mono ${
                         isAvailable
-                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                          ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
                           : isAssigned
-                          ? 'bg-[#FAF9F6] text-[#C99A68] border border-[#EFE0CC]'
+                          ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
                           : isCleaning
-                          ? 'bg-amber-50 text-amber-800 border border-amber-200 animate-pulse'
+                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse'
                           : isOccupied
-                          ? 'bg-[#FAF9F6] text-[#171717] border border-[#C99A68]/40'
-                          : 'bg-rose-50 text-rose-700 border border-rose-200'
+                          ? 'bg-blue-500/15 text-blue-400 border border-blue-500/30'
+                          : 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
                       }`}
                     >
-                      {isCleaning ? 'Cleaning / Reset' : room.status}
+                      {isCleaning ? 'Cleaning' : room.status}
                     </span>
                     {isCleaning && (
                       <button
                         onClick={() => handleMarkCleaned(room.id)}
                         disabled={markingRoomId === room.id}
-                        className="px-2.5 py-1 bg-[#171717] hover:bg-[#24211E] text-white font-bold text-[10px] rounded-lg shadow-sm transition flex items-center gap-1 cursor-pointer disabled:opacity-50"
-                        title="Mark room cleaned and make it available"
+                        className="px-2.5 py-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-[10px] rounded-lg shadow-sm transition flex items-center gap-1 cursor-pointer disabled:opacity-50"
                       >
-                        <CheckCircle2 className="w-3 h-3 text-[#C99A68]" />
-                        <span>{markingRoomId === room.id ? 'Marking...' : 'Ready'}</span>
+                        <CheckCircle2 className="w-3 h-3" />
+                        <span>{markingRoomId === room.id ? '...' : 'Ready'}</span>
                       </button>
                     )}
                   </div>
@@ -699,9 +534,9 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
 
           {/* Completed History Today */}
           {completedTasks.length > 0 && (
-            <div className="space-y-2 pt-4 border-t border-[#EFE0CC]">
-              <h3 className="text-xs font-bold text-[#77716B] uppercase tracking-wider">
-                Completed Hospitality Logs ({completedTasks.length})
+            <div className="space-y-2 pt-4 border-t border-white/8">
+              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono">
+                Completed Serviced Logs ({completedTasks.length})
               </h3>
               <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
                 {completedTasks.map((t) => {
@@ -709,10 +544,10 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
                   return (
                     <div
                       key={t.id}
-                      className="p-2.5 bg-[#FAF9F6] border border-[#EFE0CC] rounded-xl flex items-center justify-between text-[11px] text-[#77716B]"
+                      className="p-2.5 glass-panel-subtle rounded-xl flex items-center justify-between text-[11px] text-slate-400 border border-white/6"
                     >
-                      <span className="font-medium text-[#171717]">{resolvedName}</span>
-                      <span className="text-emerald-700 font-semibold flex items-center gap-1">
+                      <span className="font-medium text-slate-300">{resolvedName}</span>
+                      <span className="text-emerald-400 font-semibold flex items-center gap-1">
                         <CheckCircle2 className="w-3 h-3" /> Done
                       </span>
                     </div>
@@ -724,233 +559,137 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
         </div>
       </div>
 
-      {/* ASSIGN TASK MODAL (DYNAMIC ROOM MANAGEMENT SOURCE OF TRUTH) */}
+      {/* ASSIGN TASK MODAL */}
       {showAssignModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white/98 border border-[#EFE0CC] rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-[0_24px_60px_rgba(0,0,0,0.12)] space-y-5 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-4 border-b border-[#EFE0CC]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+          <div className="glass-panel-elevated rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-5 border border-white/12 max-h-[90vh] overflow-y-auto text-slate-100">
+            <div className="flex items-center justify-between pb-4 border-b border-white/8">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-[#FAF9F6] border border-[#EFE0CC] flex items-center justify-center text-[#C99A68]">
+                <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
                   <Coffee className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-black text-[#111111]">Pantry → Assign Task</h3>
-                  <p className="text-xs text-[#77716B]">
-                    Direct dynamic room sync from Room Management
+                  <h3 className="text-lg font-bold text-white">Create Hospitality Task</h3>
+                  <p className="text-xs text-slate-400">
+                    Assign beverage or sanitization prep for meetings
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setShowAssignModal(false)}
-                className="w-8 h-8 rounded-full bg-[#FAF9F6] hover:bg-[#F8F6F2] text-[#77716B] hover:text-[#111111] flex items-center justify-center transition cursor-pointer"
+                className="w-8 h-8 rounded-full bg-white/6 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center transition cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {assignError && (
-              <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-2 text-xs text-rose-700">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>{assignError}</span>
+              <div className="p-3 bg-rose-950/40 border border-rose-500/40 rounded-xl text-xs text-rose-300">
+                {assignError}
               </div>
             )}
 
-            <form onSubmit={handleCreateTask} className="space-y-4">
-              {/* Room Selection Dropdown (Single Source of Truth) */}
+            <form onSubmit={handleCreateTask} className="space-y-4 text-xs">
               <div>
-                <label className="block text-xs font-bold text-[#171717] uppercase tracking-wider mb-2">
-                  Select Room (From Room Management) <span className="text-[#C99A68]">*</span>
-                </label>
-                <div className="relative">
-                  <select
-                    value={selectedRoomId}
-                    onChange={(e) => handleRoomSelectChange(e.target.value)}
-                    required
-                    className="w-full bg-[#FAF9F6] border border-[#EFE0CC] rounded-xl px-4 py-3 text-sm text-[#111111] font-medium focus:border-[#C99A68] focus:outline-none appearance-none cursor-pointer"
-                  >
-                    {activeRooms.length === 0 ? (
-                      <option value="">No rooms configured in Room Management</option>
-                    ) : (
-                      activeRooms.map((r) => (
-                        <option key={r.id} value={r.id}>
-                          {r.name} {r.currentCandidateName ? `(Occupied: ${r.currentCandidateName})` : `(${r.status})`}
-                        </option>
-                      ))
-                    )}
-                  </select>
-                  <DoorOpen className="w-4 h-4 text-[#77716B] absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                </div>
-                <p className="text-[11px] text-[#77716B] mt-1">
-                  Rooms are retrieved dynamically from centralized Room Management.
-                </p>
+                <label className="block text-slate-300 font-semibold mb-1">Select Cabin / Room</label>
+                <select
+                  value={selectedRoomId}
+                  onChange={(e) => handleRoomSelectChange(e.target.value)}
+                  className="w-full p-2.5 glass-input rounded-xl text-white text-xs"
+                  required
+                >
+                  <option value="" disabled className="bg-slate-900">Choose meeting room...</option>
+                  {operationalRooms.map((r) => (
+                    <option key={r.id} value={r.id} className="bg-slate-900 text-white">
+                      {r.name} ({r.status})
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              {/* Task Type */}
               <div>
-                <label className="block text-xs font-bold text-[#171717] uppercase tracking-wider mb-2">
-                  Hospitality Task Type
-                </label>
+                <label className="block text-slate-300 font-semibold mb-1">Service Type</label>
                 <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { type: 'WATER_BEVERAGE' as PantryTaskType, label: 'Water & Tea', icon: CupSoda },
-                    { type: 'ROOM_PREP' as PantryTaskType, label: 'Room Setup', icon: Droplet },
-                    { type: 'ROOM_RESET' as PantryTaskType, label: 'Reset & Clean', icon: RefreshCw },
-                  ].map((t) => {
-                    const Icon = t.icon;
-                    const isSelected = selectedTaskType === t.type;
-                    return (
-                      <button
-                        type="button"
-                        key={t.type}
-                        onClick={() => setSelectedTaskType(t.type)}
-                        className={`p-3 rounded-xl border text-left transition cursor-pointer flex flex-col items-center justify-center gap-1.5 ${
-                          isSelected
-                            ? 'bg-[#FAF9F6] border-[#C99A68] text-[#111111] font-bold shadow-xs'
-                            : 'bg-white border-[#EFE0CC] text-[#77716B] hover:border-[#C99A68]/50'
-                        }`}
-                      >
-                        <Icon className="w-4 h-4 text-[#C99A68]" />
-                        <span className="text-xs">{t.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Candidate Name / Occupant (Optional) */}
-              <div>
-                <label className="block text-xs font-bold text-[#171717] uppercase tracking-wider mb-2">
-                  Candidate / Occupant Name (Optional)
-                </label>
-                <input
-                  type="text"
-                  value={taskCandidateName}
-                  onChange={(e) => setTaskCandidateName(e.target.value)}
-                  placeholder="e.g. Rahul Sharma"
-                  className="w-full bg-[#FAF9F6] border border-[#EFE0CC] rounded-xl px-4 py-2.5 text-sm text-[#111111] focus:border-[#C99A68] focus:outline-none"
-                />
-              </div>
-
-              {/* Checklist Items */}
-              <div>
-                <label className="block text-xs font-bold text-[#171717] uppercase tracking-wider mb-2">
-                  Checklist Items
-                </label>
-                <div className="space-y-2 mb-2">
-                  {[
-                    '2x Bottled Mineral Water',
-                    'Sanitized Glassware & Coasters',
-                    'Hot Coffee / Masala Tea Service',
-                    'Fresh Whiteboard Marker & Duster',
-                    'Stationery & Notepad Set',
-                  ].map((item) => {
-                    const isChecked = selectedItems.includes(item);
-                    return (
-                      <label
-                        key={item}
-                        onClick={() => handleToggleItem(item)}
-                        className={`flex items-center gap-2.5 p-2.5 rounded-xl border text-xs cursor-pointer select-none transition ${
-                          isChecked
-                            ? 'bg-[#FAF9F6] border-[#C99A68] text-[#171717]'
-                            : 'bg-white border-[#EFE0CC] text-[#77716B] hover:border-[#C99A68]/50'
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={isChecked}
-                          onChange={() => {}}
-                          className="accent-[#C99A68] rounded cursor-pointer"
-                        />
-                        <span>{item}</span>
-                      </label>
-                    );
-                  })}
-                </div>
-
-                {/* Add Custom Item */}
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={customItemInput}
-                    onChange={(e) => setCustomItemInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        handleAddCustomItem();
-                      }
-                    }}
-                    placeholder="Add custom hospitality item..."
-                    className="flex-1 bg-[#FAF9F6] border border-[#EFE0CC] rounded-xl px-3 py-2 text-xs text-[#111111] focus:border-[#C99A68] focus:outline-none"
-                  />
                   <button
                     type="button"
-                    onClick={handleAddCustomItem}
-                    className="px-3 py-2 bg-[#171717] hover:bg-[#24211E] text-white rounded-xl text-xs font-bold cursor-pointer transition"
+                    onClick={() => setSelectedTaskType('WATER_BEVERAGE')}
+                    className={`p-2.5 rounded-xl border text-center transition cursor-pointer ${
+                      selectedTaskType === 'WATER_BEVERAGE'
+                        ? 'bg-amber-500 text-slate-950 font-bold border-amber-400'
+                        : 'glass-input hover:bg-white/5'
+                    }`}
                   >
-                    Add
+                    Water & Beverage
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedTaskType('ROOM_RESET')}
+                    className={`p-2.5 rounded-xl border text-center transition cursor-pointer ${
+                      selectedTaskType === 'ROOM_RESET'
+                        ? 'bg-amber-500 text-slate-950 font-bold border-amber-400'
+                        : 'glass-input hover:bg-white/5'
+                    }`}
+                  >
+                    Sanitization
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedTaskType('CLEANING')}
+                    className={`p-2.5 rounded-xl border text-center transition cursor-pointer ${
+                      selectedTaskType === 'CLEANING'
+                        ? 'bg-amber-500 text-slate-950 font-bold border-amber-400'
+                        : 'glass-input hover:bg-white/5'
+                    }`}
+                  >
+                    Cabin Prep
                   </button>
                 </div>
               </div>
 
-              {/* Additional Remarks */}
               <div>
-                <label className="block text-xs font-bold text-[#171717] uppercase tracking-wider mb-2">
-                  Task Note / Special Instructions (Optional)
-                </label>
+                <label className="block text-slate-300 font-semibold mb-1">Candidate / Guest Name</label>
                 <input
                   type="text"
-                  value={taskDescription}
-                  onChange={(e) => setTaskDescription(e.target.value)}
-                  placeholder="e.g. VIP guest, serve immediately"
-                  className="w-full bg-[#FAF9F6] border border-[#EFE0CC] rounded-xl px-4 py-2.5 text-sm text-[#111111] focus:border-[#C99A68] focus:outline-none"
+                  value={taskCandidateName}
+                  onChange={(e) => setTaskCandidateName(e.target.value)}
+                  placeholder="e.g. Amit Trivedi (Optional)"
+                  className="w-full p-2.5 glass-input rounded-xl text-white text-xs"
                 />
               </div>
 
-              {/* Priority */}
               <div>
-                <label className="block text-xs font-bold text-[#171717] uppercase tracking-wider mb-2">
-                  Priority
-                </label>
-                <div className="flex gap-2">
-                  {(['NORMAL', 'HIGH', 'CRITICAL'] as NotificationPriority[]).map((p) => (
-                    <button
-                      type="button"
-                      key={p}
-                      onClick={() => setTaskPriority(p)}
-                      className={`flex-1 py-2 rounded-xl text-xs font-bold uppercase transition cursor-pointer border ${
-                        taskPriority === p
-                          ? p === 'CRITICAL'
-                            ? 'bg-rose-50 border-rose-300 text-rose-700'
-                            : 'bg-[#FAF9F6] border-[#C99A68] text-[#111111]'
-                          : 'bg-white border-[#EFE0CC] text-[#77716B]'
-                      }`}
-                    >
-                      {p}
-                    </button>
-                  ))}
+                <label className="block text-slate-300 font-semibold mb-1">Items Checklist</label>
+                <div className="space-y-1.5 p-3 glass-panel-subtle rounded-xl border border-white/6">
+                  {['2x Bottled Mineral Water', 'Sanitized Glassware & Coasters', 'Premium Green Tea / Coffee', 'Notebook & Executive Pen'].map(
+                    (item) => (
+                      <label key={item} className="flex items-center gap-2 cursor-pointer text-slate-300 text-xs">
+                        <input
+                          type="checkbox"
+                          checked={selectedItems.includes(item)}
+                          onChange={() => handleToggleItem(item)}
+                          className="rounded border-slate-700 text-amber-500 focus:ring-amber-400"
+                        />
+                        <span>{item}</span>
+                      </label>
+                    )
+                  )}
                 </div>
               </div>
 
-              {/* Submit Buttons */}
-              <div className="pt-3 flex gap-3">
+              <div className="flex justify-end gap-2 pt-2 border-t border-white/8">
                 <button
                   type="button"
                   onClick={() => setShowAssignModal(false)}
-                  className="flex-1 px-4 py-3 bg-[#FAF9F6] hover:bg-[#F8F6F2] text-[#171717] font-bold text-xs rounded-xl border border-[#EFE0CC] transition cursor-pointer"
+                  className="px-4 py-2 bg-white/6 hover:bg-white/10 text-slate-300 text-xs rounded-xl"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  disabled={submittingTask || activeRooms.length === 0}
-                  className="flex-1 px-4 py-3 bg-[#171717] hover:bg-[#24211E] disabled:opacity-50 text-white font-black text-xs rounded-xl shadow-md transition cursor-pointer flex items-center justify-center gap-2"
+                  disabled={submittingTask}
+                  className="px-5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl shadow"
                 >
-                  {submittingTask ? (
-                    <RefreshCw className="w-4 h-4 animate-spin text-[#C99A68]" />
-                  ) : (
-                    <Coffee className="w-4 h-4 text-[#C99A68]" />
-                  )}
-                  <span>Dispatch Task</span>
+                  {submittingTask ? 'Creating...' : 'Dispatch Task'}
                 </button>
               </div>
             </form>

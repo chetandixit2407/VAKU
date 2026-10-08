@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import type {
   UserRole,
   Candidate,
@@ -12,7 +13,18 @@ import type {
   ActionTask,
 } from './types/index.ts';
 import { useRealtimeEvents } from './hooks/useRealtimeEvents.ts';
-import { Navbar } from './components/Navbar.tsx';
+import { SidebarNav, type NavSection } from './components/SidebarNav.tsx';
+import { TopHeader } from './components/TopHeader.tsx';
+import { MobileNavigation } from './components/MobileNavigation.tsx';
+import { CinematicBackground, type CinematicVariant } from './components/CinematicBackground.tsx';
+import { CinematicVideoBackground } from './components/CinematicVideoBackground.tsx';
+import { OperationsCommandHeader } from './components/OperationsCommandHeader.tsx';
+import {
+  VisitorArrivalTimeline,
+  VisitorJourneyOverview,
+  computeArrivalStage,
+  type ArrivalStage,
+} from './components/VisitorArrivalTimeline.tsx';
 import { OfflineIndicator } from './components/OfflineIndicator.tsx';
 import { NotificationDrawer } from './components/NotificationDrawer.tsx';
 import { CandidateCheckInForm } from './components/CandidateCheckInForm.tsx';
@@ -28,6 +40,7 @@ import { ResetPasswordView } from './components/ResetPasswordView.tsx';
 import { InternalChatModal } from './components/InternalChatModal.tsx';
 import {
   authenticatedFetch,
+  safeJson,
   setStoredStaffToken,
   clearStoredStaffToken,
   setStoredStaffRole,
@@ -41,14 +54,6 @@ import { InterviewerDashboard } from './components/dashboards/InterviewerDashboa
 import { SeniorHRDashboard } from './components/dashboards/SeniorHRDashboard.tsx';
 import { ReceptionDashboard } from './components/dashboards/ReceptionDashboard.tsx';
 import { PantryDashboard } from './components/dashboards/PantryDashboard.tsx';
-import {
-  WCRAnimatedBackground,
-  WCRLivePulse,
-  WCRCommandPalette,
-  WCRBottomNavigation,
-  WCRGlassCard,
-} from './components/design-system/index.ts';
-import type { MobileNavTab } from './components/design-system/index.ts';
 
 import {
   Sparkles,
@@ -80,10 +85,6 @@ export default function App() {
     timestamp: string;
   } | null>(null);
 
-  // Command Palette & Mobile Navigation States
-  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);
-  const [mobileActiveTab, setMobileActiveTab] = useState<MobileNavTab>('home');
-
   // Application Data States
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [interviews, setInterviews] = useState<Interview[]>([]);
@@ -110,6 +111,11 @@ export default function App() {
   const [selectedCandidateId, setSelectedCandidateId] = useState<string>('');
   const [selectedInterview, setSelectedInterview] = useState<Interview | null>(null);
   const [checkInToken, setCheckInToken] = useState<string>('WCR-APPT-901');
+
+  // Active Navigation & Cinematic Stage Filter States
+  const [activeSection, setActiveSection] = useState<NavSection>('dashboard');
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState<boolean>(false);
+  const [filterStage, setFilterStage] = useState<ArrivalStage | null>(null);
 
   // Staff Login State
   const [loginEmail, setLoginEmail] = useState<string>('nisha@whitecollarrealty.com');
@@ -162,7 +168,7 @@ export default function App() {
   useEffect(() => {
     if (currentUser?.id) {
       authenticatedFetch(`/api/chat/unread?userId=${currentUser.id}`)
-        .then((r) => r.json())
+        .then((r) => safeJson(r, { success: false, total: 0 }))
         .then((d) => {
           if (d.success && typeof d.total === 'number') {
             setUnreadChatCount(d.total);
@@ -175,7 +181,7 @@ export default function App() {
   // Initialize Authenticated Staff Session from backend on mount
   useEffect(() => {
     authenticatedFetch('/api/auth/me')
-      .then((r) => r.json())
+      .then((r) => safeJson(r, { success: false, authenticated: false }))
       .then((data) => {
         if (data.success && data.authenticated && data.user) {
           setCurrentUser(data.user);
@@ -194,7 +200,7 @@ export default function App() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ role: 'HR' }),
           })
-            .then((r) => r.json())
+            .then((r) => safeJson(r, { success: false }))
             .then((sData) => {
               if (sData.success) {
                 setCurrentUser(sData.user);
@@ -297,13 +303,13 @@ export default function App() {
       ]);
 
       const [cData, iData, rData, nData, pData, vData, aData] = await Promise.all([
-        cRes.json(),
-        iRes.json(),
-        rRes.json(),
-        nRes.json(),
-        pRes.json(),
-        vRes.json(),
-        aRes.json(),
+        safeJson(cRes, { success: false, candidates: [] }),
+        safeJson(iRes, { success: false, interviews: [] }),
+        safeJson(rRes, { success: false, rooms: [] }),
+        safeJson(nRes, { success: false, notifications: [] }),
+        safeJson(pRes, { success: false, tasks: [] }),
+        safeJson(vRes, { success: false, visitors: [] }),
+        safeJson(aRes, { success: false, tasks: [] }),
       ]);
 
       if (cData.success && Array.isArray(cData.candidates)) setCandidates(cData.candidates);
@@ -324,7 +330,7 @@ export default function App() {
       const res = await authenticatedFetch(`/api/action-tasks/${encodeURIComponent(taskId)}/acknowledge`, {
         method: 'POST',
       });
-      const data = await res.json();
+      const data = await safeJson(res, { success: false });
       if (data.success && data.task) {
         setActionTasks((prev) =>
           prev.map((t) => (t.id === taskId ? { ...t, ...data.task } : t))
@@ -341,7 +347,7 @@ export default function App() {
       const res = await authenticatedFetch(`/api/action-tasks/${encodeURIComponent(taskId)}/complete`, {
         method: 'POST',
       });
-      const data = await res.json();
+      const data = await safeJson(res, { success: false });
       if (data.success && data.task) {
         setActionTasks((prev) =>
           prev.map((t) => (t.id === taskId ? { ...t, ...data.task } : t))
@@ -501,10 +507,7 @@ export default function App() {
       } else {
         setRouteCandidateLoading(true);
         authenticatedFetch(`/api/candidates/${encodeURIComponent(docCandidateId)}?role=${encodeURIComponent(currentRole)}`)
-          .then((r) => {
-            if (!r.ok) return { success: false };
-            return r.json();
-          })
+          .then((r) => safeJson(r, { success: false }))
           .then((data) => {
             if (data.success && data.candidate) {
               setRouteCandidate(data.candidate);
@@ -522,13 +525,20 @@ export default function App() {
   const handleSelectRole = async (role: UserRole) => {
     setCurrentRole(role);
     setStoredStaffRole(role);
+    if (role === 'RECEPTION') setActiveSection('reception');
+    else if (role === 'PANTRY') setActiveSection('hospitality');
+    else if (role === 'ADMIN') setActiveSection('rooms');
+    else if (role === 'INTERVIEWER') setActiveSection('interviews');
+    else if (role === 'HR' || role === 'SENIOR_HR') setActiveSection('candidates');
+    else if (role === 'CEO') setActiveSection('dashboard');
+
     try {
       const res = await authenticatedFetch('/api/auth/switch-role', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role }),
       });
-      const data = await res.json();
+      const data = await safeJson(res, { success: false });
       if (data.success) {
         setCurrentUser(data.user);
         setCurrentUserId(data.user.id);
@@ -540,6 +550,24 @@ export default function App() {
       }
     } catch (err) {
       console.warn('Role switch error', err);
+    }
+  };
+
+  // Handle Sidebar and Mobile Section Selection
+  const handleSelectSection = (section: NavSection) => {
+    setActiveSection(section);
+    if (section === 'reception' || section === 'visitors') {
+      handleSelectRole('RECEPTION');
+    } else if (section === 'interviews') {
+      handleSelectRole('INTERVIEWER');
+    } else if (section === 'candidates') {
+      handleSelectRole('HR');
+    } else if (section === 'rooms') {
+      handleSelectRole('ADMIN');
+    } else if (section === 'hospitality') {
+      handleSelectRole('PANTRY');
+    } else if (section === 'settings') {
+      setActiveModal('STAFF_LOGIN');
     }
   };
 
@@ -555,7 +583,7 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: loginEmail, password: loginPassword }),
       });
-      const data = await res.json();
+      const data = await safeJson(res, { success: false, error: 'Authentication failed' });
       if (!res.ok || !data.success) {
         throw new Error(data.error || 'Authentication failed');
       }
@@ -871,51 +899,54 @@ export default function App() {
   // ==========================================
   if (isDashboardRoute && !currentUser) {
     return (
-      <div className="min-h-screen bg-[#FAF9F6] text-[#171717] flex items-center justify-center p-4 font-sans relative">
-        <WCRAnimatedBackground />
-        <div className="relative z-10 bg-white/95 border border-[#EFE0CC] rounded-3xl max-w-sm w-full p-6 shadow-[0_20px_60px_rgba(0,0,0,0.06)] space-y-4">
-          <div className="flex items-center gap-2 pb-3 border-b border-[#EFE0CC]">
-            <Shield className="w-5 h-5 text-rose-500" />
+      <div className="min-h-screen bg-[#7a8894] text-slate-900 flex items-center justify-center p-4 font-sans relative overflow-hidden">
+        <CinematicVideoBackground />
+        <CinematicBackground variant="settings" intensity="subdued" />
+        <div className="glass-panel-elevated border border-white/10 rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4 relative z-10 backdrop-blur-2xl">
+          <div className="flex items-center gap-2.5 pb-2 border-b border-white/8">
+            <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center">
+              <Shield className="w-4 h-4" />
+            </div>
             <div>
-              <h3 className="text-base font-bold text-[#171717]">Access Denied</h3>
-              <p className="text-[11px] text-[#77716B]">Staff Authentication Required</p>
+              <h3 className="text-base font-bold text-white tracking-tight">Staff Authentication</h3>
+              <p className="text-[11px] text-slate-400">White Collar Realty Command Console</p>
             </div>
           </div>
-          <p className="text-xs text-[#77716B] leading-relaxed">
-            You must authenticate with a White Collar Realty staff account to access confidential dashboard operations.
+          <p className="text-xs text-slate-300">
+            Authenticate with verified White Collar Realty credentials to access operations decks.
           </p>
 
           {loginError && (
-            <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs">
+            <div className="p-2.5 bg-rose-500/15 border border-rose-500/40 rounded-xl text-rose-300 text-xs">
               {loginError}
             </div>
           )}
 
           <form onSubmit={handleStaffLogin} className="space-y-3 text-xs">
             <div>
-              <label className="block text-[#171717] font-semibold mb-1">Staff Email</label>
+              <label className="block text-slate-300 font-semibold mb-1">Staff Email</label>
               <input
                 type="email"
                 value={loginEmail}
                 onChange={(e) => setLoginEmail(e.target.value)}
                 placeholder="e.g. reception@whitecollarrealty.com"
-                className="w-full px-3 py-2 bg-white border border-[#E4CCAF] rounded-xl text-[#171717] text-xs focus:outline-hidden focus:border-[#C99A68]"
+                className="w-full px-3 py-2 bg-[#07090C] border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-amber-400 transition"
                 required
               />
             </div>
             <div>
-              <label className="block text-[#171717] font-semibold mb-1">Password</label>
+              <label className="block text-slate-300 font-semibold mb-1">Password</label>
               <input
                 type="password"
                 value={loginPassword}
                 onChange={(e) => setLoginPassword(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-[#E4CCAF] rounded-xl text-[#171717] text-xs focus:outline-hidden focus:border-[#C99A68]"
+                className="w-full px-3 py-2 bg-[#07090C] border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-amber-400 transition"
                 required
               />
             </div>
             <button
               type="submit"
-              className="w-full py-2.5 bg-[#171717] hover:bg-[#282828] text-white font-bold rounded-xl shadow-sm transition cursor-pointer active:scale-95 hover:border-[#C99A68]"
+              className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold rounded-xl shadow-lg transition cursor-pointer"
             >
               Sign In to Staff Console
             </button>
@@ -926,7 +957,7 @@ export default function App() {
                 window.history.pushState({}, '', '/register');
                 setRoutePath('/register');
               }}
-              className="text-xs text-[#77716B] hover:text-[#171717] underline cursor-pointer"
+              className="text-xs text-slate-400 hover:text-amber-400 underline cursor-pointer"
             >
               &larr; Candidate Self-Registration (/register)
             </button>
@@ -936,335 +967,411 @@ export default function App() {
     );
   }
 
+  // Determine dynamic background variant based on navigation and active modals
+  const cinematicVariant: CinematicVariant =
+    activeModal === 'QR_PASS'
+      ? 'scanner'
+      : activeModal === 'DOSSIER'
+      ? 'candidate'
+      : activeSection === 'reception'
+      ? 'reception'
+      : activeSection === 'visitors'
+      ? 'visitor'
+      : activeSection === 'interviews'
+      ? 'interview'
+      : activeSection === 'rooms'
+      ? 'room'
+      : activeSection === 'candidates'
+      ? 'candidate'
+      : activeSection === 'settings'
+      ? 'settings'
+      : 'dashboard';
+
+  const activeCandidatesList = filterStage
+    ? candidates.filter((c) => computeArrivalStage(c).currentStage === filterStage)
+    : candidates;
+
   // ==========================================
   // STAFF & OPERATIONS CONSOLE (HR, ADMIN, CEO, INTERVIEWER, RECEPTION, PANTRY)
   // ==========================================
-  const waitingCandidatesCount = candidates.filter(
-    (c) =>
-      c.status === 'ARRIVED' ||
-      c.status === 'WAITING' ||
-      c.status === 'With Kimmi Mam – Senior HR Interview'
-  ).length;
-  const inInterviewCount = candidates.filter((c) => c.status === 'IN_INTERVIEW').length;
-  const occupiedRoomsCount = rooms.filter(
-    (r) => r.status === 'OCCUPIED' || r.status === 'ASSIGNED'
-  ).length;
-  const pendingActionsCount = actionTasks.filter((t) => t.status === 'PENDING').length;
-
   return (
-    <div className="min-h-screen bg-[#FAF9F6] text-[#171717] flex flex-col font-sans selection:bg-[#C99A68] selection:text-white relative overflow-x-hidden">
-      {/* Subtle Warm White & Ambient Sunlight Caramel Background */}
-      <WCRAnimatedBackground />
+    <div className="min-h-screen bg-[#7a8894] text-slate-900 flex font-sans selection:bg-[#f36515] selection:text-white relative overflow-x-hidden">
+      {/* Cinematic Video Background with uploaded axle-parsi-hero.mp4 */}
+      <CinematicVideoBackground />
 
-      {/* Top Application Navbar */}
-      <Navbar
+      {/* Cinematic Dynamic Ambient Lighting and Particle Drift */}
+      <CinematicBackground variant={cinematicVariant} intensity="subdued" />
+
+      {/* Desktop Glass Sidebar Navigation */}
+      <SidebarNav
         currentRole={currentRole}
+        activeSection={activeSection}
+        onSelectSection={handleSelectSection}
         onSelectRole={handleSelectRole}
+        currentUser={currentUser}
         unreadCount={unreadCount}
         unreadChatCount={unreadChatCount}
-        currentUser={currentUser}
-        onLogout={handleStaffLogout}
+        isRealtimeConnected={isRealtimeConnected}
         onOpenNotifications={() => setNotificationDrawerOpen(true)}
-        onOpenChat={() => {
-          setIsChatOpen(true);
-          setUnreadChatCount(0);
-        }}
+        onOpenQRPasses={() => setActiveModal('QR_PASS')}
+        onOpenWalkIn={() => setActiveModal('WALK_IN')}
+        onOpenBlankRegister={() => setActiveModal('GENERAL_REGISTER')}
+        onLogout={handleStaffLogout}
+      />
+
+      {/* Mobile Slide-Out Drawer */}
+      <MobileNavigation
+        isOpen={isMobileNavOpen}
+        onClose={() => setIsMobileNavOpen(false)}
+        activeSection={activeSection}
+        onSelectSection={handleSelectSection}
+        currentRole={currentRole}
+        onSelectRole={handleSelectRole}
+        currentUser={currentUser}
+        unreadCount={unreadCount}
+        onOpenNotifications={() => setNotificationDrawerOpen(true)}
         onOpenQRPasses={() => setActiveModal('QR_PASS')}
         onOpenCheckIn={() => {
           setCheckInToken('WCR-APPT-901');
           setActiveModal('CHECK_IN');
         }}
-        onOpenWalkIn={() => setActiveModal('WALK_IN')}
-        isRealtimeConnected={isRealtimeConnected}
-        onOpenSearch={() => setIsCommandPaletteOpen(true)}
+        onLogout={handleStaffLogout}
       />
 
-      {/* Main Dashboard Container */}
-      <main className="relative z-10 flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6 pb-24 sm:pb-8">
-        {/* Live Office Pulse */}
-        <WCRLivePulse
-          candidatesCount={candidates.length}
-          waitingCount={waitingCandidatesCount}
-          interviewsCount={inInterviewCount}
-          roomsOccupiedCount={occupiedRoomsCount}
-          actionsCount={pendingActionsCount}
-          isConnected={isRealtimeConnected}
+      {/* Main Content Area */}
+      <div className="flex-1 min-w-0 flex flex-col relative z-10">
+        {/* Top Operations Header */}
+        <TopHeader
+          pageTitle={`WCR Operations: ${currentRole.replace('_', ' ')} Console`}
+          currentRole={currentRole}
+          currentUser={currentUser}
+          unreadCount={unreadCount}
+          unreadChatCount={unreadChatCount}
+          isRealtimeConnected={isRealtimeConnected}
+          onOpenNotifications={() => setNotificationDrawerOpen(true)}
+          onOpenChat={() => {
+            setIsChatOpen(true);
+            setUnreadChatCount(0);
+          }}
+          onOpenQRPasses={() => setActiveModal('QR_PASS')}
+          onOpenCheckIn={() => {
+            setCheckInToken('WCR-APPT-901');
+            setActiveModal('CHECK_IN');
+          }}
+          onOpenWalkIn={() => setActiveModal('WALK_IN')}
+          onToggleMobileMenu={() => setIsMobileNavOpen(true)}
+          onLogout={handleStaffLogout}
         />
 
-        {/* Realtime Candidate Intake Alert Banner */}
-        {realtimeToast && (
-          <div className="p-4 bg-white/95 border border-[#E4CCAF] rounded-2xl shadow-[0_10px_35px_rgba(201,154,104,0.1)] flex items-center justify-between gap-3 text-xs animate-in fade-in slide-in-from-top-4 duration-300">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#FAF4ED] border border-[#E4CCAF] text-[#8C6033] flex items-center justify-center font-bold shadow-xs">
-                <Sparkles className="w-5 h-5 text-[#C99A68]" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-extrabold text-[#171717] uppercase tracking-wide">{realtimeToast.title}</span>
-                  <span className="text-[10px] text-[#8A847D] font-mono font-medium">({realtimeToast.timestamp})</span>
-                </div>
-                <p className="text-[#77716B] font-medium mt-0.5">{realtimeToast.message}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              {realtimeToast.candidateId && (
-                <button
-                  onClick={() => {
-                    setSelectedCandidateId(realtimeToast.candidateId!);
-                    setActiveModal('DOSSIER');
-                    setRealtimeToast(null);
-                  }}
-                  className="px-3.5 py-1.5 bg-[#171717] hover:bg-[#282828] text-white font-bold rounded-xl transition shadow-xs cursor-pointer text-xs"
-                >
-                  View Profile &rarr;
-                </button>
-              )}
-              <button
-                onClick={() => setRealtimeToast(null)}
-                className="p-1 text-[#8A847D] hover:text-[#171717] rounded-lg cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Interactive Testing Quick Launcher Strip */}
-        <WCRGlassCard className="p-4 sm:p-5 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 text-xs" elevation="standard">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-              <strong className="text-[#171717] font-extrabold text-sm tracking-tight">
-                WCR Dual QR Architecture & Desk Photo Verification
-              </strong>
-            </div>
-            <p className="text-[#77716B] text-xs">
-              <strong className="text-emerald-700">1. General Reception QR</strong> (blank intake) &bull;{' '}
-              <strong className="text-[#8C6033]">2. Scheduled QR</strong> (appointment pass) &bull;{' '}
-              <strong className="text-sky-700">3. Reception Live Photo</strong> (WebRTC desk verification).
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2 shrink-0">
-            {/* Direct Blank Registration Test Button */}
-            <button
-              onClick={() => setActiveModal('GENERAL_REGISTER')}
-              className="px-3.5 py-2 bg-[#171717] hover:bg-[#282828] text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer flex items-center gap-1.5 active:scale-95"
-              title="Test General WCR Blank Self-Registration"
-            >
-              <UserPlus className="w-3.5 h-3.5 text-[#C99A68]" />
-              <span>Test Blank Registration</span>
-            </button>
-
-            {/* Scheduled Check-In */}
-            <button
-              onClick={() => {
-                setCheckInToken('WCR-APPT-901');
-                setActiveModal('CHECK_IN');
-              }}
-              className="px-3 py-2 bg-white hover:bg-[#FAF9F6] border border-[#E4CCAF] text-[#171717] font-semibold text-xs rounded-xl transition cursor-pointer flex items-center gap-1.5 shadow-2xs"
-            >
-              <Smartphone className="w-3.5 h-3.5 text-[#8C6033]" />
-              <span>Scheduled Check-In</span>
-            </button>
-
-            {/* Dual QR Station Standee */}
-            <button
-              onClick={() => setActiveModal('QR_PASS')}
-              className="px-3 py-2 bg-white hover:bg-[#FAF9F6] text-[#171717] font-semibold text-xs rounded-xl border border-[#EFE0CC] transition cursor-pointer flex items-center gap-1.5 shadow-2xs"
-            >
-              <QrCode className="w-3.5 h-3.5 text-[#8C6033]" />
-              <span>QR Standees</span>
-            </button>
-
-            {/* Staff Login Modal */}
-            <button
-              onClick={() => setActiveModal('STAFF_LOGIN')}
-              className="px-3 py-2 bg-[#FAF9F6] hover:bg-[#F3EFE9] border border-[#EFE0CC] text-[#77716B] hover:text-[#171717] font-semibold text-xs rounded-xl transition cursor-pointer flex items-center gap-1.5"
-            >
-              <Key className="w-3.5 h-3.5 text-[#8C6033]" />
-              <span>Staff Login</span>
-            </button>
-          </div>
-        </WCRGlassCard>
-
-        {/* Dynamic Role Dashboard View */}
-        {currentRole === 'SENIOR_HR' && (
-          <SeniorHRDashboard
-            candidates={candidates}
-            interviews={interviews}
-            rooms={rooms}
-            currentInterviewerId={currentUserId}
-            onStartInterview={handleStartInterview}
-            onOpenEndInterviewModal={(intv) => {
-              setSelectedInterview(intv);
-              setActiveModal('END_INTERVIEW');
-            }}
-            onOpenDossier={(candId) => {
-              setSelectedCandidateId(candId);
-              setActiveModal('DOSSIER');
-            }}
-            onAssignRoom={(candId, intvId) => {
-              setSelectedCandidateId(candId);
-              setSelectedInterview(intvId ? interviews.find((i) => i.id === intvId) || null : null);
-              setActiveModal('ASSIGN_ROOM');
-            }}
-            onRefresh={fetchAllData}
-          />
-        )}
-
-        {currentRole === 'HR' && (
-          <HRDashboard
-            candidates={candidates}
-            interviews={interviews}
-            rooms={rooms}
-            actionTasks={actionTasks}
-            onOpenDossier={(candId) => {
-              setSelectedCandidateId(candId);
-              setActiveModal('DOSSIER');
-            }}
-            onAssignRoom={(candId, intvId) => {
-              setSelectedCandidateId(candId);
-              setSelectedInterview(intvId ? interviews.find((i) => i.id === intvId) || null : null);
-              setActiveModal('ASSIGN_ROOM');
-            }}
-            onOpenChat={() => {
-              setIsChatOpen(true);
-              setUnreadChatCount(0);
-            }}
-            onOpenChatWithContext={openChatWithContext}
-            onRefresh={fetchAllData}
-          />
-        )}
-
-        {currentRole === 'ADMIN' && (
-          <AdminDashboard
+        {/* Main Dashboard Container */}
+        <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+          {/* Operations Command Header with Live KPIs & Clock */}
+          <OperationsCommandHeader
             candidates={candidates}
             interviews={interviews}
             rooms={rooms}
             pantryTasks={pantryTasks}
-            actionTasks={actionTasks}
-            onOpenDossier={(candId) => {
-              setSelectedCandidateId(candId);
-              setActiveModal('DOSSIER');
-            }}
-            onAssignRoom={(candId, intvId) => {
-              setSelectedCandidateId(candId);
-              setSelectedInterview(intvId ? interviews.find((i) => i.id === intvId) || null : null);
-              setActiveModal('ASSIGN_ROOM');
-            }}
-            onOpenChatWithContext={openChatWithContext}
-            onMarkRoomCleaned={handleMarkRoomCleaned}
-            onAcknowledgeActionTask={handleAcknowledgeActionTask}
-            onCompleteActionTask={handleCompleteActionTask}
-            onRefresh={fetchAllData}
-          />
-        )}
-
-        {currentRole === 'CEO' && (
-          <CEODashboard
-            candidates={candidates}
-            interviews={interviews}
-            rooms={rooms}
-            onOpenDossier={(candId) => {
-              setSelectedCandidateId(candId);
-              setActiveModal('DOSSIER');
-            }}
-          />
-        )}
-
-        {currentRole === 'INTERVIEWER' && (
-          <InterviewerDashboard
-            candidates={candidates}
-            interviews={interviews}
-            rooms={rooms}
-            currentInterviewerId={currentUserId}
-            onStartInterview={handleStartInterview}
-            onOpenEndInterviewModal={(intv) => {
-              setSelectedInterview(intv);
-              setActiveModal('END_INTERVIEW');
-            }}
-            onOpenDossier={(candId) => {
-              setSelectedCandidateId(candId);
-              setActiveModal('DOSSIER');
-            }}
-          />
-        )}
-
-        {currentRole === 'RECEPTION' && (
-          <ReceptionDashboard
-            candidates={candidates}
-            rooms={rooms}
             visitors={visitors}
-            actionTasks={actionTasks}
-            onAcknowledgeTask={handleAcknowledgeActionTask}
-            onCompleteTask={handleCompleteActionTask}
-            onCheckout={handleCheckout}
-            onOpenCheckIn={() => {
-              setCheckInToken('WCR-APPT-901');
-              setActiveModal('CHECK_IN');
-            }}
-            onOpenWalkIn={() => setActiveModal('WALK_IN')}
-            onOpenQR={() => setActiveModal('QR_PASS')}
-            onOpenChat={() => {
-              setIsChatOpen(true);
-              setUnreadChatCount(0);
-            }}
-            onOpenChatWithContext={openChatWithContext}
-            onRefresh={fetchAllData}
+            userName={currentUser?.name || 'Officer'}
+            userRole={currentRole}
           />
-        )}
 
-        {currentRole === 'PANTRY' && (
-          <PantryDashboard
-            tasks={pantryTasks}
-            rooms={rooms}
+          {/* Visitor Arrival Journey Flow Filter Banner */}
+          <VisitorJourneyOverview
             candidates={candidates}
-            actionTasks={actionTasks}
-            onAcknowledgeTask={handleAcknowledgeActionTask}
-            onCompleteTask={handleCompletePantryTask}
-            onCompleteActionTask={handleCompleteActionTask}
-            onMarkRoomCleaned={handleMarkRoomCleaned}
-            onOpenChat={() => {
-              setIsChatOpen(true);
-              setUnreadChatCount(0);
-            }}
-            onRefresh={fetchAllData}
+            selectedStage={filterStage}
+            onSelectStage={(stage) => setFilterStage(stage)}
           />
-        )}
-      </main>
+
+          {/* Realtime Candidate Intake Alert Banner */}
+          {realtimeToast && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="p-4 bg-gradient-to-r from-amber-500/20 via-amber-600/15 to-purple-600/20 border border-amber-500/40 rounded-2xl shadow-xl flex items-center justify-between gap-3 text-xs"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-bold shadow-md animate-bounce">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-black text-amber-300 uppercase tracking-wide">{realtimeToast.title}</span>
+                    <span className="text-[10px] text-slate-400 font-mono">({realtimeToast.timestamp})</span>
+                  </div>
+                  <p className="text-slate-200 font-medium mt-0.5">{realtimeToast.message}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {realtimeToast.candidateId && (
+                  <button
+                    onClick={() => {
+                      setSelectedCandidateId(realtimeToast.candidateId!);
+                      setActiveModal('DOSSIER');
+                      setRealtimeToast(null);
+                    }}
+                    className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl transition shadow cursor-pointer text-xs"
+                  >
+                    View Profile &rarr;
+                  </button>
+                )}
+                <button
+                  onClick={() => setRealtimeToast(null)}
+                  className="p-1 text-slate-400 hover:text-white rounded-lg cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Interactive Testing Quick Launcher Strip */}
+          <div className="p-4 glass-panel rounded-3xl border border-white/8 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 text-xs shadow-xl">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                <strong className="text-white font-bold text-sm tracking-tight">
+                  WCR Dual QR Architecture & Desk Photo Verification
+                </strong>
+              </div>
+              <p className="text-slate-400 text-xs">
+                <strong className="text-emerald-400">1. General Reception QR</strong> (100% blank form, isolated session) &bull;{' '}
+                <strong className="text-amber-400">2. Scheduled QR</strong> (Appointment pass) &bull;{' '}
+                <strong className="text-cyan-400">3. Reception Live Photo</strong> (WebRTC desk verification).
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              {/* Direct Blank Registration Test Button */}
+              <button
+                onClick={() => setActiveModal('GENERAL_REGISTER')}
+                className="px-3.5 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-black text-xs rounded-xl shadow-lg transition cursor-pointer flex items-center gap-1.5"
+                title="Test General WCR Blank Self-Registration"
+              >
+                <UserPlus className="w-3.5 h-3.5" />
+                <span>Test Blank Registration</span>
+              </button>
+
+              {/* Scheduled Check-In */}
+              <button
+                onClick={() => {
+                  setCheckInToken('WCR-APPT-901');
+                  setActiveModal('CHECK_IN');
+                }}
+                className="px-3 py-2 bg-white/5 hover:bg-white/10 border border-amber-500/40 text-amber-300 font-semibold text-xs rounded-xl transition cursor-pointer flex items-center gap-1.5"
+              >
+                <Smartphone className="w-3.5 h-3.5 text-amber-400" />
+                <span>Scheduled Check-In</span>
+              </button>
+
+              {/* Dual QR Station Standee */}
+              <button
+                onClick={() => setActiveModal('QR_PASS')}
+                className="px-3 py-2 bg-white/5 hover:bg-white/10 text-slate-200 font-semibold text-xs rounded-xl border border-white/8 transition cursor-pointer flex items-center gap-1.5"
+              >
+                <QrCode className="w-3.5 h-3.5 text-amber-400" />
+                <span>QR Standees</span>
+              </button>
+
+              {/* Staff Login Modal */}
+              <button
+                onClick={() => setActiveModal('STAFF_LOGIN')}
+                className="px-3 py-2 bg-white/4 hover:bg-white/8 border border-white/8 text-slate-400 hover:text-white font-semibold text-xs rounded-xl transition cursor-pointer flex items-center gap-1.5"
+              >
+                <Key className="w-3.5 h-3.5 text-purple-400" />
+                <span>Staff Login</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Dynamic Role Dashboard View with Smooth Cinematic Transition */}
+          <motion.div
+            key={currentRole}
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+            className="space-y-6"
+          >
+            {currentRole === 'SENIOR_HR' && (
+              <SeniorHRDashboard
+                candidates={activeCandidatesList}
+                interviews={interviews}
+                rooms={rooms}
+                currentInterviewerId={currentUserId}
+                onStartInterview={handleStartInterview}
+                onOpenEndInterviewModal={(intv) => {
+                  setSelectedInterview(intv);
+                  setActiveModal('END_INTERVIEW');
+                }}
+                onOpenDossier={(candId) => {
+                  setSelectedCandidateId(candId);
+                  setActiveModal('DOSSIER');
+                }}
+                onAssignRoom={(candId, intvId) => {
+                  setSelectedCandidateId(candId);
+                  setSelectedInterview(intvId ? interviews.find((i) => i.id === intvId) || null : null);
+                  setActiveModal('ASSIGN_ROOM');
+                }}
+                onRefresh={fetchAllData}
+              />
+            )}
+
+            {currentRole === 'HR' && (
+              <HRDashboard
+                candidates={activeCandidatesList}
+                interviews={interviews}
+                rooms={rooms}
+                actionTasks={actionTasks}
+                onOpenDossier={(candId) => {
+                  setSelectedCandidateId(candId);
+                  setActiveModal('DOSSIER');
+                }}
+                onAssignRoom={(candId, intvId) => {
+                  setSelectedCandidateId(candId);
+                  setSelectedInterview(intvId ? interviews.find((i) => i.id === intvId) || null : null);
+                  setActiveModal('ASSIGN_ROOM');
+                }}
+                onOpenChat={() => {
+                  setIsChatOpen(true);
+                  setUnreadChatCount(0);
+                }}
+                onOpenChatWithContext={openChatWithContext}
+                onRefresh={fetchAllData}
+              />
+            )}
+
+            {currentRole === 'ADMIN' && (
+              <AdminDashboard
+                candidates={activeCandidatesList}
+                interviews={interviews}
+                rooms={rooms}
+                pantryTasks={pantryTasks}
+                actionTasks={actionTasks}
+                onOpenDossier={(candId) => {
+                  setSelectedCandidateId(candId);
+                  setActiveModal('DOSSIER');
+                }}
+                onAssignRoom={(candId, intvId) => {
+                  setSelectedCandidateId(candId);
+                  setSelectedInterview(intvId ? interviews.find((i) => i.id === intvId) || null : null);
+                  setActiveModal('ASSIGN_ROOM');
+                }}
+                onOpenChatWithContext={openChatWithContext}
+                onMarkRoomCleaned={handleMarkRoomCleaned}
+                onAcknowledgeActionTask={handleAcknowledgeActionTask}
+                onCompleteActionTask={handleCompleteActionTask}
+                onRefresh={fetchAllData}
+              />
+            )}
+
+            {currentRole === 'CEO' && (
+              <CEODashboard
+                candidates={activeCandidatesList}
+                interviews={interviews}
+                rooms={rooms}
+                onOpenDossier={(candId) => {
+                  setSelectedCandidateId(candId);
+                  setActiveModal('DOSSIER');
+                }}
+              />
+            )}
+
+            {currentRole === 'INTERVIEWER' && (
+              <InterviewerDashboard
+                candidates={activeCandidatesList}
+                interviews={interviews}
+                rooms={rooms}
+                currentInterviewerId={currentUserId}
+                onStartInterview={handleStartInterview}
+                onOpenEndInterviewModal={(intv) => {
+                  setSelectedInterview(intv);
+                  setActiveModal('END_INTERVIEW');
+                }}
+                onOpenDossier={(candId) => {
+                  setSelectedCandidateId(candId);
+                  setActiveModal('DOSSIER');
+                }}
+              />
+            )}
+
+            {currentRole === 'RECEPTION' && (
+              <ReceptionDashboard
+                candidates={activeCandidatesList}
+                rooms={rooms}
+                visitors={visitors}
+                actionTasks={actionTasks}
+                onAcknowledgeTask={handleAcknowledgeActionTask}
+                onCompleteTask={handleCompleteActionTask}
+                onCheckout={handleCheckout}
+                onOpenCheckIn={() => {
+                  setCheckInToken('WCR-APPT-901');
+                  setActiveModal('CHECK_IN');
+                }}
+                onOpenWalkIn={() => setActiveModal('WALK_IN')}
+                onOpenQR={() => setActiveModal('QR_PASS')}
+                onOpenChat={() => {
+                  setIsChatOpen(true);
+                  setUnreadChatCount(0);
+                }}
+                onOpenChatWithContext={openChatWithContext}
+                onRefresh={fetchAllData}
+              />
+            )}
+
+            {currentRole === 'PANTRY' && (
+              <PantryDashboard
+                tasks={pantryTasks}
+                rooms={rooms}
+                candidates={activeCandidatesList}
+                actionTasks={actionTasks}
+                onAcknowledgeTask={handleAcknowledgeActionTask}
+                onCompleteTask={handleCompletePantryTask}
+                onCompleteActionTask={handleCompleteActionTask}
+                onMarkRoomCleaned={handleMarkRoomCleaned}
+                onOpenChat={() => {
+                  setIsChatOpen(true);
+                  setUnreadChatCount(0);
+                }}
+                onRefresh={fetchAllData}
+              />
+            )}
+          </motion.div>
+        </main>
+      </div>
 
       {/* Floating Offline Indicator */}
       <OfflineIndicator />
 
       {/* Real-time In-App Internal Office Chat Toast Notification */}
       {chatToast && (
-        <div className="fixed bottom-5 right-5 z-50 max-w-sm w-full bg-white/95 border border-[#E4CCAF] rounded-3xl shadow-[0_14px_45px_rgba(0,0,0,0.1)] p-4 animate-in slide-in-from-bottom-5 duration-300">
+        <div className="fixed bottom-5 right-5 z-50 max-w-sm w-full bg-slate-900 border border-amber-500/50 rounded-2xl shadow-2xl p-4 animate-in slide-in-from-bottom-5 duration-300">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-2xl bg-[#171717] text-[#D6B28A] flex items-center justify-center font-black shrink-0 mt-0.5 shadow-sm">
-                <MessageSquare className="w-4 h-4" />
+              <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center font-black shrink-0 mt-0.5">
+                <MessageSquare className="w-5 h-5" />
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h4 className="text-xs font-bold text-[#171717] truncate">{chatToast.senderName}</h4>
-                  <span className="px-2 py-0.5 rounded-full bg-[#FAF4ED] text-[9px] font-bold text-[#8C6033] border border-[#E4CCAF]">
+                  <h4 className="text-xs font-bold text-white truncate">{chatToast.senderName}</h4>
+                  <span className="px-1.5 py-0.2 rounded-sm bg-slate-800 text-[9px] font-bold text-amber-400 border border-slate-700">
                     {chatToast.senderRole}
                   </span>
-                  <span className="text-[10px] text-[#8A847D]">{chatToast.timestamp}</span>
+                  <span className="text-[10px] text-slate-500">{chatToast.timestamp}</span>
                 </div>
-                <p className="text-xs text-[#77716B] mt-1 line-clamp-2 leading-relaxed">
+                <p className="text-xs text-slate-300 mt-1 line-clamp-2 leading-relaxed">
                   {chatToast.content}
                 </p>
                 {(chatToast.candidateName || chatToast.roomName) && (
                   <div className="flex flex-wrap items-center gap-1.5 mt-2">
                     {chatToast.candidateName && (
-                      <span className="px-2 py-0.5 bg-[#FAF4ED] border border-[#E4CCAF] rounded-md text-[10px] font-semibold text-[#8C6033]">
+                      <span className="px-2 py-0.5 bg-amber-500/10 border border-amber-500/30 rounded-md text-[10px] font-semibold text-amber-300">
                         Candidate: {chatToast.candidateName}
                       </span>
                     )}
                     {chatToast.roomName && (
-                      <span className="px-2 py-0.5 bg-sky-50 border border-sky-200 rounded-md text-[10px] font-semibold text-sky-700">
+                      <span className="px-2 py-0.5 bg-sky-500/10 border border-sky-500/30 rounded-md text-[10px] font-semibold text-sky-300">
                         Room: {chatToast.roomName}
                       </span>
                     )}
@@ -1274,13 +1381,13 @@ export default function App() {
             </div>
             <button
               onClick={() => setChatToast(null)}
-              className="text-[#8A847D] hover:text-[#171717] p-1 rounded-lg hover:bg-[#F3EFE9] transition cursor-pointer shrink-0"
+              className="text-slate-500 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition cursor-pointer shrink-0"
               title="Dismiss alert"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
-          <div className="flex items-center justify-end gap-2 mt-3 pt-2.5 border-t border-[#EFE0CC]">
+          <div className="flex items-center justify-end gap-2 mt-3 pt-2 border-t border-slate-800/80">
             <button
               onClick={() => {
                 setChatToast(null);
@@ -1291,10 +1398,10 @@ export default function App() {
                   recipientId: chatToast.recipientId,
                 });
               }}
-              className="px-3.5 py-1.5 bg-[#171717] hover:bg-[#282828] text-white font-bold text-xs rounded-xl transition shadow-sm flex items-center gap-1 cursor-pointer active:scale-95"
+              className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl transition shadow-md flex items-center gap-1 cursor-pointer"
             >
               <span>Open Chat</span>
-              <ArrowRight className="w-3.5 h-3.5 text-[#C99A68]" />
+              <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
@@ -1346,7 +1453,7 @@ export default function App() {
         onNewMessageSent={() => {
           if (currentUser?.id) {
             authenticatedFetch(`/api/chat/unread?userId=${currentUser.id}`)
-              .then((r) => r.json())
+              .then((r) => safeJson(r, { success: false, total: 0 }))
               .then((d) => {
                 if (d.success && typeof d.total === 'number') {
                   setUnreadChatCount(d.total);
@@ -1473,29 +1580,29 @@ export default function App() {
 
       {/* 8. STAFF LOGIN MODAL (EMAIL + PASSWORD) */}
       {activeModal === 'STAFF_LOGIN' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md p-4">
-          <div className="bg-white/98 border border-[#EFE0CC] rounded-3xl max-w-sm w-full p-6 shadow-[0_25px_70px_rgba(0,0,0,0.15)] space-y-4 text-[#171717]">
-            <div className="flex items-center justify-between pb-3 border-b border-[#EFE0CC]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-xs p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
               <div className="flex items-center gap-2">
-                <Shield className="w-5 h-5 text-[#C99A68]" />
-                <h3 className="text-base font-bold text-[#171717]">Staff Login</h3>
+                <Shield className="w-5 h-5 text-purple-400" />
+                <h3 className="text-base font-bold text-white">Staff Login</h3>
               </div>
               <button
                 onClick={() => setActiveModal(null)}
-                className="p-1 rounded-lg text-[#77716B] hover:text-[#171717] hover:bg-[#F3EFE9] transition cursor-pointer"
+                className="p-1 rounded-lg text-slate-400 hover:text-white"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {loginError && (
-              <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs">
+              <div className="p-2.5 bg-rose-500/15 border border-rose-500/40 rounded-xl text-rose-300 text-xs">
                 {loginError}
               </div>
             )}
 
             {loginSuccess && (
-              <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-700 text-xs flex items-center gap-1.5">
+              <div className="p-2.5 bg-emerald-500/15 border border-emerald-500/40 rounded-xl text-emerald-300 text-xs flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4" />
                 <span>{loginSuccess}</span>
               </div>
@@ -1503,24 +1610,24 @@ export default function App() {
 
             <form onSubmit={handleStaffLogin} className="space-y-3 text-xs">
               <div>
-                <label className="block text-[#171717] font-semibold mb-1">Staff Email</label>
+                <label className="block text-slate-300 font-semibold mb-1">Staff Email</label>
                 <input
                   type="email"
                   value={loginEmail}
                   onChange={(e) => setLoginEmail(e.target.value)}
                   placeholder="e.g. reception@whitecollarrealty.com"
-                  className="w-full px-3 py-2 bg-white border border-[#E4CCAF] rounded-xl text-[#171717] text-xs focus:outline-hidden focus:border-[#C99A68]"
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white text-xs"
                   required
                 />
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="block text-[#171717] font-semibold">Password</label>
+                  <label className="block text-slate-300 font-semibold">Password</label>
                   <button
                     type="button"
                     onClick={() => setActiveModal('FORGOT_PASSWORD')}
-                    className="text-[#8C6033] hover:text-[#171717] text-[11px] font-semibold underline cursor-pointer"
+                    className="text-amber-400 hover:text-amber-300 text-[11px] font-semibold underline cursor-pointer"
                   >
                     Forgot Password?
                   </button>
@@ -1529,7 +1636,7 @@ export default function App() {
                   type="password"
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-[#E4CCAF] rounded-xl text-[#171717] text-xs focus:outline-hidden focus:border-[#C99A68]"
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white text-xs"
                   required
                 />
               </div>
@@ -1537,14 +1644,14 @@ export default function App() {
               <div className="pt-2">
                 <button
                   type="submit"
-                  className="w-full py-2.5 bg-[#171717] hover:bg-[#282828] text-white font-bold rounded-xl shadow-sm transition cursor-pointer active:scale-95 hover:border-[#C99A68]"
+                  className="w-full py-2.5 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-400 hover:to-purple-500 text-white font-bold rounded-xl shadow-lg transition cursor-pointer"
                 >
                   Authenticate Staff Session
                 </button>
               </div>
 
-              <div className="pt-2 border-t border-[#EFE0CC] text-[10px] space-y-1.5">
-                <p className="font-semibold text-[#77716B]">Quick Select Staff Role (Password: <span className="font-mono text-[#8C6033]">wcr123</span>):</p>
+              <div className="pt-2 border-t border-slate-800 text-[10px] space-y-1.5">
+                <p className="font-semibold text-slate-400">Quick Select Staff Role (Password: <span className="font-mono text-amber-400">wcr123</span>):</p>
                 <div className="grid grid-cols-2 gap-1.5 pt-1">
                   <button
                     type="button"
@@ -1552,10 +1659,10 @@ export default function App() {
                       setLoginEmail('lalit@whitecollarrealty.com');
                       setLoginPassword('wcr123');
                     }}
-                    className="p-2 bg-[#FAF9F6] hover:bg-[#FAF4ED] border border-[#EFE0CC] hover:border-[#E4CCAF] rounded-xl text-left transition cursor-pointer"
+                    className="p-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-lg text-left text-slate-300 hover:text-white transition cursor-pointer"
                   >
-                    <span className="font-bold text-emerald-700 block">CEO Suite</span>
-                    <span className="text-[9px] text-[#77716B] font-mono truncate block">lalit@...</span>
+                    <span className="font-bold text-emerald-400 block">CEO Suite</span>
+                    <span className="text-[9px] text-slate-500 font-mono truncate block">lalit@...</span>
                   </button>
 
                   <button
@@ -1564,10 +1671,10 @@ export default function App() {
                       setLoginEmail('nisha@whitecollarrealty.com');
                       setLoginPassword('wcr123');
                     }}
-                    className="p-2 bg-[#FAF9F6] hover:bg-[#FAF4ED] border border-[#EFE0CC] hover:border-[#E4CCAF] rounded-xl text-left transition cursor-pointer"
+                    className="p-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-lg text-left text-slate-300 hover:text-white transition cursor-pointer"
                   >
-                    <span className="font-bold text-[#8C6033] block">HR Lead</span>
-                    <span className="text-[9px] text-[#77716B] font-mono truncate block">nisha@...</span>
+                    <span className="font-bold text-amber-400 block">HR Lead</span>
+                    <span className="text-[9px] text-slate-500 font-mono truncate block">nisha@...</span>
                   </button>
 
                   <button
@@ -1576,10 +1683,10 @@ export default function App() {
                       setLoginEmail('kimmi@whitecollarrealty.com');
                       setLoginPassword('wcr123');
                     }}
-                    className="p-2 bg-[#FAF9F6] hover:bg-[#FAF4ED] border border-[#EFE0CC] hover:border-[#E4CCAF] rounded-xl text-left transition cursor-pointer"
+                    className="p-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-lg text-left text-slate-300 hover:text-white transition cursor-pointer"
                   >
-                    <span className="font-bold text-amber-700 block">Kimmi Mam (Sr HR)</span>
-                    <span className="text-[9px] text-[#77716B] font-mono truncate block">kimmi@...</span>
+                    <span className="font-bold text-amber-300 block">Kimmi Mam (Sr HR)</span>
+                    <span className="text-[9px] text-slate-500 font-mono truncate block">kimmi@...</span>
                   </button>
 
                   <button
@@ -1588,10 +1695,10 @@ export default function App() {
                       setLoginEmail('reception@whitecollarrealty.com');
                       setLoginPassword('wcr123');
                     }}
-                    className="p-2 bg-[#FAF9F6] hover:bg-[#FAF4ED] border border-[#EFE0CC] hover:border-[#E4CCAF] rounded-xl text-left transition cursor-pointer"
+                    className="p-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-lg text-left text-slate-300 hover:text-white transition cursor-pointer"
                   >
-                    <span className="font-bold text-cyan-700 block">Reception Desk</span>
-                    <span className="text-[9px] text-[#77716B] font-mono truncate block">reception@...</span>
+                    <span className="font-bold text-cyan-400 block">Reception Desk</span>
+                    <span className="text-[9px] text-slate-500 font-mono truncate block">reception@...</span>
                   </button>
 
                   <button
@@ -1600,10 +1707,10 @@ export default function App() {
                       setLoginEmail('pantry@whitecollarrealty.com');
                       setLoginPassword('wcr123');
                     }}
-                    className="p-2 bg-[#FAF9F6] hover:bg-[#FAF4ED] border border-[#EFE0CC] hover:border-[#E4CCAF] rounded-xl text-left transition cursor-pointer"
+                    className="p-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-lg text-left text-slate-300 hover:text-white transition cursor-pointer"
                   >
-                    <span className="font-bold text-[#8C6033] block">Pantry Steward</span>
-                    <span className="text-[9px] text-[#77716B] font-mono truncate block">pantry@...</span>
+                    <span className="font-bold text-amber-200 block">Pantry Steward</span>
+                    <span className="text-[9px] text-slate-500 font-mono truncate block">pantry@...</span>
                   </button>
 
                   <button
@@ -1612,10 +1719,10 @@ export default function App() {
                       setLoginEmail('sameer@whitecollarrealty.com');
                       setLoginPassword('wcr123');
                     }}
-                    className="p-2 bg-[#FAF9F6] hover:bg-[#FAF4ED] border border-[#EFE0CC] hover:border-[#E4CCAF] rounded-xl text-left transition cursor-pointer"
+                    className="p-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-lg text-left text-slate-300 hover:text-white transition cursor-pointer"
                   >
-                    <span className="font-bold text-purple-700 block">Admin Ops</span>
-                    <span className="text-[9px] text-[#77716B] font-mono truncate block">sameer@...</span>
+                    <span className="font-bold text-purple-400 block">Admin Ops</span>
+                    <span className="text-[9px] text-slate-500 font-mono truncate block">sameer@...</span>
                   </button>
                 </div>
               </div>
@@ -1635,51 +1742,6 @@ export default function App() {
           }}
         />
       )}
-
-      {/* Global Command Palette (Cmd + K / Ctrl + K) */}
-      <WCRCommandPalette
-        isOpen={isCommandPaletteOpen}
-        onClose={() => setIsCommandPaletteOpen(false)}
-        candidates={candidates}
-        rooms={rooms}
-        interviews={interviews}
-        actionTasks={actionTasks}
-        onSelectCandidate={(candId) => {
-          setSelectedCandidateId(candId);
-          setActiveModal('DOSSIER');
-        }}
-        onSelectRoom={() => {
-          setActiveModal('ASSIGN_ROOM');
-        }}
-        onOpenChat={() => {
-          setIsChatOpen(true);
-          setUnreadChatCount(0);
-        }}
-      />
-
-      {/* Floating Mobile Bottom Navigation */}
-      <WCRBottomNavigation
-        activeTab={mobileActiveTab}
-        onTabChange={(tab) => {
-          setMobileActiveTab(tab);
-          if (tab === 'chat') {
-            setIsChatOpen(true);
-            setUnreadChatCount(0);
-          } else if (tab === 'tasks') {
-            setNotificationDrawerOpen(true);
-          } else if (tab === 'candidates') {
-            if (candidates.length > 0) {
-              setSelectedCandidateId(candidates[0].id);
-              setActiveModal('DOSSIER');
-            }
-          } else if (tab === 'more') {
-            setActiveModal('QR_PASS');
-          }
-        }}
-        unreadChatCount={unreadChatCount}
-        unreadTasksCount={pendingActionsCount}
-        waitingCount={waitingCandidatesCount}
-      />
     </div>
   );
 }

@@ -106,3 +106,31 @@ export async function authenticatedFetch(
     headers,
   });
 }
+
+/**
+ * Safely parses JSON response from fetch.
+ * Protects against HTML error pages, <!doctype ... unexpected tokens, and empty bodies.
+ */
+export async function safeJson<T = any>(
+  response: Response,
+  fallback: any = { success: false }
+): Promise<T> {
+  try {
+    const contentType = response.headers?.get?.('content-type') || '';
+    if (!response.ok && contentType.includes('text/html')) {
+      return fallback as T;
+    }
+    const text = await response.text();
+    if (!text || !text.trim()) {
+      return fallback as T;
+    }
+    const trimmed = text.trim();
+    if (trimmed.startsWith('<') || trimmed.toLowerCase().startsWith('<!doctype')) {
+      return fallback as T;
+    }
+    return JSON.parse(trimmed) as T;
+  } catch {
+    return fallback as T;
+  }
+}
+

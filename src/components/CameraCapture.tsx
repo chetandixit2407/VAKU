@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   Camera,
   RefreshCw,
@@ -11,6 +12,8 @@ import {
   Check,
   UserCheck,
   Shield,
+  Sparkles,
+  Zap,
 } from 'lucide-react';
 
 export type PhotoCaptureSource = 'LIVE_CAMERA' | 'FILE_UPLOAD' | 'RECEPTION_ASSISTED';
@@ -28,8 +31,8 @@ type CameraState = 'INITIALIZING' | 'STREAMING' | 'CAPTURED' | 'ERROR';
 
 export const CameraCapture: React.FC<CameraCaptureProps> = ({
   preferredFacingMode = 'user',
-  title = 'Arrival Photo Verification',
-  subtitle = 'Front desk photo for visitor verification and badge issuance.',
+  title = 'Candidate Photo',
+  subtitle = 'Front desk biometric verification and badge photo issuance.',
   onCapture,
   onSelectReceptionAssisted,
   onCancel,
@@ -39,9 +42,9 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
   const [captureSource, setCaptureSource] = useState<PhotoCaptureSource>('LIVE_CAMERA');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [errorType, setErrorType] = useState<string | null>(null);
   const [isRetrying, setIsRetrying] = useState<boolean>(false);
   const [captureTimestamp, setCaptureTimestamp] = useState<string>('');
+  const [showFlash, setShowFlash] = useState<boolean>(false);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const isMountedRef = useRef<boolean>(true);
@@ -81,14 +84,15 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
     async (targetMode: 'user' | 'environment') => {
       stopAllMediaTracks();
       setErrorMessage(null);
-      setErrorType(null);
       setCameraState('INITIALIZING');
       setIsRetrying(true);
 
-      // Check secure context
-      if (typeof window !== 'undefined' && window.isSecureContext === false && window.location.hostname !== 'localhost') {
+      if (
+        typeof window !== 'undefined' &&
+        window.isSecureContext === false &&
+        window.location.hostname !== 'localhost'
+      ) {
         if (isMountedRef.current) {
-          setErrorType('SecurityError');
           setErrorMessage('Camera access requires an HTTPS connection. Please access via secure URL.');
           setCameraState('ERROR');
           setIsRetrying(false);
@@ -98,107 +102,52 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
 
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         if (isMountedRef.current) {
-          setErrorType('NotSupported');
-          setErrorMessage('Your browser does not support camera access (getUserMedia). You can upload a photo file or select reception-assisted capture.');
+          setErrorMessage('Your browser hardware environment does not support camera access.');
           setCameraState('ERROR');
           setIsRetrying(false);
         }
         return;
       }
 
-      // Constraints matrix
-      const oppositeMode = targetMode === 'user' ? 'environment' : 'user';
-      const constraintTiers: MediaStreamConstraints[] = [
-        {
-          video: { facingMode: { ideal: targetMode }, width: { ideal: 1280 }, height: { ideal: 720 } },
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: targetMode,
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+          },
           audio: false,
-        },
-        {
-          video: { facingMode: targetMode },
-          audio: false,
-        },
-        {
-          video: { facingMode: { ideal: oppositeMode } },
-          audio: false,
-        },
-        {
-          video: true,
-          audio: false,
-        },
-      ];
+        });
 
-      let acquiredStream: MediaStream | null = null;
-      let lastCaughtError: any = null;
-
-      for (let i = 0; i < constraintTiers.length; i++) {
-        try {
-          acquiredStream = await navigator.mediaDevices.getUserMedia(constraintTiers[i]);
-          if (acquiredStream) break;
-        } catch (err: any) {
-          lastCaughtError = err;
-          // If explicitly denied, do not continue trying
-          if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-            break;
-          }
-        }
-      }
-
-      if (!acquiredStream || !isMountedRef.current) {
-        if (acquiredStream) stopAllMediaTracks(acquiredStream);
-
-        const errName = lastCaughtError?.name || 'UnknownError';
-        setErrorType(errName);
-
-        let userMsg = 'Unable to access camera.';
-        if (errName === 'NotAllowedError' || errName === 'PermissionDeniedError') {
-          userMsg =
-            'Camera permission was denied. Please allow camera permissions in your browser or choose Reception-Assisted Capture below.';
-        } else if (errName === 'NotReadableError' || errName === 'TrackStartError') {
-          userMsg =
-            'Camera hardware is currently busy or in use by another tab/application. Please close other camera apps and retry.';
-        } else if (errName === 'NotFoundError' || errName === 'DevicesNotFoundError') {
-          userMsg = 'No camera sensor was detected on this device. You can upload a photo file or request reception assistance.';
-        } else if (lastCaughtError?.message) {
-          userMsg = `Camera Error (${errName}): ${lastCaughtError.message}`;
+        if (!isMountedRef.current) {
+          stopAllMediaTracks(stream);
+          return;
         }
 
+        currentStreamRef.current = stream;
+
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.onloadedmetadata = async () => {
+            if (isMountedRef.current && videoRef.current) {
+              try {
+                await videoRef.current.play();
+                setCameraState('STREAMING');
+              } catch (playErr) {
+                console.warn('Video play error', playErr);
+                setCameraState('STREAMING');
+              }
+            }
+          };
+        }
+      } catch (err: any) {
+        console.warn('Camera stream error', err);
         if (isMountedRef.current) {
-          setErrorMessage(userMsg);
+          setErrorMessage(err.message || 'Unable to access device camera. Please check permissions.');
           setCameraState('ERROR');
-          setIsRetrying(false);
         }
-        return;
-      }
-
-      currentStreamRef.current = acquiredStream;
-
-      if (videoRef.current) {
-        const video = videoRef.current;
-        video.setAttribute('playsinline', 'true');
-        video.setAttribute('webkit-playsinline', 'true');
-        video.muted = true;
-        video.autoplay = true;
-        video.srcObject = acquiredStream;
-
-        video.onloadedmetadata = () => {
-          video
-            .play()
-            .then(() => {
-              if (isMountedRef.current) {
-                setCameraState('STREAMING');
-                setIsRetrying(false);
-              }
-            })
-            .catch(() => {
-              if (isMountedRef.current) {
-                setCameraState('STREAMING');
-                setIsRetrying(false);
-              }
-            });
-        };
-      } else {
+      } finally {
         if (isMountedRef.current) {
-          setCameraState('STREAMING');
           setIsRetrying(false);
         }
       }
@@ -216,84 +165,64 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
     };
   }, [facingMode, initializeCamera, stopAllMediaTracks]);
 
-  // Capture snapshot from video canvas
-  const handleCapture = () => {
-    if (!videoRef.current) return;
+  const handleToggleFacing = () => {
+    setFacingMode((prev) => (prev === 'user' ? 'environment' : 'user'));
+  };
+
+  const handleSnapPhoto = () => {
+    if (!videoRef.current || cameraState !== 'STREAMING') return;
+
+    // Trigger flash animation
+    setShowFlash(true);
+    setTimeout(() => setShowFlash(false), 280);
+
     const video = videoRef.current;
-    const width = video.videoWidth || 640;
-    const height = video.videoHeight || 480;
-
     const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
     const ctx = canvas.getContext('2d');
+
     if (ctx) {
       if (facingMode === 'user') {
-        ctx.translate(width, 0);
+        ctx.translate(canvas.width, 0);
         ctx.scale(-1, 1);
       }
-      ctx.drawImage(video, 0, 0, width, height);
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
 
-      if (facingMode === 'user') {
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-      }
-
-      // Add clean WCR corporate watermark
-      const now = new Date();
-      const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-      const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-      const formattedTimestamp = `${dateStr} • ${timeStr}`;
-      setCaptureTimestamp(formattedTimestamp);
-
-      // Bottom bar
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
-      ctx.fillRect(0, height - 36, width, 36);
-
-      ctx.font = 'bold 11px sans-serif';
-      ctx.fillStyle = '#f59e0b';
-      ctx.fillText('WCR VERIFIED ARRIVAL', 12, height - 14);
-
-      ctx.font = '11px monospace';
-      ctx.fillStyle = '#f8fafc';
-      ctx.fillText(formattedTimestamp, width - ctx.measureText(formattedTimestamp).width - 12, height - 14);
-
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
       setCapturedPhoto(dataUrl);
       setCaptureSource('LIVE_CAMERA');
       setCameraState('CAPTURED');
-
-      stopAllMediaTracks();
+      setCaptureTimestamp(
+        new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+      );
     }
   };
 
   const handleRetake = () => {
     setCapturedPhoto(null);
-    setCaptureTimestamp('');
+    setCameraState('INITIALIZING');
     initializeCamera(facingMode);
-  };
-
-  const handleToggleFacing = () => {
-    const nextMode = facingMode === 'user' ? 'environment' : 'user';
-    setFacingMode(nextMode);
   };
 
   const handleFallbackFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const result = event.target?.result as string;
-        if (result) {
-          setCapturedPhoto(result);
-          setCaptureSource('FILE_UPLOAD');
-          setCameraState('CAPTURED');
-          setCaptureTimestamp(`Device Upload • ${new Date().toLocaleDateString('en-GB')}`);
-          stopAllMediaTracks();
-        }
-      };
-      reader.readAsDataURL(file);
-    }
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      if (dataUrl) {
+        stopAllMediaTracks();
+        setCapturedPhoto(dataUrl);
+        setCaptureSource('FILE_UPLOAD');
+        setCameraState('CAPTURED');
+        setCaptureTimestamp(
+          new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+        );
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleConfirmReceptionAssisted = () => {
@@ -313,15 +242,17 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
   };
 
   return (
-    <div className="w-full max-w-md mx-auto bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xl text-slate-800">
+    <div className="w-full max-w-md mx-auto glass-panel-elevated rounded-3xl overflow-hidden border border-white/12 shadow-2xl text-slate-100">
       {/* Header */}
-      <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-        <div>
-          <div className="flex items-center gap-1.5 text-slate-900 font-bold text-sm">
-            <Camera className="w-4 h-4 text-amber-600" />
-            <span>{title}</span>
+      <div className="p-4 sm:p-5 border-b border-white/8 flex items-center justify-between bg-white/2">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center">
+            <Camera className="w-4 h-4" />
           </div>
-          <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>
+          <div>
+            <h3 className="text-sm font-bold text-white tracking-tight">{title}</h3>
+            <p className="text-[11px] text-slate-400">{subtitle}</p>
+          </div>
         </div>
         {onCancel && (
           <button
@@ -330,7 +261,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
               stopAllMediaTracks();
               onCancel();
             }}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition cursor-pointer"
+            className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/6 transition cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -338,30 +269,30 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
       </div>
 
       {/* Main Viewport */}
-      <div className="p-4 space-y-4">
+      <div className="p-5 space-y-4">
         {/* Error Notice */}
         {cameraState === 'ERROR' && errorMessage && (
-          <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-900 space-y-2.5">
-            <div className="flex items-start gap-2">
-              <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+          <div className="p-4 bg-rose-950/40 border border-rose-500/40 rounded-2xl text-xs text-rose-200 space-y-3">
+            <div className="flex items-start gap-2.5">
+              <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
               <div>
-                <p className="font-semibold text-rose-950">Camera Access Notice</p>
-                <p className="text-xs text-rose-800 mt-0.5 leading-relaxed">{errorMessage}</p>
+                <p className="font-bold text-rose-100">Camera Access Notice</p>
+                <p className="text-xs text-rose-300/90 mt-0.5 leading-relaxed">{errorMessage}</p>
               </div>
             </div>
 
-            <div className="pt-2 border-t border-rose-200/80 flex flex-wrap gap-2">
+            <div className="pt-2 border-t border-rose-500/20 flex flex-wrap gap-2">
               <button
                 type="button"
                 onClick={() => initializeCamera(facingMode)}
-                className="px-3 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-900 font-semibold rounded-lg flex items-center gap-1.5 transition text-xs cursor-pointer"
+                className="px-3 py-1.5 bg-rose-500/30 hover:bg-rose-500/40 text-rose-100 font-semibold rounded-xl flex items-center gap-1.5 transition text-xs cursor-pointer border border-rose-500/30"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isRetrying ? 'animate-spin' : ''}`} />
                 Retry Camera
               </button>
 
-              <label className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-medium rounded-lg flex items-center gap-1.5 transition text-xs cursor-pointer border border-slate-200">
-                <Upload className="w-3.5 h-3.5 text-slate-600" />
+              <label className="px-3 py-1.5 bg-white/8 hover:bg-white/12 text-slate-200 font-medium rounded-xl flex items-center gap-1.5 transition text-xs cursor-pointer border border-white/10">
+                <Upload className="w-3.5 h-3.5 text-amber-400" />
                 Upload Photo File
                 <input
                   type="file"
@@ -374,26 +305,51 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
               <button
                 type="button"
                 onClick={handleConfirmReceptionAssisted}
-                className="px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 font-semibold rounded-lg flex items-center gap-1.5 transition text-xs cursor-pointer border border-amber-300"
+                className="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-semibold rounded-xl flex items-center gap-1.5 transition text-xs cursor-pointer border border-amber-500/30"
               >
-                <UserCheck className="w-3.5 h-3.5 text-amber-700" />
-                Reception-Assisted Capture
+                <UserCheck className="w-3.5 h-3.5 text-amber-400" />
+                Reception Assisted
               </button>
             </div>
           </div>
         )}
 
-        {/* Viewport Box */}
-        <div className="relative w-full aspect-square max-h-[300px] bg-slate-900 rounded-xl overflow-hidden border border-slate-200 flex items-center justify-center shadow-inner">
+        {/* Viewport Frame with Luxury Reticle */}
+        <div className="relative w-full aspect-square max-h-[320px] bg-[#05070A] rounded-2xl overflow-hidden border border-white/10 flex items-center justify-center shadow-inner">
+          {/* Capture Flash Overlay */}
+          <AnimatePresence>
+            {showFlash && (
+              <motion.div
+                initial={{ opacity: 0.9 }}
+                animate={{ opacity: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.28 }}
+                className="absolute inset-0 bg-white z-50 pointer-events-none"
+              />
+            )}
+          </AnimatePresence>
+
           {cameraState === 'CAPTURED' && capturedPhoto ? (
             <div className="relative w-full h-full">
-              <img src={capturedPhoto} alt="Captured preview" className="w-full h-full object-cover" />
-              <div className="absolute top-2.5 right-2.5 bg-emerald-600 text-white font-semibold px-2 py-0.5 rounded-md text-[11px] flex items-center gap-1 shadow">
-                <CheckCircle2 className="w-3 h-3" />
-                {captureSource === 'LIVE_CAMERA' ? 'Live Camera' : 'Device Upload'}
-              </div>
+              <img
+                src={capturedPhoto}
+                alt="Captured preview"
+                className="w-full h-full object-cover"
+              />
+
+              {/* Luxury PHOTO VERIFIED Badge */}
+              <motion.div
+                initial={{ scale: 0.85, opacity: 0, y: -8 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+                className="absolute top-3 right-3 bg-emerald-500/90 backdrop-blur-md text-slate-950 font-black px-3 py-1 rounded-xl text-xs flex items-center gap-1.5 shadow-xl border border-emerald-400"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span>PHOTO VERIFIED</span>
+              </motion.div>
+
               {captureTimestamp && (
-                <div className="absolute bottom-2.5 left-2.5 bg-slate-900/80 px-2 py-0.5 rounded text-[10px] text-amber-300 font-mono">
+                <div className="absolute bottom-3 left-3 bg-slate-950/80 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] text-amber-300 font-mono border border-white/10">
                   {captureTimestamp}
                 </div>
               )}
@@ -411,34 +367,46 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
               />
 
               {cameraState === 'INITIALIZING' && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2.5 bg-slate-900 text-slate-300 p-4">
-                  <div className="w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
-                  <p className="text-xs font-medium text-slate-200">Connecting to camera hardware...</p>
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#07090C] text-slate-300 p-4">
+                  <div className="w-9 h-9 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+                  <p className="text-xs font-medium text-slate-300">Connecting optical hardware...</p>
                 </div>
               )}
 
               {cameraState === 'STREAMING' && (
                 <>
-                  <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 px-2 py-0.5 bg-slate-950/70 backdrop-blur-xs rounded-md text-[10px] font-semibold text-emerald-400 border border-slate-700">
+                  {/* Status Overlay */}
+                  <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 bg-slate-950/80 backdrop-blur-md rounded-xl text-[10px] font-bold text-emerald-400 border border-emerald-500/30">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    LIVE PREVIEW
+                    LIVE OPTICAL FEED
                   </div>
 
-                  <div className="absolute top-2.5 right-2.5 flex items-center gap-1">
+                  {/* Switch Camera */}
+                  <div className="absolute top-3 right-3 flex items-center gap-1">
                     <button
                       type="button"
                       onClick={handleToggleFacing}
-                      className="p-1.5 bg-slate-950/70 hover:bg-slate-800 text-slate-200 hover:text-amber-400 rounded-lg border border-slate-700 transition cursor-pointer"
+                      className="p-2 bg-slate-950/80 hover:bg-slate-900 text-slate-300 hover:text-amber-400 rounded-xl border border-white/10 transition cursor-pointer backdrop-blur-md"
                       title="Switch Camera (Front/Rear)"
                     >
                       <FlipHorizontal className="w-4 h-4" />
                     </button>
                   </div>
 
-                  <div className="absolute inset-8 border border-dashed border-amber-400/50 rounded-xl pointer-events-none flex items-center justify-center">
-                    <span className="text-[10px] text-amber-300/80 font-medium bg-slate-950/50 px-2 py-0.5 rounded">
-                      Align Face in Center
-                    </span>
+                  {/* Corner Target Reticles */}
+                  <div className="absolute inset-8 pointer-events-none flex items-center justify-center animate-reticle">
+                    {/* Top Left */}
+                    <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-amber-400" />
+                    {/* Top Right */}
+                    <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-amber-400" />
+                    {/* Bottom Left */}
+                    <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-amber-400" />
+                    {/* Bottom Right */}
+                    <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-amber-400" />
+
+                    <div className="bg-slate-950/70 backdrop-blur-md px-3 py-1 rounded-full border border-amber-400/30 text-[10px] font-semibold text-amber-300 tracking-wide">
+                      Align Face in Frame
+                    </div>
                   </div>
                 </>
               )}
@@ -446,90 +414,48 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
           )}
         </div>
 
-        {/* Buttons / Controls */}
-        <div>
-          {cameraState === 'STREAMING' ? (
-            <div className="flex items-center gap-2.5">
-              <button
-                type="button"
-                onClick={handleCapture}
-                className="flex-1 py-3 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl shadow transition cursor-pointer flex items-center justify-center gap-2"
-              >
-                <Camera className="w-4 h-4 text-amber-400" />
-                Capture Photo
-              </button>
-
-              <button
-                type="button"
-                onClick={handleToggleFacing}
-                className="p-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl border border-slate-200 transition cursor-pointer"
-                title="Switch Lens"
-              >
-                <FlipHorizontal className="w-4 h-4" />
-              </button>
-            </div>
-          ) : cameraState === 'CAPTURED' ? (
-            <div className="flex items-center gap-2.5">
+        {/* Action Controls */}
+        <div className="pt-2">
+          {cameraState === 'CAPTURED' ? (
+            <div className="flex gap-2.5">
               <button
                 type="button"
                 onClick={handleRetake}
-                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl border border-slate-200 flex items-center justify-center gap-1.5 cursor-pointer transition"
+                className="flex-1 py-2.5 px-4 bg-white/6 hover:bg-white/10 text-slate-200 hover:text-white font-semibold text-xs rounded-xl border border-white/10 transition flex items-center justify-center gap-2 cursor-pointer"
               >
-                <RotateCcw className="w-3.5 h-3.5" />
+                <RotateCcw className="w-4 h-4" />
                 Retake
               </button>
 
               <button
                 type="button"
                 onClick={handleConfirmPhoto}
-                className="flex-1 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl shadow flex items-center justify-center gap-1.5 cursor-pointer transition"
+                className="flex-1 py-2.5 px-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition flex items-center justify-center gap-2 cursor-pointer"
               >
-                <Check className="w-4 h-4 text-emerald-400" />
-                Attach Photo
+                <Check className="w-4 h-4 stroke-[3]" />
+                Confirm & Continue
               </button>
             </div>
           ) : (
-            <div className="flex flex-col gap-2">
-              <button
+            <div className="flex flex-col items-center gap-3">
+              {/* Premium Circular Shutter Button */}
+              <motion.button
                 type="button"
-                onClick={() => initializeCamera(facingMode)}
-                className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl flex items-center justify-center gap-2 cursor-pointer transition"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.94 }}
+                disabled={cameraState !== 'STREAMING'}
+                onClick={handleSnapPhoto}
+                className="relative w-16 h-16 rounded-full bg-gradient-to-tr from-amber-500 to-amber-400 text-slate-950 flex items-center justify-center shadow-2xl shadow-amber-500/30 ring-4 ring-white/10 disabled:opacity-40 disabled:pointer-events-none cursor-pointer group"
+                title="Capture Candidate Photo"
               >
-                <RefreshCw className="w-3.5 h-3.5 text-amber-400" />
-                Initialize Camera
-              </button>
+                <div className="w-12 h-12 rounded-full border-2 border-slate-950/60 flex items-center justify-center group-hover:scale-95 transition-transform">
+                  <Camera className="w-6 h-6 text-slate-950" />
+                </div>
+              </motion.button>
 
-              <button
-                type="button"
-                onClick={handleConfirmReceptionAssisted}
-                className="w-full py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-medium rounded-xl flex items-center justify-center gap-2 cursor-pointer transition"
-              >
-                <UserCheck className="w-3.5 h-3.5 text-amber-700" />
-                Reception will capture photo at desk
-              </button>
-            </div>
-          )}
-
-          {/* Quick Upload or Reception Assistant Option */}
-          {cameraState === 'STREAMING' && (
-            <div className="pt-2.5 flex items-center justify-between text-[11px] text-slate-500">
-              <label className="hover:text-slate-800 underline cursor-pointer">
-                Upload from device instead
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleFallbackFileUpload}
-                />
-              </label>
-
-              <button
-                type="button"
-                onClick={handleConfirmReceptionAssisted}
-                className="hover:text-slate-800 underline cursor-pointer"
-              >
-                Reception will assist
-              </button>
+              <p className="text-[11px] text-slate-400 font-medium">
+                Tap button to capture high-resolution photo
+              </p>
             </div>
           )}
         </div>

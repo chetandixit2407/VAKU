@@ -69,18 +69,18 @@ export const WalkInModal: React.FC<WalkInModalProps> = ({ onClose, onSuccess }) 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
-      <div className="bg-[#1a0f0a]/95 border border-[rgba(225,165,95,0.28)] rounded-3xl max-w-lg w-full shadow-2xl shadow-black/80 overflow-hidden animate-in fade-in zoom-in-95 duration-200 text-slate-100">
-        <div className="p-5 sm:p-6 border-b border-[rgba(200,140,80,0.18)] flex items-center justify-between bg-[#140b07]/90">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-xs p-4">
+      <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div className="p-5 sm:p-6 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
           <div>
             <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 block">
               Front Desk Quick Intake
             </span>
-            <h2 className="text-lg font-bold text-[#fdf6ed] mt-0.5">Register Walk-in Visitor / Client</h2>
+            <h2 className="text-lg font-bold text-white mt-0.5">Register Walk-in Visitor / Client</h2>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-[#a88d77] hover:text-white hover:bg-[#25150d] transition cursor-pointer"
+            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition"
           >
             <X className="w-5 h-5" />
           </button>
@@ -95,7 +95,7 @@ export const WalkInModal: React.FC<WalkInModalProps> = ({ onClose, onSuccess }) 
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-semibold text-[#e8c89b] mb-1">
+              <label className="block font-semibold text-slate-300 mb-1">
                 Visitor Name <span className="text-amber-400">*</span>
               </label>
               <input
@@ -103,12 +103,12 @@ export const WalkInModal: React.FC<WalkInModalProps> = ({ onClose, onSuccess }) 
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="e.g. Ramesh Patel"
-                className="w-full px-3 py-2 bg-[#120a06] border border-[rgba(200,140,80,0.25)] rounded-xl text-white text-xs focus:outline-hidden focus:border-amber-400"
+                className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white text-xs focus:outline-hidden focus:border-amber-400"
                 required
               />
             </div>
             <div>
-              <label className="block font-semibold text-[#e8c89b] mb-1">
+              <label className="block font-semibold text-slate-300 mb-1">
                 Mobile Number <span className="text-amber-400">*</span>
               </label>
               <input
@@ -116,7 +116,7 @@ export const WalkInModal: React.FC<WalkInModalProps> = ({ onClose, onSuccess }) 
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="9876543210"
-                className="w-full px-3 py-2 bg-[#120a06] border border-[rgba(200,140,80,0.25)] rounded-xl text-white text-xs focus:outline-hidden focus:border-amber-400"
+                className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white text-xs focus:outline-hidden focus:border-amber-400"
                 required
               />
             </div>
@@ -124,21 +124,21 @@ export const WalkInModal: React.FC<WalkInModalProps> = ({ onClose, onSuccess }) 
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-semibold text-[#e8c89b] mb-1">Company / Organization</label>
+              <label className="block font-semibold text-slate-300 mb-1">Company / Organization</label>
               <input
                 type="text"
                 value={company}
                 onChange={(e) => setCompany(e.target.value)}
                 placeholder="e.g. Apex Investments"
-                className="w-full px-3 py-2 bg-[#120a06] border border-[rgba(200,140,80,0.25)] rounded-xl text-white text-xs focus:outline-hidden focus:border-amber-400"
+                className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white text-xs focus:outline-hidden focus:border-amber-400"
               />
             </div>
             <div>
-              <label className="block font-semibold text-[#e8c89b] mb-1">Visitor Category</label>
+              <label className="block font-semibold text-slate-300 mb-1">Visitor Category</label>
               <select
                 value={visitorType}
                 onChange={(e) => setVisitorType(e.target.value as VisitorType)}
-                className="w-full px-3 py-2 bg-[#120a06] border border-[rgba(200,140,80,0.25)] rounded-xl text-white text-xs focus:outline-hidden focus:border-amber-400"
+                className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white text-xs focus:outline-hidden focus:border-amber-400"
               >
                 <option value="CLIENT">Client / High-Net-Worth Investor</option>
                 <option value="VENDOR">Vendor / Partner</option>
@@ -149,13 +149,13 @@ export const WalkInModal: React.FC<WalkInModalProps> = ({ onClose, onSuccess }) 
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-semibold text-[#e8c89b] mb-1">
+              <label className="block font-semibold text-slate-300 mb-1">
                 Meeting Host (WCR Staff) <span className="text-amber-400">*</span>
               </label>
               <select
                 value={selectedHostId}
                 onChange={(e) => setSelectedHostId(e.target.value)}
-                className="w-full px-3 py-2 bg-[#120a06] border border-[rgba(200,140,80,0.25)] rounded-xl text-white text-xs focus:outline-hidden focus:border-amber-400"
+                className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white text-xs focus:outline-hidden focus:border-amber-400"
               >
                 {STAFF_HOST_OPTIONS.map((host) => (
                   <option key={host.id} value={host.id}>
@@ -165,29 +165,29 @@ export const WalkInModal: React.FC<WalkInModalProps> = ({ onClose, onSuccess }) 
               </select>
             </div>
             <div>
-              <label className="block font-semibold text-[#e8c89b] mb-1">Purpose of Visit</label>
+              <label className="block font-semibold text-slate-300 mb-1">Purpose of Visit</label>
               <input
                 type="text"
                 value={purpose}
                 onChange={(e) => setPurpose(e.target.value)}
                 placeholder="e.g. Contract Signing"
-                className="w-full px-3 py-2 bg-[#120a06] border border-[rgba(200,140,80,0.25)] rounded-xl text-white text-xs focus:outline-hidden focus:border-amber-400"
+                className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white text-xs focus:outline-hidden focus:border-amber-400"
               />
             </div>
           </div>
 
-          <div className="pt-3 border-t border-[rgba(200,140,80,0.18)] flex justify-end gap-3">
+          <div className="pt-3 border-t border-slate-800 flex justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-[#20120b] hover:bg-[#2c180e] text-[#a88d77] hover:text-[#fdf6ed] rounded-xl font-semibold border border-[rgba(200,140,80,0.2)] transition cursor-pointer"
+              className="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl hover:bg-slate-700 font-semibold"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="px-5 py-2.5 bg-gradient-to-r from-[#c98944] to-amber-600 hover:from-[#db974e] hover:to-amber-500 text-slate-950 font-bold rounded-xl shadow-lg flex items-center gap-1.5 transition cursor-pointer"
+              className="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold rounded-xl shadow-lg flex items-center gap-1.5"
             >
               {submitting ? (
                 <>

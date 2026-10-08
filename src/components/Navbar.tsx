@@ -15,7 +15,6 @@ import {
   LogOut,
   User as UserIcon,
   MessageSquare,
-  Search,
 } from 'lucide-react';
 import type { UserRole, User } from '../types/index.ts';
 import { PWAInstallButton } from './PWAInstallButton.tsx';
@@ -33,7 +32,6 @@ interface NavbarProps {
   isRealtimeConnected: boolean;
   currentUser?: User | null;
   onLogout?: () => void;
-  onOpenSearch?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -49,15 +47,14 @@ export const Navbar: React.FC<NavbarProps> = ({
   isRealtimeConnected,
   currentUser,
   onLogout,
-  onOpenSearch,
 }) => {
   const allRoles: { role: UserRole; label: string; icon: any; color: string }[] = [
-    { role: 'HR', label: 'HR Lead', icon: Users, color: 'text-[#e8c89b]' },
+    { role: 'HR', label: 'HR Lead', icon: Users, color: 'text-amber-400' },
     { role: 'SENIOR_HR', label: 'Senior HR', icon: Award, color: 'text-amber-300' },
-    { role: 'ADMIN', label: 'Admin Ops', icon: Shield, color: 'text-purple-300' },
-    { role: 'CEO', label: 'CEO Suite', icon: Award, color: 'text-emerald-300' },
-    { role: 'INTERVIEWER', label: 'Interviewer', icon: UserCheck, color: 'text-sky-300' },
-    { role: 'RECEPTION', label: 'Front Desk', icon: Building, color: 'text-cyan-300' },
+    { role: 'ADMIN', label: 'Admin Ops', icon: Shield, color: 'text-purple-400' },
+    { role: 'CEO', label: 'CEO Suite', icon: Award, color: 'text-emerald-400' },
+    { role: 'INTERVIEWER', label: 'Interviewer', icon: UserCheck, color: 'text-blue-400' },
+    { role: 'RECEPTION', label: 'Front Desk', icon: Building, color: 'text-cyan-400' },
     { role: 'PANTRY', label: 'Pantry Steward', icon: Coffee, color: 'text-amber-300' },
   ];
 
@@ -73,63 +70,63 @@ export const Navbar: React.FC<NavbarProps> = ({
     : allRoles.filter((r) => r.role === currentUser.role);
 
   return (
-    <header className="sticky top-0 z-40 bg-white/92 backdrop-blur-2xl border-b border-[#EFE0CC] px-4 sm:px-6 py-2.5 shadow-[0_4px_25px_rgba(0,0,0,0.03)] text-[#171717] transition-all duration-300">
+    <header className="sticky top-0 z-40 bg-slate-950/90 backdrop-blur-md border-b border-slate-800/80 px-4 sm:px-6 py-2.5">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
         {/* Brand */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-2xl bg-[#171717] text-[#D6B28A] flex items-center justify-center font-black text-sm shadow-md border border-[#2D2D2D]">
+          <div className="flex items-center gap-2">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-slate-950 font-black text-sm shadow-md shadow-amber-500/10">
               WCR
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-extrabold text-[#171717] text-sm tracking-tight">
+                <span className="font-extrabold text-white text-sm tracking-tight">
                   White Collar Realty
                 </span>
-                <span className="hidden sm:inline-block px-2 py-0.5 rounded-md bg-[#FAF4ED] border border-[#E4CCAF] text-[10px] font-black text-[#8C6033] uppercase tracking-widest">
-                  COMMAND CENTER
+                <span className="hidden sm:inline-block px-1.5 py-0.2 rounded-sm bg-amber-500/10 border border-amber-500/30 text-[10px] font-bold text-amber-400 uppercase tracking-widest">
+                  Ops PWA
                 </span>
               </div>
-              <p className="text-[10px] text-[#77716B] font-medium hidden md:block">
-                Operations & Candidate Intake Architecture
+              <p className="text-[10px] text-slate-400 font-medium hidden md:block">
+                Fully Automated Office & Candidate Management
               </p>
             </div>
           </div>
 
           {/* Real-time Indicator */}
           <div
-            className={`hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold ${
+            className={`hidden lg:flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold ${
               isRealtimeConnected
-                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                : 'bg-rose-50 text-rose-700 border border-rose-200'
+                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
             }`}
             title={isRealtimeConnected ? 'Live Server-Sent Events Connected' : 'Connecting to Realtime stream'}
           >
             <span
               className={`w-1.5 h-1.5 rounded-full ${
-                isRealtimeConnected ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'
+                isRealtimeConnected ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'
               }`}
             />
-            <span>{isRealtimeConnected ? 'LIVE SYNC' : 'RECONNECTING'}</span>
+            <span>{isRealtimeConnected ? 'Live Real-Time' : 'Reconnecting'}</span>
           </div>
         </div>
 
         {/* Role View Switcher */}
         {visibleRoles.length > 1 && (
-          <div className="flex items-center bg-[#FAF9F6] border border-[#EFE0CC] rounded-2xl p-1 gap-1 overflow-x-auto max-w-full">
+          <div className="flex items-center bg-slate-900 border border-slate-800 rounded-2xl p-1 gap-1 overflow-x-auto max-w-full">
             {visibleRoles.map(({ role, label, icon: Icon, color }) => {
               const active = currentRole === role;
               return (
                 <button
                   key={role}
                   onClick={() => onSelectRole(role)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition shrink-0 cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold transition shrink-0 cursor-pointer ${
                     active
-                      ? 'bg-[#FAF4ED] text-[#171717] font-extrabold shadow-xs border border-[#E4CCAF]'
-                      : 'text-[#77716B] hover:text-[#171717] hover:bg-[#F3EFE9]'
+                      ? 'bg-amber-500 text-slate-950 shadow-sm font-bold'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
                   }`}
                 >
-                  <Icon className={`w-3.5 h-3.5 ${active ? 'text-[#8C6033]' : 'text-[#8A847D]'}`} />
+                  <Icon className={`w-3.5 h-3.5 ${active ? 'text-slate-950' : color}`} />
                   <span className="hidden sm:inline">{label}</span>
                   <span className="sm:hidden">{role}</span>
                 </button>
@@ -140,50 +137,35 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Action Controls, User Info, & Notifications */}
         <div className="flex items-center gap-2">
-          {/* Global Search Button */}
-          {onOpenSearch && (
-            <button
-              onClick={onOpenSearch}
-              className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-white hover:bg-[#FAF9F6] border border-[#EFE0CC] text-[#171717] text-xs font-semibold transition cursor-pointer shadow-2xs"
-              title="Global Command Palette (Cmd + K / Ctrl + K)"
-            >
-              <Search className="w-3.5 h-3.5 text-[#8C6033]" />
-              <span className="hidden xl:inline text-[#77716B]">Search</span>
-              <kbd className="hidden sm:inline text-[9px] font-mono px-1.5 py-0.5 rounded bg-[#FAF9F6] border border-[#EFE0CC] text-[#8A847D]">
-                ⌘K
-              </kbd>
-            </button>
-          )}
-
           {/* Quick Intake buttons */}
           <button
             onClick={onOpenCheckIn}
-            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-[#FAF9F6] border border-[#E4CCAF] text-[#171717] font-semibold text-xs transition cursor-pointer shadow-2xs"
+            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-amber-500/40 text-amber-300 font-semibold text-xs transition cursor-pointer"
             title="Candidate Arrival Self Check-In Form"
           >
-            <UserCheck className="w-3.5 h-3.5 text-[#8C6033]" />
-            <span>Check-In</span>
+            <UserCheck className="w-3.5 h-3.5 text-amber-400" />
+            <span>Candidate Check-In</span>
           </button>
 
           <button
             onClick={onOpenQRPasses}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-[#FAF9F6] border border-[#EFE0CC] text-[#171717] font-semibold text-xs transition cursor-pointer shadow-2xs"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-semibold text-xs transition cursor-pointer"
             title="WCR QR Codes & Passes"
           >
-            <QrCode className="w-3.5 h-3.5 text-[#8C6033]" />
+            <QrCode className="w-3.5 h-3.5 text-amber-400" />
             <span className="hidden sm:inline">QR Station</span>
           </button>
 
           {/* Internal Office Chat */}
           <button
             onClick={onOpenChat}
-            className="relative p-2 rounded-xl bg-white border border-[#EFE0CC] text-[#171717] hover:bg-[#FAF9F6] transition cursor-pointer flex items-center gap-1.5 shadow-2xs"
+            className="relative p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-amber-300 hover:bg-slate-800 transition cursor-pointer flex items-center gap-1.5"
             title="Internal Office Chat"
           >
-            <MessageSquare className="w-4 h-4 text-[#8C6033]" />
+            <MessageSquare className="w-4 h-4 text-amber-400" />
             <span className="hidden lg:inline text-xs font-semibold">Office Chat</span>
             {unreadChatCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#C99A68] text-white text-[10px] font-black flex items-center justify-center shadow-md">
+              <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black flex items-center justify-center animate-bounce shadow-md">
                 {unreadChatCount > 9 ? '9+' : unreadChatCount}
               </span>
             )}
@@ -192,12 +174,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Notification Bell */}
           <button
             onClick={onOpenNotifications}
-            className="relative p-2 rounded-xl bg-white border border-[#EFE0CC] text-[#77716B] hover:text-[#171717] hover:bg-[#FAF9F6] transition cursor-pointer shadow-2xs"
+            className="relative p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800 transition cursor-pointer"
             title="Alert Feed"
           >
             <Bell className="w-4 h-4" />
             {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#C99A68] text-white text-[10px] font-black flex items-center justify-center shadow-md">
+              <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black flex items-center justify-center animate-bounce shadow-md">
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
@@ -205,14 +187,14 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* User Badge & Logout */}
           {currentUser && (
-            <div className="flex items-center gap-2 pl-2 border-l border-[#EFE0CC]">
+            <div className="flex items-center gap-2 pl-1 border-l border-slate-800">
               <div className="hidden sm:flex flex-col text-right">
-                <span className="text-xs font-bold text-[#171717] leading-tight">{currentUser.name}</span>
-                <span className="text-[10px] font-mono text-[#8C6033] font-medium">{currentUser.role}</span>
+                <span className="text-xs font-bold text-white leading-tight">{currentUser.name}</span>
+                <span className="text-[10px] font-mono text-amber-400">{currentUser.role}</span>
               </div>
               <button
                 onClick={onLogout}
-                className="p-2 rounded-xl bg-white hover:bg-rose-50 border border-[#EFE0CC] hover:border-rose-200 text-[#77716B] hover:text-rose-600 transition cursor-pointer shadow-2xs"
+                className="p-2 rounded-xl bg-slate-900 hover:bg-rose-500/20 border border-slate-800 hover:border-rose-500/40 text-slate-400 hover:text-rose-300 transition cursor-pointer"
                 title="Sign out of staff console"
               >
                 <LogOut className="w-4 h-4" />

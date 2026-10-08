@@ -5175,8 +5175,22 @@ async function startServer() {
     res.json({ success: true, settings: dbService.get().settings });
   });
 
+  // Serve public directory assets (including background video, posters, logos, icons, PWA manifest)
+  const PUBLIC_DIR = path.resolve(process.cwd(), 'public');
+  if (fs.existsSync(PUBLIC_DIR)) {
+    app.use(express.static(PUBLIC_DIR));
+  }
+
   // Serve local pdfjs worker assets safely on same origin
   app.use('/pdfjs', express.static(path.resolve(process.cwd(), 'node_modules/pdfjs-dist/build')));
+
+  // 404 API Catch-all: Ensure all unhandled /api/* requests return JSON, NEVER falling through to SPA HTML
+  app.all('/api/*', (req: Request, res: Response) => {
+    res.status(404).json({
+      success: false,
+      error: `API endpoint not found: ${req.method} ${req.path}`,
+    });
+  });
 
   // ==========================================
   // VITE DEV MIDDLEWARE OR PRODUCTION STATIC
@@ -5189,7 +5203,6 @@ async function startServer() {
         middlewareMode: true,
         hmr: false,
         watch: isHmrDisabled ? null : {},
-        allowedHosts: true,
       },
       appType: 'spa',
     });

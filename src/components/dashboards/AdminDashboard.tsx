@@ -559,30 +559,30 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-[#EFE0CC]">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
         <div>
           <div className="flex items-center gap-2">
-            <Shield className="w-5 h-5 text-[#C99A68]" />
-            <h1 className="text-xl font-black text-[#111111] tracking-tight">
+            <Shield className="w-5 h-5 text-purple-400" />
+            <h1 className="text-xl font-bold text-white tracking-tight">
               Operations & Security Administration
             </h1>
           </div>
-          <p className="text-xs text-[#77716B] mt-0.5">
+          <p className="text-xs text-slate-400 mt-0.5">
             Full Access Credentials Manager (Sameer Sir), Room Configuration, Password Reset Approvals, and Central Audit Trail.
           </p>
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex flex-wrap bg-white/90 border border-[#EFE0CC] rounded-2xl p-1 gap-1 shadow-sm">
+        <div className="flex flex-wrap bg-slate-900 border border-slate-800 rounded-2xl p-1 gap-1">
           <button
             onClick={() => setActiveTab('candidates')}
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
               activeTab === 'candidates'
-                ? 'bg-[#171717] text-white font-bold shadow-xs'
-                : 'text-[#77716B] hover:text-[#111111] hover:bg-[#FAF9F6]'
+                ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-bold shadow-md'
+                : 'text-slate-400 hover:text-white'
             }`}
           >
-            <UserCheck className="w-3.5 h-3.5 text-[#C99A68]" />
+            <UserCheck className="w-3.5 h-3.5" />
             <span>Live Candidates ({candidates.length})</span>
           </button>
 
@@ -590,11 +590,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             onClick={() => setActiveTab('users')}
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
               activeTab === 'users'
-                ? 'bg-[#171717] text-white font-bold shadow-xs'
-                : 'text-[#77716B] hover:text-[#111111] hover:bg-[#FAF9F6]'
+                ? 'bg-purple-500 text-white font-bold shadow-sm'
+                : 'text-slate-400 hover:text-white'
             }`}
           >
-            <Users className="w-3.5 h-3.5 text-[#C99A68]" />
+            <Users className="w-3.5 h-3.5" />
             <span>Staff Accounts ({staffUsers.length})</span>
           </button>
 
@@ -602,11 +602,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             onClick={() => setActiveTab('rooms')}
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
               activeTab === 'rooms'
-                ? 'bg-[#171717] text-white font-bold shadow-xs'
-                : 'text-[#77716B] hover:text-[#111111] hover:bg-[#FAF9F6]'
+                ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
+                : 'text-slate-400 hover:text-white'
             }`}
           >
-            <DoorOpen className="w-3.5 h-3.5 text-[#C99A68]" />
+            <DoorOpen className="w-3.5 h-3.5" />
             <span>Rooms & Pantry Monitor ({rooms.length})</span>
           </button>
 
@@ -614,14 +614,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             onClick={() => setActiveTab('tasks')}
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 relative ${
               activeTab === 'tasks'
-                ? 'bg-[#171717] text-white font-bold shadow-xs'
-                : 'text-[#77716B] hover:text-[#111111] hover:bg-[#FAF9F6]'
+                ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
+                : 'text-slate-400 hover:text-white'
             }`}
           >
-            <Sparkles className="w-3.5 h-3.5 text-[#C99A68]" />
+            <Sparkles className="w-3.5 h-3.5" />
             <span>Action Alerts & Tasks</span>
             {actionTasks.filter((t) => t.status === 'PENDING').length > 0 && (
-              <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-[#FAF9F6] text-[#C99A68] border border-[#EFE0CC]">
+              <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-amber-400 text-slate-950">
                 {actionTasks.filter((t) => t.status === 'PENDING').length}
               </span>
             )}
@@ -631,11 +631,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             onClick={() => setActiveTab('resets')}
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 relative ${
               activeTab === 'resets'
-                ? 'bg-[#171717] text-white font-bold shadow-xs'
-                : 'text-[#77716B] hover:text-[#111111] hover:bg-[#FAF9F6]'
+                ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
+                : 'text-slate-400 hover:text-white'
             }`}
           >
-            <KeyRound className="w-3.5 h-3.5 text-[#C99A68]" />
+            <KeyRound className="w-3.5 h-3.5" />
             <span>Reset Requests</span>
             {pendingResetCount > 0 && (
               <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-rose-500 text-white">
@@ -648,8 +648,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             onClick={() => setActiveTab('visibility')}
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
               activeTab === 'visibility'
-                ? 'bg-[#171717] text-white font-bold shadow-xs'
-                : 'text-[#77716B] hover:text-[#111111] hover:bg-[#FAF9F6]'
+                ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
+                : 'text-slate-400 hover:text-white'
             }`}
           >
             Role Visibility Matrix
@@ -659,8 +659,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             onClick={() => setActiveTab('audit')}
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
               activeTab === 'audit'
-                ? 'bg-[#171717] text-white font-bold shadow-xs'
-                : 'text-[#77716B] hover:text-[#111111] hover:bg-[#FAF9F6]'
+                ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
+                : 'text-slate-400 hover:text-white'
             }`}
           >
             Audit Trail ({auditLogs.length})
@@ -670,8 +670,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             onClick={() => setActiveTab('settings')}
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
               activeTab === 'settings'
-                ? 'bg-[#171717] text-white font-bold shadow-xs'
-                : 'text-[#77716B] hover:text-[#111111] hover:bg-[#FAF9F6]'
+                ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
+                : 'text-slate-400 hover:text-white'
             }`}
           >
             Workflow Rules
@@ -684,27 +684,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         <div className="space-y-4 animate-in fade-in duration-200">
           {/* Summary Metric Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="p-4 bg-white/95 border border-[#EFE0CC] rounded-2xl shadow-sm">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#77716B] block">
+            <div className="p-4 bg-slate-900 border border-slate-800 rounded-2xl">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
                 Total Intake
               </span>
-              <div className="text-xl font-black text-[#111111] mt-1">{candidates.length}</div>
-              <span className="text-[10px] text-[#8A847D]">Authorized View</span>
+              <div className="text-xl font-black text-white mt-1">{candidates.length}</div>
+              <span className="text-[10px] text-slate-500">Authorized View</span>
             </div>
-            <div className="p-4 bg-white/95 border border-[#EFE0CC] rounded-2xl shadow-sm">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#C99A68] block">
+            <div className="p-4 bg-slate-900 border border-blue-500/30 rounded-2xl">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400 block">
                 In Session
               </span>
-              <div className="text-xl font-black text-[#111111] mt-1">
+              <div className="text-xl font-black text-blue-300 mt-1">
                 {candidates.filter((c) => c.status === 'IN_INTERVIEW').length}
               </div>
-              <span className="text-[10px] text-[#77716B]">Live Interviews</span>
+              <span className="text-[10px] text-blue-400/70">Live Interviews</span>
             </div>
-            <div className="p-4 bg-white/95 border border-[#EFE0CC] rounded-2xl shadow-sm">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#C99A68] block">
+            <div className="p-4 bg-slate-900 border border-amber-500/30 rounded-2xl">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 block">
                 Waiting / Assigned
               </span>
-              <div className="text-xl font-black text-[#111111] mt-1">
+              <div className="text-xl font-black text-amber-300 mt-1">
                 {
                   candidates.filter(
                     (c) =>
@@ -715,13 +715,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   ).length
                 }
               </div>
-              <span className="text-[10px] text-[#77716B]">In Pipeline</span>
+              <span className="text-[10px] text-amber-400/70">In Pipeline</span>
             </div>
-            <div className="p-4 bg-white/95 border border-[#EFE0CC] rounded-2xl shadow-sm">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block">
+            <div className="p-4 bg-slate-900 border border-emerald-500/30 rounded-2xl">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 block">
                 Completed Today
               </span>
-              <div className="text-xl font-black text-emerald-700 mt-1">
+              <div className="text-xl font-black text-emerald-300 mt-1">
                 {
                   candidates.filter(
                     (c) =>
@@ -732,28 +732,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   ).length
                 }
               </div>
-              <span className="text-[10px] text-[#77716B]">Evaluated / Departed</span>
+              <span className="text-[10px] text-emerald-400/70">Evaluated / Departed</span>
             </div>
           </div>
 
           {/* Search and Filters Bar */}
-          <div className="p-4 bg-white/95 border border-[#EFE0CC] rounded-2xl flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shadow-sm">
+          <div className="p-4 bg-slate-900 border border-slate-800 rounded-2xl flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
             <div className="relative flex-1">
-              <Search className="w-4 h-4 text-[#77716B] absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={candidateSearch}
                 onChange={(e) => setCandidateSearch(e.target.value)}
                 placeholder="Search candidate by name, position, phone, department, or room..."
-                className="w-full pl-9 pr-4 py-2 bg-[#FAF9F6] border border-[#EFE0CC] rounded-xl text-[#111111] text-xs placeholder:text-[#8A847D] focus:outline-hidden focus:border-[#C99A68]"
+                className="w-full pl-9 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs placeholder:text-slate-500 focus:outline-hidden focus:border-amber-500"
               />
             </div>
             <div className="flex items-center gap-2">
-              <Filter className="w-3.5 h-3.5 text-[#77716B]" />
+              <Filter className="w-3.5 h-3.5 text-slate-400" />
               <select
                 value={candidateStatusFilter}
                 onChange={(e) => setCandidateStatusFilter(e.target.value)}
-                className="px-3 py-2 bg-[#FAF9F6] border border-[#EFE0CC] rounded-xl text-[#111111] text-xs focus:outline-hidden focus:border-[#C99A68]"
+                className="px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:outline-hidden focus:border-amber-500"
               >
                 <option value="ALL">All Statuses ({candidates.length})</option>
                 <option value="IN_INTERVIEW">In Interview</option>
@@ -767,18 +767,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </select>
               <button
                 onClick={onRefresh}
-                className="p-2 bg-[#FAF9F6] hover:bg-[#F8F6F2] text-[#171717] rounded-xl border border-[#EFE0CC] transition cursor-pointer"
+                className="p-2 bg-slate-800 hover:bg-slate-700 text-amber-400 rounded-xl border border-slate-700 transition cursor-pointer"
                 title="Sync authoritative live data"
               >
-                <RefreshCw className="w-4 h-4 text-[#C99A68]" />
+                <RefreshCw className="w-4 h-4" />
               </button>
             </div>
           </div>
 
           {/* Candidates Full Table */}
-          <div className="overflow-x-auto bg-white/95 border border-[#EFE0CC] rounded-3xl shadow-[0_14px_45px_rgba(0,0,0,0.05)]">
+          <div className="overflow-x-auto bg-slate-900 border border-slate-800 rounded-3xl shadow-xl">
             <table className="w-full text-left text-xs">
-              <thead className="bg-[#FAF9F6] border-b border-[#EFE0CC] text-[#77716B]">
+              <thead className="bg-slate-950/80 border-b border-slate-800 text-slate-300">
                 <tr>
                   <th className="p-4 font-bold">Candidate & Position</th>
                   <th className="p-4 font-bold">Live Location / Room</th>
@@ -788,7 +788,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <th className="p-4 font-bold text-right">Admin Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#EFE0CC]">
+              <tbody className="divide-y divide-slate-800/60">
                 {candidates
                   .filter((c) => {
                     if (c.isDeleted) return false;
@@ -823,7 +823,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     const isLiveSession = cand.status === 'IN_INTERVIEW';
 
                     return (
-                      <tr key={cand.id} className="hover:bg-[#FAF9F6]/80 transition">
+                      <tr key={cand.id} className="hover:bg-slate-800/30 transition">
                         {/* Candidate Name & Contact */}
                         <td className="p-4">
                           <div className="flex items-center gap-3">
@@ -831,24 +831,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                               <img
                                 src={cand.livePhoto}
                                 alt={cand.fullName}
-                                className="w-10 h-10 rounded-xl object-cover border border-[#EFE0CC] shrink-0"
+                                className="w-10 h-10 rounded-xl object-cover border border-slate-700 shrink-0"
                               />
                             ) : (
-                              <div className="w-10 h-10 rounded-xl bg-[#FAF9F6] border border-[#EFE0CC] flex items-center justify-center text-[#77716B] font-bold shrink-0">
+                              <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 font-bold shrink-0">
                                 {cand.fullName?.charAt(0) || 'C'}
                               </div>
                             )}
                             <div>
-                              <h4 className="font-bold text-[#111111] text-xs flex items-center gap-1.5">
+                              <h4 className="font-bold text-white text-xs flex items-center gap-1.5">
                                 {cand.fullName}
                                 {isLiveSession && (
-                                  <span className="w-2 h-2 rounded-full bg-[#C99A68] animate-ping" />
+                                  <span className="w-2 h-2 rounded-full bg-blue-400 animate-ping" />
                                 )}
                               </h4>
-                              <p className="text-[11px] text-[#C99A68] font-semibold">
+                              <p className="text-[11px] text-amber-400 font-medium">
                                 {cand.position}
                               </p>
-                              <div className="flex items-center gap-2 text-[10px] text-[#77716B] mt-0.5">
+                              <div className="flex items-center gap-2 text-[10px] text-slate-400 mt-0.5">
                                 {cand.phone && <span>📞 {cand.phone}</span>}
                                 {cand.department && <span>• {cand.department}</span>}
                               </div>
@@ -859,12 +859,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         {/* Live Location & Room */}
                         <td className="p-4">
                           <div className="space-y-1">
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-[#FAF9F6] border border-[#EFE0CC] text-[#171717] font-semibold text-[11px]">
-                              <MapPin className="w-3.5 h-3.5 text-[#C99A68] shrink-0" />
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-slate-950 border border-slate-800 text-white font-semibold text-[11px]">
+                              <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                               {cand.assignedRoomName || cand.currentLocation || 'Reception Area'}
                             </span>
                             {cand.assignedRoomId && (
-                              <p className="text-[10px] text-[#77716B] font-mono">
+                              <p className="text-[10px] text-slate-400 font-mono">
                                 Room ID: {cand.assignedRoomId}
                               </p>
                             )}
@@ -874,15 +874,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         {/* Interview Stage & Interviewer */}
                         <td className="p-4">
                           <div className="space-y-0.5">
-                            <p className="font-semibold text-[#111111] text-xs">
+                            <p className="font-semibold text-white text-xs">
                               {intv?.roundName || cand.interviewRound || 'Direct Evaluation'}
                             </p>
-                            <p className="text-[11px] text-[#C99A68]">
+                            <p className="text-[11px] text-amber-300">
                               Interviewer:{' '}
-                              <strong className="text-[#171717]">{intv?.interviewerName || cand.interviewerName || 'Assigned Lead'}</strong>
+                              <strong>{intv?.interviewerName || cand.interviewerName || 'Assigned Lead'}</strong>
                             </p>
                             {intv?.scheduledTime && (
-                              <p className="text-[10px] text-[#77716B]">
+                              <p className="text-[10px] text-slate-400">
                                 Time: {intv.scheduledTime}
                               </p>
                             )}
@@ -894,14 +894,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           <span
                             className={`px-2.5 py-1 rounded-full text-[10px] font-bold border inline-block ${
                               cand.status === 'IN_INTERVIEW'
-                                ? 'bg-sky-50 text-sky-800 border-sky-200'
+                                ? 'bg-blue-500/15 text-blue-300 border-blue-500/40 animate-pulse'
                                 : cand.status === 'ROOM_ASSIGNED'
-                                ? 'bg-[#FAF9F6] text-[#C99A68] border border-[#EFE0CC]'
+                                ? 'bg-amber-500/15 text-amber-300 border-amber-500/40'
                                 : cand.status === 'WAITING' || cand.status === 'ARRIVED'
-                                ? 'bg-amber-50 text-amber-800 border-amber-200'
+                                ? 'bg-purple-500/15 text-purple-300 border-purple-500/40'
                                 : cand.status === 'COMPLETED' || cand.status === 'CHECKED_OUT' || cand.status === 'OFFERED'
-                                ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                                : 'bg-rose-50 text-rose-800 border-rose-200'
+                                ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/40'
+                                : 'bg-rose-500/15 text-rose-400 border-rose-500/40'
                             }`}
                           >
                             {cand.status}
@@ -910,10 +910,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
                         {/* Timestamps & Workflow */}
                         <td className="p-4">
-                          <div className="space-y-0.5 text-[10px] text-[#77716B]">
+                          <div className="space-y-0.5 text-[10px] text-slate-400">
                             {cand.arrivalTime && (
                               <div className="flex items-center gap-1">
-                                <Clock className="w-3 h-3 text-[#C99A68]" />
+                                <Clock className="w-3 h-3 text-slate-500" />
                                 <span>
                                   Arrived:{' '}
                                   {new Date(cand.arrivalTime).toLocaleTimeString([], {
@@ -924,7 +924,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                               </div>
                             )}
                             {cand.checkOutTime && (
-                              <div className="text-[#8A847D]">
+                              <div className="text-slate-500">
                                 Departed:{' '}
                                 {new Date(cand.checkOutTime).toLocaleTimeString([], {
                                   hour: '2-digit',
@@ -932,7 +932,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 })}
                               </div>
                             )}
-                            <div className="text-[#8A847D] font-mono">
+                            <div className="text-slate-500 font-mono">
                               Intake: {new Date(cand.createdAt).toLocaleDateString()}
                             </div>
                           </div>
@@ -944,10 +944,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             {onAssignRoom && (
                               <button
                                 onClick={() => onAssignRoom(cand.id, cand.currentInterviewId)}
-                                className="px-2.5 py-1.5 bg-[#FAF9F6] hover:bg-[#F8F6F2] text-[#171717] font-bold text-[11px] rounded-xl border border-[#EFE0CC] transition cursor-pointer flex items-center gap-1"
+                                className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-[11px] rounded-xl border border-slate-700 hover:border-amber-500/50 transition cursor-pointer flex items-center gap-1"
                                 title="Admin / HR Room Control: Change or assign room"
                               >
-                                <DoorOpen className="w-3 h-3 text-[#C99A68]" />
+                                <DoorOpen className="w-3 h-3" />
                                 <span>Room</span>
                               </button>
                             )}
@@ -960,16 +960,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                     initialMessage: `Status update regarding ${cand.fullName}.`,
                                   })
                                 }
-                                className="p-1.5 bg-[#FAF9F6] hover:bg-[#F8F6F2] text-[#171717] rounded-xl border border-[#EFE0CC] transition cursor-pointer"
+                                className="p-1.5 bg-slate-800 hover:bg-slate-700 text-amber-300 rounded-xl border border-slate-700 transition cursor-pointer"
                                 title="Open Context Chat for candidate"
                               >
-                                <MessageSquare className="w-3.5 h-3.5 text-[#C99A68]" />
+                                <MessageSquare className="w-3.5 h-3.5" />
                               </button>
                             )}
                             {onOpenDossier && (
                               <button
                                 onClick={() => onOpenDossier(cand.id)}
-                                className="px-3 py-1.5 bg-[#171717] hover:bg-[#24211E] text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer"
+                                className="px-3 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs rounded-xl shadow-xs transition cursor-pointer"
                               >
                                 Dossier
                               </button>
@@ -1509,40 +1509,40 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <h3 className="text-sm font-black text-[#111111] flex items-center gap-1.5">
-                <Sliders className="w-4 h-4 text-[#C99A68]" />
+              <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
+                <Sliders className="w-4 h-4 text-amber-400" />
                 Dynamic Field-Level Visibility & Confidentiality Engine
               </h3>
-              <p className="text-xs text-[#77716B]">
+              <p className="text-xs text-slate-400">
                 Click any checkbox to grant or revoke field access for that role in real time.
               </p>
             </div>
             {saveSuccess && (
-              <span className="px-3 py-1 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-1 animate-in fade-in">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="px-3 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold flex items-center gap-1 animate-in fade-in">
+                <CheckCircle2 className="w-3.5 h-3.5" />
                 Changes Persisted to Database
               </span>
             )}
           </div>
 
-          <div className="overflow-x-auto bg-white/95 border border-[#EFE0CC] rounded-3xl shadow-[0_14px_45px_rgba(0,0,0,0.05)]">
+          <div className="overflow-x-auto bg-slate-900 border border-slate-800 rounded-3xl shadow-xl">
             <table className="w-full text-left text-xs">
-              <thead className="bg-[#FAF9F6] border-b border-[#EFE0CC] text-[#77716B]">
+              <thead className="bg-slate-950/80 border-b border-slate-800 text-slate-300">
                 <tr>
                   <th className="p-4 font-bold">Field / Information</th>
                   {rolesList.map((r) => (
                     <th key={r} className="p-4 font-bold text-center">
-                      <span className="px-2 py-0.5 rounded-lg bg-[#FAF9F6] border border-[#EFE0CC] text-[#171717]">
+                      <span className="px-2 py-0.5 rounded-lg bg-slate-900 border border-slate-800 text-amber-400">
                         {r}
                       </span>
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#EFE0CC]">
+              <tbody className="divide-y divide-slate-800">
                 {fieldsList.map((f) => (
-                  <tr key={f.key} className="hover:bg-[#FAF9F6]/80 transition">
-                    <td className="p-4 font-semibold text-[#111111]">{f.label}</td>
+                  <tr key={f.key} className="hover:bg-slate-800/40 transition">
+                    <td className="p-4 font-semibold text-white">{f.label}</td>
                     {rolesList.map((r) => {
                       const isChecked = visibilitySettings ? visibilitySettings[r]?.[f.key] : false;
                       const isLocked = r === 'ADMIN' || r === 'CEO';
@@ -1554,7 +1554,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             checked={isChecked || false}
                             disabled={isLocked || savingSettings}
                             onChange={() => toggleField(r, f.key)}
-                            className="w-4 h-4 rounded-md accent-[#C99A68] cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                            className="w-4 h-4 rounded-md accent-amber-500 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                           />
                         </td>
                       );
@@ -1572,36 +1572,36 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         <div className="space-y-4 animate-in fade-in duration-200">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div>
-              <h3 className="text-sm font-black text-[#111111] flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-[#C99A68]" />
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-amber-400" />
                 Live Operational Action Alerts & Task Monitor ({actionTasks.length})
               </h3>
-              <p className="text-xs text-[#77716B]">
+              <p className="text-xs text-slate-400">
                 Full real-time visibility across Reception candidate escorts, Pantry room preparations & cleans, and staff instructions.
               </p>
             </div>
 
             <button
               onClick={onRefresh}
-              className="p-2 bg-[#FAF9F6] hover:bg-[#F8F6F2] text-[#171717] rounded-xl border border-[#EFE0CC] transition cursor-pointer flex items-center gap-1.5 text-xs font-semibold"
+              className="p-2 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-xl border border-slate-800 transition cursor-pointer flex items-center gap-1.5 text-xs font-semibold"
             >
-              <RefreshCw className="w-3.5 h-3.5 text-[#C99A68]" />
+              <RefreshCw className="w-3.5 h-3.5" />
               <span>Refresh Tasks</span>
             </button>
           </div>
 
           {/* Filters Bar */}
-          <div className="p-3 bg-white/95 border border-[#EFE0CC] rounded-2xl flex flex-wrap items-center justify-between gap-3 shadow-sm">
+          <div className="p-3 bg-slate-900/80 border border-slate-800 rounded-2xl flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-[11px] font-bold text-[#77716B] uppercase mr-1">Role:</span>
+              <span className="text-[11px] font-bold text-slate-400 uppercase mr-1">Role:</span>
               {(['ALL', 'RECEPTION', 'PANTRY', 'CUSTOM'] as const).map((r) => (
                 <button
                   key={r}
                   onClick={() => setTaskRoleFilter(r)}
                   className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
                     taskRoleFilter === r
-                      ? 'bg-[#171717] text-white'
-                      : 'bg-[#FAF9F6] text-[#77716B] hover:text-[#111111] border border-[#EFE0CC]'
+                      ? 'bg-amber-500 text-slate-950'
+                      : 'bg-slate-800 text-slate-400 hover:text-white'
                   }`}
                 >
                   {r}
@@ -1610,15 +1610,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
 
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-[11px] font-bold text-[#77716B] uppercase mr-1">Status:</span>
+              <span className="text-[11px] font-bold text-slate-400 uppercase mr-1">Status:</span>
               {(['ALL', 'PENDING', 'ACKNOWLEDGED', 'COMPLETED'] as const).map((s) => (
                 <button
                   key={s}
                   onClick={() => setTaskStatusFilter(s)}
                   className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
                     taskStatusFilter === s
-                      ? 'bg-[#171717] text-white'
-                      : 'bg-[#FAF9F6] text-[#77716B] hover:text-[#111111] border border-[#EFE0CC]'
+                      ? 'bg-purple-500 text-white'
+                      : 'bg-slate-800 text-slate-400 hover:text-white'
                   }`}
                 >
                   {s}
@@ -1640,10 +1640,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
             if (filtered.length === 0) {
               return (
-                <div className="p-12 text-center bg-white/90 border border-[#EFE0CC] rounded-3xl shadow-sm space-y-2">
-                  <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto" />
-                  <h4 className="text-sm font-bold text-[#111111]">No matching action tasks found</h4>
-                  <p className="text-xs text-[#77716B] max-w-sm mx-auto">
+                <div className="p-12 text-center bg-slate-900/60 border border-slate-800 rounded-3xl space-y-2">
+                  <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" />
+                  <h4 className="text-sm font-bold text-white">No matching action tasks found</h4>
+                  <p className="text-xs text-slate-400 max-w-sm mx-auto">
                     Action tasks appear in real time whenever staff send instructions like "Bring candidate to room" or "Prepare room" in chat.
                   </p>
                 </div>
@@ -1660,35 +1660,35 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   return (
                     <div
                       key={task.id}
-                      className="p-4 bg-white/95 border border-[#EFE0CC] hover:border-[#C99A68] rounded-2xl space-y-3 transition shadow-sm flex flex-col justify-between"
+                      className="p-4 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-2xl space-y-3 transition shadow-lg flex flex-col justify-between"
                     >
-                      <div className="flex items-start justify-between gap-2 pb-2 border-b border-[#EFE0CC]">
+                      <div className="flex items-start justify-between gap-2 pb-2 border-b border-slate-800">
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-[#FAF9F6] text-[#C99A68] border border-[#EFE0CC]">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-amber-500/10 text-amber-300 border border-amber-500/20">
                               {task.targetRole} TASK
                             </span>
-                            <span className="text-xs font-bold text-[#111111]">From: {task.senderName} ({task.senderRole})</span>
+                            <span className="text-xs font-bold text-white">From: {task.senderName} ({task.senderRole})</span>
                           </div>
-                          <div className="text-[10px] text-[#8A847D] flex items-center gap-1 mt-0.5">
-                            <Clock className="w-3 h-3 text-[#C99A68]" />
+                          <div className="text-[10px] text-slate-500 flex items-center gap-1 mt-0.5">
+                            <Clock className="w-3 h-3" />
                             <span>{new Date(task.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {new Date(task.createdAt).toLocaleDateString()}</span>
                           </div>
                         </div>
 
                         <div>
                           {isPending && (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#C99A68]/15 text-[#171717] border border-[#C99A68]/40">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse">
                               PENDING
                             </span>
                           )}
                           {isAcknowledged && (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-50 text-sky-800 border border-sky-200">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/40">
                               ACKNOWLEDGED
                             </span>
                           )}
                           {isCompleted && (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
                               COMPLETED
                             </span>
                           )}
@@ -1696,21 +1696,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       </div>
 
                       <div className="space-y-2">
-                        <h4 className="text-xs font-bold text-[#111111]">{task.title}</h4>
-                        {/* Charcoal Inner Panel for Instruction */}
-                        <p className="text-xs text-white bg-[#171717] p-2.5 rounded-xl border border-[#24211E]">
+                        <h4 className="text-xs font-bold text-white">{task.title}</h4>
+                        <p className="text-xs text-slate-300 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80">
                           "{task.instruction}"
                         </p>
 
                         {(task.candidateName || task.destinationRoomName) && (
                           <div className="flex flex-wrap items-center gap-2 text-[11px]">
                             {task.candidateName && (
-                              <span className="px-2 py-0.5 rounded-lg bg-[#FAF9F6] text-[#171717] font-semibold border border-[#EFE0CC]">
+                              <span className="px-2 py-0.5 rounded-lg bg-slate-800 text-amber-300 font-semibold border border-slate-700">
                                 👤 {task.candidateName}
                               </span>
                             )}
                             {task.destinationRoomName && (
-                              <span className="px-2 py-0.5 rounded-lg bg-[#FAF9F6] text-[#171717] font-semibold border border-[#EFE0CC]">
+                              <span className="px-2 py-0.5 rounded-lg bg-slate-800 text-cyan-300 font-semibold border border-slate-700">
                                 🏢 {task.destinationRoomName}
                               </span>
                             )}
@@ -1718,13 +1717,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         )}
                       </div>
 
-                      <div className="pt-2 border-t border-[#EFE0CC] flex items-center justify-between gap-2">
-                        <div className="text-[10px] text-[#77716B]">
+                      <div className="pt-2 border-t border-slate-800 flex items-center justify-between gap-2">
+                        <div className="text-[10px] text-slate-400">
                           {task.acknowledgedBy && (
-                            <span>Ack by <strong className="text-[#171717]">{task.acknowledgedBy}</strong></span>
+                            <span>Ack by <strong>{task.acknowledgedBy}</strong></span>
                           )}
                           {task.completedBy && (
-                            <span className="ml-2">Done by <strong className="text-[#171717]">{task.completedBy}</strong></span>
+                            <span className="ml-2">Done by <strong>{task.completedBy}</strong></span>
                           )}
                         </div>
 
@@ -1732,7 +1731,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           {isPending && onAcknowledgeActionTask && (
                             <button
                               onClick={() => onAcknowledgeActionTask(task.id)}
-                              className="px-2.5 py-1 rounded-lg bg-[#171717] hover:bg-[#24211E] text-white text-xs font-bold transition cursor-pointer"
+                              className="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition cursor-pointer"
                             >
                               Acknowledge
                             </button>
@@ -1740,7 +1739,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           {!isCompleted && onCompleteActionTask && (
                             <button
                               onClick={() => onCompleteActionTask(task.id)}
-                              className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition cursor-pointer"
+                              className="px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-bold transition cursor-pointer"
                             >
                               Complete
                             </button>
@@ -1761,42 +1760,42 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-black text-[#111111] flex items-center gap-2">
-                <Database className="w-4 h-4 text-[#C99A68]" />
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <Database className="w-4 h-4 text-purple-400" />
                 Immutable System Audit Trail
               </h3>
-              <p className="text-xs text-[#77716B]">
+              <p className="text-xs text-slate-400">
                 Chronological ledger of security events, administrative credentials overrides, password changes, room allocations, and check-ins.
               </p>
             </div>
             <button
               onClick={fetchLogs}
-              className="p-2 bg-[#FAF9F6] hover:bg-[#F8F6F2] text-[#171717] rounded-xl border border-[#EFE0CC] transition cursor-pointer"
+              className="p-2 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-xl border border-slate-800 transition cursor-pointer"
               title="Refresh logs"
             >
-              <RefreshCw className={`w-4 h-4 text-[#C99A68] ${loadingLogs ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 ${loadingLogs ? 'animate-spin' : ''}`} />
             </button>
           </div>
 
-          <div className="bg-white/95 border border-[#EFE0CC] rounded-3xl p-4 shadow-[0_14px_45px_rgba(0,0,0,0.05)] max-h-[500px] overflow-y-auto space-y-2">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-4 shadow-xl max-h-[500px] overflow-y-auto space-y-2">
             {auditLogs.map((log) => (
               <div
                 key={log.id}
-                className="p-3.5 bg-[#FAF9F6] border border-[#EFE0CC] rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs hover:border-[#C99A68] transition"
+                className="p-3.5 bg-slate-950 border border-slate-800/80 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs hover:border-slate-700 transition"
               >
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 rounded-md font-mono text-[10px] font-bold bg-white text-[#C99A68] border border-[#EFE0CC]">
+                    <span className="px-2 py-0.5 rounded-md font-mono text-[10px] font-bold bg-purple-500/10 text-purple-300 border border-purple-500/20">
                       {log.action}
                     </span>
-                    <span className="font-semibold text-[#111111]">{log.actorName}</span>
+                    <span className="font-semibold text-white">{log.actorName}</span>
                     {log.actorRole && (
-                      <span className="text-[10px] text-[#77716B]">({log.actorRole})</span>
+                      <span className="text-[10px] text-amber-400">({log.actorRole})</span>
                     )}
                   </div>
-                  <p className="text-[#171717] text-[11px] leading-relaxed">{log.details}</p>
+                  <p className="text-slate-300 text-[11px] leading-relaxed">{log.details}</p>
                 </div>
-                <div className="text-[#8A847D] text-[10px] font-mono shrink-0">
+                <div className="text-slate-500 text-[10px] font-mono shrink-0">
                   {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })},{' '}
                   {new Date(log.timestamp).toLocaleDateString()}
                 </div>
@@ -1810,27 +1809,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       {activeTab === 'settings' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-black text-[#111111] flex items-center gap-2">
-              <Settings className="w-4 h-4 text-[#C99A68]" />
+            <h3 className="text-sm font-bold text-white flex items-center gap-2">
+              <Settings className="w-4 h-4 text-amber-400" />
               Office Operations Workflow Rules
             </h3>
             {saveSuccess && (
-              <span className="px-3 py-1 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-1 animate-in fade-in">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="px-3 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold flex items-center gap-1 animate-in fade-in">
+                <CheckCircle2 className="w-3.5 h-3.5" />
                 Settings Saved
               </span>
             )}
           </div>
 
-          <div className="bg-white/95 border border-[#EFE0CC] rounded-3xl p-6 shadow-[0_14px_45px_rgba(0,0,0,0.05)] space-y-5">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* QR Expiry Setting */}
-              <div className="p-4 bg-[#FAF9F6] border border-[#EFE0CC] rounded-2xl space-y-3">
+              <div className="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-3">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-bold text-[#111111]">QR Token Expiration Window</h4>
-                  <span className="text-xs font-mono text-[#C99A68] font-bold">{qrExpiryMinutes} mins</span>
+                  <h4 className="text-sm font-bold text-white">QR Token Expiration Window</h4>
+                  <span className="text-xs font-mono text-amber-400 font-bold">{qrExpiryMinutes} mins</span>
                 </div>
-                <p className="text-xs text-[#77716B]">
+                <p className="text-xs text-slate-400">
                   Time-to-live for self-registration QR pass tokens before requiring front desk reissue.
                 </p>
                 <input
@@ -1840,54 +1839,54 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   step="5"
                   value={qrExpiryMinutes}
                   onChange={(e) => setQrExpiryMinutes(Number(e.target.value))}
-                  className="w-full accent-[#C99A68] cursor-pointer"
+                  className="w-full accent-amber-500 cursor-pointer"
                 />
               </div>
 
               {/* Requirement: Live Photo */}
-              <div className="p-4 bg-[#FAF9F6] border border-[#EFE0CC] rounded-2xl space-y-3">
+              <div className="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-3">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-bold text-[#111111]">Mandatory Live Photo Capture</h4>
+                  <h4 className="text-sm font-bold text-white">Mandatory Live Photo Capture</h4>
                   <input
                     type="checkbox"
                     checked={reqLivePhoto}
                     onChange={(e) => setReqLivePhoto(e.target.checked)}
-                    className="w-4 h-4 rounded-md accent-[#C99A68] cursor-pointer"
+                    className="w-4 h-4 rounded-md accent-amber-500 cursor-pointer"
                   />
                 </div>
-                <p className="text-xs text-[#77716B]">
+                <p className="text-xs text-slate-400">
                   Require candidate live webcam/phone snapshot for digital access badge creation and escort recognition.
                 </p>
               </div>
 
               {/* Requirement: Resume Upload */}
-              <div className="p-4 bg-[#FAF9F6] border border-[#EFE0CC] rounded-2xl space-y-3">
+              <div className="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-3">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-bold text-[#111111]">Mandatory Resume Document</h4>
+                  <h4 className="text-sm font-bold text-white">Mandatory Resume Document</h4>
                   <input
                     type="checkbox"
                     checked={reqResume}
                     onChange={(e) => setReqResume(e.target.checked)}
-                    className="w-4 h-4 rounded-md accent-[#C99A68] cursor-pointer"
+                    className="w-4 h-4 rounded-md accent-amber-500 cursor-pointer"
                   />
                 </div>
-                <p className="text-xs text-[#77716B]">
+                <p className="text-xs text-slate-400">
                   Require candidate to attach PDF/Doc resume before advancing past review stage.
                 </p>
               </div>
 
               {/* Requirement: Pantry Auto-Assign */}
-              <div className="p-4 bg-[#FAF9F6] border border-[#EFE0CC] rounded-2xl space-y-3">
+              <div className="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-3">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-bold text-[#111111]">Auto Pantry Room Prep</h4>
+                  <h4 className="text-sm font-bold text-white">Auto Pantry Room Prep</h4>
                   <input
                     type="checkbox"
                     checked={autoPantry}
                     onChange={(e) => setAutoPantry(e.target.checked)}
-                    className="w-4 h-4 rounded-md accent-[#C99A68] cursor-pointer"
+                    className="w-4 h-4 rounded-md accent-amber-500 cursor-pointer"
                   />
                 </div>
-                <p className="text-xs text-[#77716B]">
+                <p className="text-xs text-slate-400">
                   Automatically dispatch water & beverage preparation tasks to pantry stewards whenever an interview room is allocated.
                 </p>
               </div>
@@ -1897,16 +1896,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <button
                 onClick={handleSaveOfficeSettings}
                 disabled={savingSettings}
-                className="px-6 py-2.5 bg-[#171717] hover:bg-[#24211E] text-white text-xs font-bold rounded-xl shadow-md flex items-center gap-2 cursor-pointer transition disabled:opacity-50"
+                className="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-xs font-bold rounded-xl shadow-lg flex items-center gap-2 cursor-pointer transition disabled:opacity-50"
               >
                 {savingSettings ? (
                   <>
-                    <RefreshCw className="w-4 h-4 animate-spin text-[#C99A68]" />
+                    <RefreshCw className="w-4 h-4 animate-spin" />
                     Saving Configuration...
                   </>
                 ) : (
                   <>
-                    <CheckCircle2 className="w-4 h-4 text-[#C99A68]" />
+                    <CheckCircle2 className="w-4 h-4" />
                     Save Operations Settings
                   </>
                 )}
@@ -1918,51 +1917,51 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
       {/* MODAL: ADD NEW ROOM (NO FLOOR, NO CAPACITY) */}
       {showNewRoomModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-3 sm:p-5 overflow-y-auto">
-          <div className="bg-white/98 border border-[#EFE0CC] rounded-3xl max-w-lg w-full p-6 sm:p-8 text-[#111111] shadow-[0_24px_60px_rgba(0,0,0,0.12)] relative animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-xs p-3 sm:p-5 overflow-y-auto">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-8 text-slate-100 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
             <button
               onClick={() => setShowNewRoomModal(false)}
-              className="absolute top-5 right-5 p-2 rounded-xl bg-[#FAF9F6] hover:bg-[#F8F6F2] text-[#77716B] hover:text-[#111111] transition cursor-pointer"
+              className="absolute top-5 right-5 p-2 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-400 hover:text-white transition"
             >
               <X className="w-5 h-5" />
             </button>
 
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-2xl bg-[#FAF9F6] border border-[#EFE0CC] flex items-center justify-center text-[#C99A68]">
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
                 <DoorOpen className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-lg font-black text-[#111111]">Configure New Room / Pod</h3>
-                <p className="text-xs text-[#77716B]">Office Room Registration (Single Source of Truth)</p>
+                <h3 className="text-lg font-bold text-white">Configure New Room / Pod</h3>
+                <p className="text-xs text-slate-400">Office Room Registration (Single Source of Truth)</p>
               </div>
             </div>
 
             {roomError && (
-              <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-2xl text-rose-700 text-xs flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+              <div className="mb-4 p-3 bg-rose-500/10 border border-rose-500/30 rounded-2xl text-rose-300 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
                 <span>{roomError}</span>
               </div>
             )}
 
             <form onSubmit={handleCreateRoomSubmit} className="space-y-4 text-xs">
               <div>
-                <label className="block font-semibold text-[#171717] mb-1">Room Name *</label>
+                <label className="block font-semibold text-slate-300 mb-1">Room Name *</label>
                 <input
                   type="text"
                   required
                   value={newRoomForm.name}
                   onChange={(e) => setNewRoomForm({ ...newRoomForm, name: e.target.value })}
                   placeholder="e.g. The Boardroom or Cabin 5"
-                  className="w-full px-3.5 py-2.5 bg-[#FAF9F6] border border-[#EFE0CC] rounded-xl text-[#111111] focus:outline-hidden focus:border-[#C99A68]"
+                  className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-hidden focus:border-amber-400"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-[#171717] mb-1">Room Type</label>
+                <label className="block font-semibold text-slate-300 mb-1">Room Type</label>
                 <select
                   value={newRoomForm.type}
                   onChange={(e) => setNewRoomForm({ ...newRoomForm, type: e.target.value as RoomType })}
-                  className="w-full px-3.5 py-2.5 bg-[#FAF9F6] border border-[#EFE0CC] rounded-xl text-[#111111] focus:outline-hidden focus:border-[#C99A68]"
+                  className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-hidden focus:border-amber-400"
                 >
                   <option value="MEETING_ROOM">Meeting Room</option>
                   <option value="CABIN">Executive Cabin</option>
@@ -1974,13 +1973,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </div>
 
               <div>
-                <label className="block font-semibold text-[#171717] mb-1">Preferred Purpose / Allocation Note</label>
+                <label className="block font-semibold text-slate-300 mb-1">Preferred Purpose / Allocation Note</label>
                 <input
                   type="text"
                   value={newRoomForm.preferredFor}
                   onChange={(e) => setNewRoomForm({ ...newRoomForm, preferredFor: e.target.value })}
                   placeholder="e.g. Sales Panel & Leadership Interviews"
-                  className="w-full px-3.5 py-2.5 bg-[#FAF9F6] border border-[#EFE0CC] rounded-xl text-[#111111] focus:outline-hidden focus:border-[#C99A68]"
+                  className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-hidden focus:border-amber-400"
                 />
               </div>
 
@@ -1988,17 +1987,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowNewRoomModal(false)}
-                  className="flex-1 py-2.5 bg-[#FAF9F6] hover:bg-[#F8F6F2] text-[#171717] font-semibold text-xs rounded-xl border border-[#EFE0CC] transition cursor-pointer"
+                  className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs rounded-xl border border-slate-700 transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={savingRoom}
-                  className="flex-1 py-2.5 bg-[#171717] hover:bg-[#24211E] text-white font-black text-xs rounded-xl shadow-md transition cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
+                  className="flex-1 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs rounded-xl shadow-lg transition cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
                 >
                   {savingRoom ? (
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <span>Add Room</span>
                   )}
@@ -2011,51 +2010,51 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
       {/* MODAL: EDIT ROOM (NO FLOOR, NO CAPACITY) */}
       {selectedRoomForEdit && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-3 sm:p-5 overflow-y-auto">
-          <div className="bg-white/98 border border-[#EFE0CC] rounded-3xl max-w-lg w-full p-6 sm:p-8 text-[#111111] shadow-[0_24px_60px_rgba(0,0,0,0.12)] relative animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-xs p-3 sm:p-5 overflow-y-auto">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-8 text-slate-100 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
             <button
               onClick={() => setSelectedRoomForEdit(null)}
-              className="absolute top-5 right-5 p-2 rounded-xl bg-[#FAF9F6] hover:bg-[#F8F6F2] text-[#77716B] hover:text-[#111111] transition cursor-pointer"
+              className="absolute top-5 right-5 p-2 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-400 hover:text-white transition"
             >
               <X className="w-5 h-5" />
             </button>
 
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-2xl bg-[#FAF9F6] border border-[#EFE0CC] flex items-center justify-center text-[#C99A68]">
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
                 <Edit3 className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-lg font-black text-[#111111]">Edit Room Configuration</h3>
-                <p className="text-xs text-[#77716B]">Renaming will automatically cascade to all modules</p>
+                <h3 className="text-lg font-bold text-white">Edit Room Configuration</h3>
+                <p className="text-xs text-slate-400">Renaming will automatically cascade to all modules</p>
               </div>
             </div>
 
             {roomError && (
-              <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-2xl text-rose-700 text-xs flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+              <div className="mb-4 p-3 bg-rose-500/10 border border-rose-500/30 rounded-2xl text-rose-300 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
                 <span>{roomError}</span>
               </div>
             )}
 
             <form onSubmit={handleEditRoomSubmit} className="space-y-4 text-xs">
               <div>
-                <label className="block font-semibold text-[#171717] mb-1">Room Name *</label>
+                <label className="block font-semibold text-slate-300 mb-1">Room Name *</label>
                 <input
                   type="text"
                   required
                   value={editRoomForm.name}
                   onChange={(e) => setEditRoomForm({ ...editRoomForm, name: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-[#FAF9F6] border border-[#EFE0CC] rounded-xl text-[#111111] focus:outline-hidden focus:border-[#C99A68]"
+                  className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-hidden focus:border-amber-400"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-[#171717] mb-1">Room Type</label>
+                  <label className="block font-semibold text-slate-300 mb-1">Room Type</label>
                   <select
                     value={editRoomForm.type}
                     onChange={(e) => setEditRoomForm({ ...editRoomForm, type: e.target.value as RoomType })}
-                    className="w-full px-3.5 py-2.5 bg-[#FAF9F6] border border-[#EFE0CC] rounded-xl text-[#111111] focus:outline-hidden focus:border-[#C99A68]"
+                    className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-hidden focus:border-amber-400"
                   >
                     <option value="MEETING_ROOM">Meeting Room</option>
                     <option value="CABIN">Executive Cabin</option>
@@ -2067,11 +2066,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-[#171717] mb-1">Status</label>
+                  <label className="block font-semibold text-slate-300 mb-1">Status</label>
                   <select
                     value={editRoomForm.status}
                     onChange={(e) => setEditRoomForm({ ...editRoomForm, status: e.target.value as RoomStatus })}
-                    className="w-full px-3.5 py-2.5 bg-[#FAF9F6] border border-[#EFE0CC] rounded-xl text-[#111111] focus:outline-hidden focus:border-[#C99A68]"
+                    className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-hidden focus:border-amber-400"
                   >
                     <option value="AVAILABLE">Available</option>
                     <option value="ASSIGNED">Assigned</option>
@@ -2083,13 +2082,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </div>
 
               <div>
-                <label className="block font-semibold text-[#171717] mb-1">Preferred Purpose</label>
+                <label className="block font-semibold text-slate-300 mb-1">Preferred Purpose</label>
                 <input
                   type="text"
                   value={editRoomForm.preferredFor}
                   onChange={(e) => setEditRoomForm({ ...editRoomForm, preferredFor: e.target.value })}
                   placeholder="e.g. Sales Panel & Leadership Interviews"
-                  className="w-full px-3.5 py-2.5 bg-[#FAF9F6] border border-[#EFE0CC] rounded-xl text-[#111111] focus:outline-hidden focus:border-[#C99A68]"
+                  className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-hidden focus:border-amber-400"
                 />
               </div>
 
@@ -2099,9 +2098,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   id="editRoomActive"
                   checked={editRoomForm.isActive}
                   onChange={(e) => setEditRoomForm({ ...editRoomForm, isActive: e.target.checked })}
-                  className="w-4 h-4 rounded-md accent-[#C99A68] cursor-pointer"
+                  className="w-4 h-4 rounded-md accent-amber-500 cursor-pointer"
                 />
-                <label htmlFor="editRoomActive" className="text-[#171717] font-semibold cursor-pointer">
+                <label htmlFor="editRoomActive" className="text-slate-300 font-semibold cursor-pointer">
                   Room Active and Available for Allocation
                 </label>
               </div>
@@ -2110,17 +2109,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <button
                   type="button"
                   onClick={() => setSelectedRoomForEdit(null)}
-                  className="flex-1 py-2.5 bg-[#FAF9F6] hover:bg-[#F8F6F2] text-[#171717] font-semibold text-xs rounded-xl border border-[#EFE0CC] transition cursor-pointer"
+                  className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs rounded-xl border border-slate-700 transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={savingRoom}
-                  className="flex-1 py-2.5 bg-[#171717] hover:bg-[#24211E] text-white font-black text-xs rounded-xl shadow-md transition cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
+                  className="flex-1 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs rounded-xl shadow-lg transition cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
                 >
                   {savingRoom ? (
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <span>Save Changes</span>
                   )}
@@ -2148,28 +2147,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
       {/* MODAL: CREATE NEW STAFF USER */}
       {showNewUserModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-3 sm:p-5 overflow-y-auto">
-          <div className="bg-white/98 border border-[#EFE0CC] rounded-3xl max-w-lg w-full p-6 sm:p-8 text-[#111111] shadow-[0_24px_60px_rgba(0,0,0,0.12)] relative animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-xs p-3 sm:p-5 overflow-y-auto">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-8 text-slate-100 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
             <button
               onClick={() => setShowNewUserModal(false)}
-              className="absolute top-5 right-5 p-2 rounded-xl bg-[#FAF9F6] hover:bg-[#F8F6F2] text-[#77716B] hover:text-[#111111] transition cursor-pointer"
+              className="absolute top-5 right-5 p-2 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-400 hover:text-white transition"
             >
               <X className="w-5 h-5" />
             </button>
 
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-2xl bg-[#FAF9F6] border border-[#EFE0CC] flex items-center justify-center text-[#C99A68]">
+              <div className="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400">
                 <Users className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-lg font-black text-[#111111]">Provision New Staff Account</h3>
-                <p className="text-xs text-[#77716B]">Individual Staff Account Configuration</p>
+                <h3 className="text-lg font-bold text-white">Provision New Staff Account</h3>
+                <p className="text-xs text-slate-400">Individual Staff Account Configuration</p>
               </div>
             </div>
 
             {newUserError && (
-              <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-2xl text-rose-700 text-xs flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+              <div className="mb-4 p-3 bg-rose-500/10 border border-rose-500/30 rounded-2xl text-rose-300 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
                 <span>{newUserError}</span>
               </div>
             )}
@@ -2177,60 +2176,60 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <form onSubmit={handleCreateUserSubmit} className="space-y-3.5 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-[#171717] mb-1">Full Name</label>
+                  <label className="block font-semibold text-slate-300 mb-1">Full Name</label>
                   <input
                     type="text"
                     required
                     value={newUserForm.name}
                     onChange={(e) => setNewUserForm({ ...newUserForm, name: e.target.value })}
                     placeholder="e.g. Vikas Sharma"
-                    className="w-full px-3 py-2 bg-[#FAF9F6] border border-[#EFE0CC] rounded-xl text-[#111111] focus:outline-hidden focus:border-[#C99A68]"
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-hidden focus:border-amber-400"
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-[#171717] mb-1">Username / ID</label>
+                  <label className="block font-semibold text-slate-300 mb-1">Username / ID</label>
                   <input
                     type="text"
                     value={newUserForm.username}
                     onChange={(e) => setNewUserForm({ ...newUserForm, username: e.target.value })}
                     placeholder="e.g. vikas.hr"
-                    className="w-full px-3 py-2 bg-[#FAF9F6] border border-[#EFE0CC] rounded-xl text-[#111111] font-mono focus:outline-hidden focus:border-[#C99A68]"
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white font-mono focus:outline-hidden focus:border-amber-400"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-[#171717] mb-1">Official Email</label>
+                  <label className="block font-semibold text-slate-300 mb-1">Official Email</label>
                   <input
                     type="email"
                     required
                     value={newUserForm.email}
                     onChange={(e) => setNewUserForm({ ...newUserForm, email: e.target.value })}
                     placeholder="name@whitecollarrealty.com"
-                    className="w-full px-3 py-2 bg-[#FAF9F6] border border-[#EFE0CC] rounded-xl text-[#111111] focus:outline-hidden focus:border-[#C99A68]"
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-hidden focus:border-amber-400"
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-[#171717] mb-1">Initial Password</label>
+                  <label className="block font-semibold text-slate-300 mb-1">Initial Password</label>
                   <input
                     type="password"
                     required
                     value={newUserForm.password}
                     onChange={(e) => setNewUserForm({ ...newUserForm, password: e.target.value })}
                     placeholder="Min 5 characters"
-                    className="w-full px-3 py-2 bg-[#FAF9F6] border border-[#EFE0CC] rounded-xl text-[#111111] focus:outline-hidden focus:border-[#C99A68]"
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-hidden focus:border-amber-400"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-[#171717] mb-1">Role</label>
+                  <label className="block font-semibold text-slate-300 mb-1">Role</label>
                   <select
                     value={newUserForm.role}
                     onChange={(e) => setNewUserForm({ ...newUserForm, role: e.target.value as UserRole })}
-                    className="w-full px-3 py-2 bg-[#FAF9F6] border border-[#EFE0CC] rounded-xl text-[#111111] focus:outline-hidden focus:border-[#C99A68]"
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-hidden focus:border-amber-400"
                   >
                     <option value="HR">HR Executive</option>
                     <option value="ADMIN">Admin</option>
@@ -2240,12 +2239,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </select>
                 </div>
                 <div>
-                  <label className="block font-semibold text-[#171717] mb-1">Department</label>
+                  <label className="block font-semibold text-slate-300 mb-1">Department</label>
                   <input
                     type="text"
                     value={newUserForm.department}
                     onChange={(e) => setNewUserForm({ ...newUserForm, department: e.target.value })}
-                    className="w-full px-3 py-2 bg-[#FAF9F6] border border-[#EFE0CC] rounded-xl text-[#111111] focus:outline-hidden focus:border-[#C99A68]"
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-hidden focus:border-amber-400"
                   />
                 </div>
               </div>
@@ -2254,14 +2253,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowNewUserModal(false)}
-                  className="flex-1 py-2.5 bg-[#FAF9F6] hover:bg-[#F8F6F2] text-[#171717] font-semibold text-xs rounded-xl border border-[#EFE0CC] transition cursor-pointer"
+                  className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs rounded-xl border border-slate-700 transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={creatingUser}
-                  className="flex-1 py-2.5 bg-[#171717] hover:bg-[#24211E] text-white font-black text-xs rounded-xl shadow-md transition cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
+                  className="flex-1 py-2.5 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-400 hover:to-purple-500 text-white font-black text-xs rounded-xl shadow-lg transition cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
                 >
                   {creatingUser ? (
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

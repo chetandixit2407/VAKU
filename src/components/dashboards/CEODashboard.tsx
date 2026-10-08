@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'motion/react';
 import {
   Award,
   TrendingUp,
@@ -8,11 +9,9 @@ import {
   Sparkles,
   MapPin,
   FileText,
-  DoorOpen,
-  ChevronRight,
+  ArrowRight,
 } from 'lucide-react';
 import type { Candidate, Interview, Room } from '../../types/index.ts';
-import { WCRGlassCard, WCRMetricCard } from '../design-system/index.ts';
 
 interface CEODashboardProps {
   candidates: Candidate[];
@@ -32,159 +31,156 @@ export const CEODashboard: React.FC<CEODashboardProps> = ({
   const inSessionCount = candidates.filter((c) => c.status === 'IN_INTERVIEW').length;
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
+    <div className="space-y-6">
       {/* Executive Banner */}
-      <WCRGlassCard className="p-6 sm:p-7 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4" elevation="standard">
+      <div className="p-6 glass-panel-elevated rounded-3xl border border-white/8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <Award className="w-5 h-5 text-[#8C6033]" />
-            <span className="text-xs font-black uppercase tracking-widest text-[#8C6033]">
+            <Award className="w-5 h-5 text-amber-400" />
+            <span className="text-xs font-bold uppercase tracking-widest text-amber-400 font-mono">
               White Collar Realty • Executive Suite
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-[#171717] tracking-tight">
+          <h1 className="text-2xl font-black text-white tracking-tight">
             Strategic Office Operations Overview
           </h1>
-          <p className="text-xs text-[#77716B]">
-            Filtered executive briefing &bull; High-level talent pipeline & facility command.
+          <p className="text-xs text-slate-400">
+            Filtered executive briefing • High-level talent pipeline & facility performance.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="px-5 py-2.5 bg-[#FAF4ED] border border-[#E4CCAF] rounded-2xl text-center shadow-xs">
-            <span className="text-[10px] uppercase font-bold text-[#8C6033] block">Offer Rate</span>
-            <span className="text-xl font-black text-emerald-700">
+          <div className="px-4 py-2 glass-panel rounded-2xl border border-white/8 text-center">
+            <span className="text-[10px] uppercase font-bold text-slate-400 block font-mono">Offer Rate</span>
+            <span className="text-lg font-black text-emerald-400 tabular-nums">
               {candidates.length > 0 ? `${Math.round((offeredCount / Math.max(1, candidates.length)) * 100)}%` : '0%'}
             </span>
           </div>
         </div>
-      </WCRGlassCard>
-
-      {/* Signature Dark Charcoal Executive Insight Panel */}
-      <div className="p-5 sm:p-6 bg-[#171717] text-white rounded-3xl border border-[#2D2D2D] shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="space-y-1 max-w-2xl">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#C99A68]">
-            <Sparkles className="w-4 h-4" />
-            <span>EXECUTIVE BRIEFING & THROUGHPUT</span>
-          </div>
-          <p className="text-sm font-semibold text-[#FDFCF9] leading-relaxed">
-            Today's recruitment pipeline is running at optimal capacity with {activeCandidates.length} candidate{activeCandidates.length === 1 ? '' : 's'} on premises. Executive suites and boardroom pods are pre-allocated for next rounds.
-          </p>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <span className="px-3.5 py-1.5 rounded-xl bg-[#262626] border border-[#3E3E3E] text-xs font-bold text-[#E4CCAF]">
-            Turnaround: 18m avg
-          </span>
-          <span className="px-3.5 py-1.5 rounded-xl bg-[#262626] border border-[#3E3E3E] text-xs font-bold text-emerald-400">
-            98.5% SLA
-          </span>
-        </div>
       </div>
 
-      {/* Strategic Animated Metric Cards */}
+      {/* Strategic Metrics */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <WCRMetricCard
-          label="Active Presence"
-          value={activeCandidates.length}
-          subtitle="Candidates on premises"
-          icon={<Award className="w-5 h-5" />}
-          accentColor="caramel"
-        />
+        <motion.div
+          whileHover={{ y: -2, scale: 1.01 }}
+          className="p-4 glass-panel rounded-2xl border border-white/8"
+        >
+          <span className="text-xs text-slate-400 block font-medium">Active Office Presence</span>
+          <p className="text-2xl font-black text-white mt-1 tabular-nums">{activeCandidates.length}</p>
+          <span className="text-[10px] text-amber-400 font-semibold font-mono">Candidates on premises</span>
+        </motion.div>
 
-        <WCRMetricCard
-          label="Interviews Live"
-          value={inSessionCount}
-          subtitle="Evaluation rounds"
-          icon={<UserCheck className="w-5 h-5" />}
-          accentColor="blue"
-        />
+        <motion.div
+          whileHover={{ y: -2, scale: 1.01 }}
+          className="p-4 glass-panel rounded-2xl border border-white/8"
+        >
+          <span className="text-xs text-slate-400 block font-medium">Interviews Live</span>
+          <p className="text-2xl font-black text-blue-400 mt-1 tabular-nums">{inSessionCount}</p>
+          <span className="text-[10px] text-slate-400 font-mono">Active evaluation rounds</span>
+        </motion.div>
 
-        <WCRMetricCard
-          label="Offers / Completes"
-          value={offeredCount}
-          subtitle="Today's selections"
-          icon={<CheckCircle2 className="w-5 h-5" />}
-          accentColor="emerald"
-        />
+        <motion.div
+          whileHover={{ y: -2, scale: 1.01 }}
+          className="p-4 glass-panel rounded-2xl border border-white/8"
+        >
+          <span className="text-xs text-slate-400 block font-medium">Leadership Offers / Hires</span>
+          <p className="text-2xl font-black text-emerald-400 mt-1 tabular-nums">{offeredCount}</p>
+          <span className="text-[10px] text-emerald-400 font-semibold font-mono">Today's recommendations</span>
+        </motion.div>
 
-        <WCRMetricCard
-          label="Executive Suites"
-          value={rooms.filter((r) => r.type === 'EXECUTIVE_BOARDROOM' || r.isReservedNextRound).length}
-          subtitle="Leadership chambers"
-          icon={<DoorOpen className="w-5 h-5" />}
-          accentColor="amber"
-        />
+        <motion.div
+          whileHover={{ y: -2, scale: 1.01 }}
+          className="p-4 glass-panel rounded-2xl border border-white/8"
+        >
+          <span className="text-xs text-slate-400 block font-medium">Executive Boardrooms</span>
+          <p className="text-2xl font-black text-purple-400 mt-1 tabular-nums">
+            {rooms.filter((r) => r.type === 'EXECUTIVE_BOARDROOM').length}
+          </p>
+          <span className="text-[10px] text-slate-400 font-mono">Executive meeting suites</span>
+        </motion.div>
       </div>
 
       {/* Candidate Pipeline Briefing */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-extrabold text-[#171717] flex items-center gap-2 tracking-tight">
-            <Sparkles className="w-4 h-4 text-[#8C6033]" />
+          <h2 className="text-base font-bold text-white flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-amber-400" />
             Executive Candidate Briefs
           </h2>
-          <span className="text-xs text-[#77716B] font-medium">
-            Confidentiality Filter Active &bull; Operational noise suppressed
+          <span className="text-xs text-slate-400 font-medium">
+            Confidentiality Filter Active • Operational noise suppressed
           </span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {candidates.map((cand) => {
+            const intv = interviews.find((i) => i.id === cand.currentInterviewId);
             return (
-              <WCRGlassCard
+              <motion.div
                 key={cand.id}
-                enableTilt={true}
-                className="p-5 space-y-3"
+                whileHover={{ y: -2 }}
+                className="p-5 glass-panel rounded-2xl border border-white/8 space-y-3"
               >
                 <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex items-center gap-3">
                     {cand.livePhoto ? (
                       <img
                         src={cand.livePhoto}
                         alt={cand.fullName}
-                        className="w-12 h-12 rounded-2xl object-cover border border-[#E4CCAF] shadow-xs shrink-0"
+                        className="w-12 h-12 rounded-2xl object-cover border border-amber-500/80 shadow-md"
                       />
                     ) : (
-                      <div className="w-12 h-12 rounded-2xl bg-[#FAF4ED] border border-[#E4CCAF] flex items-center justify-center text-[#8C6033] shrink-0">
+                      <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/8 flex items-center justify-center text-slate-400">
                         <Award className="w-6 h-6" />
                       </div>
                     )}
-                    <div className="min-w-0">
-                      <h3 className="text-base font-bold text-[#171717] truncate">{cand.fullName}</h3>
-                      <p className="text-xs text-[#8C6033] font-medium truncate">{cand.position}</p>
-                      <p className="text-[11px] text-[#77716B] truncate">{cand.department}</p>
+                    <div>
+                      <h3 className="text-base font-bold text-white">{cand.fullName}</h3>
+                      <p className="text-xs text-amber-400 font-medium">{cand.position}</p>
+                      <p className="text-[11px] text-slate-400">{cand.department}</p>
                     </div>
                   </div>
 
-                  <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#FAF4ED] text-[#8C6033] border border-[#E4CCAF] shrink-0">
+                  <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-white/6 text-amber-300 border border-white/10 font-mono">
                     {cand.status}
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 text-xs bg-[#FAF9F6] p-3 rounded-xl border border-[#EFE0CC]">
+                <div className="grid grid-cols-2 gap-2 text-xs bg-black/30 p-3 rounded-xl border border-white/6">
                   <div>
-                    <span className="text-[#8A847D] block text-[10px]">Experience</span>
-                    <strong className="text-[#171717]">{cand.totalExperience || 'Fresher'}</strong>
+                    <span className="text-slate-500 block text-[10px]">Experience</span>
+                    <strong className="text-slate-200">{cand.totalExperience}</strong>
                   </div>
                   <div>
-                    <span className="text-[#8A847D] block text-[10px]">Location</span>
-                    <strong className="text-[#8C6033]">{cand.currentLocation || 'Lobby'}</strong>
+                    <span className="text-slate-500 block text-[10px]">Location</span>
+                    <strong className="text-slate-200">{cand.currentLocation}</strong>
                   </div>
+                  {intv && (
+                    <>
+                      <div>
+                        <span className="text-slate-500 block text-[10px]">Current Round</span>
+                        <strong className="text-slate-200">{intv.roundName}</strong>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 block text-[10px]">Interviewer</span>
+                        <strong className="text-slate-200">{intv.interviewerName}</strong>
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 <div className="flex items-center justify-between pt-1">
-                  <span className="text-[11px] text-[#8A847D]">
-                    ID: <strong className="font-mono text-[#171717]">{cand.id}</strong>
+                  <span className="text-[11px] text-slate-500">
+                    {cand.currentCompany ? `Ex: ${cand.currentCompany}` : 'Qualified Profile'}
                   </span>
                   <button
                     onClick={() => onOpenDossier(cand.id)}
-                    className="px-3.5 py-1.5 rounded-xl bg-[#171717] hover:bg-[#282828] text-white font-bold text-xs transition cursor-pointer flex items-center gap-1 active:scale-95 shadow-2xs"
+                    className="px-3.5 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-bold text-xs transition cursor-pointer"
                   >
-                    <span>View Dossier</span>
-                    <ChevronRight className="w-3.5 h-3.5 text-[#C99A68]" />
+                    Executive Dossier
                   </button>
                 </div>
-              </WCRGlassCard>
+              </motion.div>
             );
           })}
         </div>
