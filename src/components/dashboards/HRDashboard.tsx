@@ -189,8 +189,9 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
                 return (
                   <motion.div
                     key={cand.id}
-                    whileHover={{ y: -2 }}
-                    className="p-4 sm:p-5 glass-panel rounded-2xl shadow-xl space-y-3 transition border border-white/8"
+                    whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
+                    whileTap={{ scale: 0.99 }}
+                    className="p-4 sm:p-5 glass-panel rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-amber-500/15 space-y-3 transition border border-white/8"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3.5">
@@ -281,9 +282,11 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
               </h3>
               <div className="space-y-2">
                 {inInterviewCandidates.map((cand) => (
-                  <div
+                  <motion.div
                     key={cand.id}
-                    className="p-3.5 glass-panel rounded-2xl border border-blue-500/30 flex items-center justify-between text-xs"
+                    whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
+                    whileTap={{ scale: 0.99 }}
+                    className="p-3.5 glass-panel rounded-2xl border border-blue-500/30 flex items-center justify-between text-xs shadow-lg hover:shadow-xl hover:shadow-blue-500/10"
                   >
                     <div>
                       <strong className="text-white block text-sm">{cand.fullName}</strong>
@@ -305,7 +308,7 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
                         Details
                       </button>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             </div>
@@ -330,9 +333,11 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
               const isCleaning = room.status === 'CLEANING' || room.status === 'NEEDS_CLEANING';
 
               return (
-                <div
+                <motion.div
                   key={room.id}
-                  className="p-3.5 glass-panel rounded-2xl space-y-1 text-xs border border-white/8"
+                  whileHover={{ scale: 1.02, y: -2, transition: { duration: 0.2, ease: 'easeOut' } }}
+                  whileTap={{ scale: 0.99 }}
+                  className="p-3.5 glass-panel rounded-2xl space-y-1 text-xs border border-white/8 shadow-md hover:shadow-xl hover:shadow-amber-500/10"
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-white">{room.name}</span>
@@ -361,7 +366,7 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
                       </span>
                     )}
                   </div>
-                </div>
+                </motion.div>
               );
             })}
           </div>

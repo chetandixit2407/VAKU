@@ -417,9 +417,10 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
               waitingCandidates.map((cand) => (
                 <motion.div
                   key={cand.id}
-                  whileHover={{ y: -2 }}
+                  whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
+                  whileTap={{ scale: 0.99 }}
                   onClick={() => setSelectedProfileCandidateId(cand.id)}
-                  className="p-4 glass-panel hover:border-amber-500/50 rounded-2xl space-y-3 text-xs shadow-lg cursor-pointer transition border border-white/8"
+                  className="p-4 glass-panel hover:border-amber-500/50 rounded-2xl space-y-3 text-xs shadow-xl hover:shadow-2xl hover:shadow-amber-500/15 cursor-pointer transition border border-white/8"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">

@@ -16,8 +16,6 @@ import { useRealtimeEvents } from './hooks/useRealtimeEvents.ts';
 import { SidebarNav, type NavSection } from './components/SidebarNav.tsx';
 import { TopHeader } from './components/TopHeader.tsx';
 import { MobileNavigation } from './components/MobileNavigation.tsx';
-import { CinematicBackground, type CinematicVariant } from './components/CinematicBackground.tsx';
-import { CinematicVideoBackground } from './components/CinematicVideoBackground.tsx';
 import { OperationsCommandHeader } from './components/OperationsCommandHeader.tsx';
 import {
   VisitorArrivalTimeline,
@@ -899,9 +897,7 @@ export default function App() {
   // ==========================================
   if (isDashboardRoute && !currentUser) {
     return (
-      <div className="min-h-screen bg-[#7a8894] text-slate-900 flex items-center justify-center p-4 font-sans relative overflow-hidden">
-        <CinematicVideoBackground />
-        <CinematicBackground variant="settings" intensity="subdued" />
+      <div className="min-h-screen bg-[#8F94A1] text-slate-100 flex items-center justify-center p-4 font-sans relative overflow-hidden">
         <div className="glass-panel-elevated border border-white/10 rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4 relative z-10 backdrop-blur-2xl">
           <div className="flex items-center gap-2.5 pb-2 border-b border-white/8">
             <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center">
@@ -967,26 +963,6 @@ export default function App() {
     );
   }
 
-  // Determine dynamic background variant based on navigation and active modals
-  const cinematicVariant: CinematicVariant =
-    activeModal === 'QR_PASS'
-      ? 'scanner'
-      : activeModal === 'DOSSIER'
-      ? 'candidate'
-      : activeSection === 'reception'
-      ? 'reception'
-      : activeSection === 'visitors'
-      ? 'visitor'
-      : activeSection === 'interviews'
-      ? 'interview'
-      : activeSection === 'rooms'
-      ? 'room'
-      : activeSection === 'candidates'
-      ? 'candidate'
-      : activeSection === 'settings'
-      ? 'settings'
-      : 'dashboard';
-
   const activeCandidatesList = filterStage
     ? candidates.filter((c) => computeArrivalStage(c).currentStage === filterStage)
     : candidates;
@@ -995,13 +971,7 @@ export default function App() {
   // STAFF & OPERATIONS CONSOLE (HR, ADMIN, CEO, INTERVIEWER, RECEPTION, PANTRY)
   // ==========================================
   return (
-    <div className="min-h-screen bg-[#7a8894] text-slate-900 flex font-sans selection:bg-[#f36515] selection:text-white relative overflow-x-hidden">
-      {/* Cinematic Video Background with uploaded axle-parsi-hero.mp4 */}
-      <CinematicVideoBackground />
-
-      {/* Cinematic Dynamic Ambient Lighting and Particle Drift */}
-      <CinematicBackground variant={cinematicVariant} intensity="subdued" />
-
+    <div className="min-h-screen bg-[#8F94A1] text-slate-100 flex font-sans selection:bg-[#f36515] selection:text-white relative overflow-x-hidden">
       {/* Desktop Glass Sidebar Navigation */}
       <SidebarNav
         currentRole={currentRole}

@@ -62,8 +62,9 @@ export const CEODashboard: React.FC<CEODashboardProps> = ({
       {/* Strategic Metrics */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <motion.div
-          whileHover={{ y: -2, scale: 1.01 }}
-          className="p-4 glass-panel rounded-2xl border border-white/8"
+          whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
+          whileTap={{ scale: 0.99 }}
+          className="p-4 glass-panel rounded-2xl border border-white/8 shadow-md hover:shadow-xl hover:shadow-amber-500/10 transition"
         >
           <span className="text-xs text-slate-400 block font-medium">Active Office Presence</span>
           <p className="text-2xl font-black text-white mt-1 tabular-nums">{activeCandidates.length}</p>
@@ -71,8 +72,9 @@ export const CEODashboard: React.FC<CEODashboardProps> = ({
         </motion.div>
 
         <motion.div
-          whileHover={{ y: -2, scale: 1.01 }}
-          className="p-4 glass-panel rounded-2xl border border-white/8"
+          whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
+          whileTap={{ scale: 0.99 }}
+          className="p-4 glass-panel rounded-2xl border border-white/8 shadow-md hover:shadow-xl hover:shadow-blue-500/10 transition"
         >
           <span className="text-xs text-slate-400 block font-medium">Interviews Live</span>
           <p className="text-2xl font-black text-blue-400 mt-1 tabular-nums">{inSessionCount}</p>
@@ -80,8 +82,9 @@ export const CEODashboard: React.FC<CEODashboardProps> = ({
         </motion.div>
 
         <motion.div
-          whileHover={{ y: -2, scale: 1.01 }}
-          className="p-4 glass-panel rounded-2xl border border-white/8"
+          whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
+          whileTap={{ scale: 0.99 }}
+          className="p-4 glass-panel rounded-2xl border border-white/8 shadow-md hover:shadow-xl hover:shadow-emerald-500/10 transition"
         >
           <span className="text-xs text-slate-400 block font-medium">Leadership Offers / Hires</span>
           <p className="text-2xl font-black text-emerald-400 mt-1 tabular-nums">{offeredCount}</p>
@@ -89,8 +92,9 @@ export const CEODashboard: React.FC<CEODashboardProps> = ({
         </motion.div>
 
         <motion.div
-          whileHover={{ y: -2, scale: 1.01 }}
-          className="p-4 glass-panel rounded-2xl border border-white/8"
+          whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
+          whileTap={{ scale: 0.99 }}
+          className="p-4 glass-panel rounded-2xl border border-white/8 shadow-md hover:shadow-xl hover:shadow-purple-500/10 transition"
         >
           <span className="text-xs text-slate-400 block font-medium">Executive Boardrooms</span>
           <p className="text-2xl font-black text-purple-400 mt-1 tabular-nums">
@@ -118,8 +122,9 @@ export const CEODashboard: React.FC<CEODashboardProps> = ({
             return (
               <motion.div
                 key={cand.id}
-                whileHover={{ y: -2 }}
-                className="p-5 glass-panel rounded-2xl border border-white/8 space-y-3"
+                whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
+                whileTap={{ scale: 0.99 }}
+                className="p-5 glass-panel rounded-2xl border border-white/8 space-y-3 shadow-xl hover:shadow-2xl hover:shadow-amber-500/15 transition"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">

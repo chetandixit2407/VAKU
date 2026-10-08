@@ -310,9 +310,11 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
               const resolvedRoom = resolveRoomName(task.destinationRoomId || task.roomId, task.destinationRoomName);
 
               return (
-                <div
+                <motion.div
                   key={task.id}
-                  className="p-4 glass-panel rounded-2xl border border-amber-400/60 flex flex-col justify-between space-y-3"
+                  whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
+                  whileTap={{ scale: 0.99 }}
+                  className="p-4 glass-panel rounded-2xl border border-amber-400/60 flex flex-col justify-between space-y-3 shadow-xl hover:shadow-2xl hover:shadow-amber-500/15"
                 >
                   <div className="flex items-center justify-between text-xs pb-2 border-b border-white/8">
                     <span className="font-bold text-white truncate">{task.title}</span>
@@ -347,7 +349,7 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
                       <span>Mark Completed</span>
                     </button>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
           </div>
@@ -389,8 +391,9 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
                 return (
                   <motion.div
                     key={task.id}
-                    whileHover={{ y: -2 }}
-                    className="p-5 glass-panel rounded-2xl border border-amber-500/40 hover:border-amber-400 shadow-xl space-y-3.5 transition"
+                    whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
+                    whileTap={{ scale: 0.99 }}
+                    className="p-5 glass-panel rounded-2xl border border-amber-500/40 hover:border-amber-400 shadow-xl hover:shadow-2xl hover:shadow-amber-500/15 space-y-3.5 transition"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
