@@ -6,7 +6,6 @@ export type CinematicVariant =
   | 'visitor'
   | 'interview'
   | 'room'
-  | 'scanner'
   | 'candidate'
   | 'settings';
 

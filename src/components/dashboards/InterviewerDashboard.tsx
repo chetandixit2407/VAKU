@@ -95,7 +95,7 @@ export const InterviewerDashboard: React.FC<InterviewerDashboardProps> = ({
                   key={intv.id}
                   whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
                   whileTap={{ scale: 0.99 }}
-                  className="p-5 glass-panel rounded-2xl border border-white/8 hover:border-white/16 shadow-xl hover:shadow-2xl hover:shadow-blue-500/15 space-y-4 transition"
+                  className="p-5 glass-panel dashboard-card rounded-2xl border border-white/8 hover:border-white/16 shadow-xl hover:shadow-2xl hover:shadow-blue-500/15 space-y-4 transition"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3.5">
@@ -195,7 +195,7 @@ export const InterviewerDashboard: React.FC<InterviewerDashboardProps> = ({
             {activeInterviews.map((intv) => (
               <div
                 key={intv.id}
-                className="p-5 glass-panel rounded-2xl border border-blue-500/30 shadow-xl space-y-4"
+                className="p-5 glass-panel dashboard-card rounded-2xl border border-blue-500/30 shadow-xl space-y-4"
               >
                 <div className="flex items-center justify-between">
                   <div>

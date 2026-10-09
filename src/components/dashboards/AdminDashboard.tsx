@@ -684,14 +684,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         <div className="space-y-4 animate-in fade-in duration-200">
           {/* Summary Metric Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="p-4 bg-slate-900 border border-slate-800 rounded-2xl">
+            <div className="p-4 bg-slate-900 dashboard-card border border-slate-800 rounded-2xl">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
                 Total Intake
               </span>
               <div className="text-xl font-black text-white mt-1">{candidates.length}</div>
               <span className="text-[10px] text-slate-500">Authorized View</span>
             </div>
-            <div className="p-4 bg-slate-900 border border-blue-500/30 rounded-2xl">
+            <div className="p-4 bg-slate-900 dashboard-card border border-blue-500/30 rounded-2xl">
               <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400 block">
                 In Session
               </span>
@@ -700,7 +700,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </div>
               <span className="text-[10px] text-blue-400/70">Live Interviews</span>
             </div>
-            <div className="p-4 bg-slate-900 border border-amber-500/30 rounded-2xl">
+            <div className="p-4 bg-slate-900 dashboard-card border border-amber-500/30 rounded-2xl">
               <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 block">
                 Waiting / Assigned
               </span>
@@ -717,7 +717,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </div>
               <span className="text-[10px] text-amber-400/70">In Pipeline</span>
             </div>
-            <div className="p-4 bg-slate-900 border border-emerald-500/30 rounded-2xl">
+            <div className="p-4 bg-slate-900 dashboard-card border border-emerald-500/30 rounded-2xl">
               <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 block">
                 Completed Today
               </span>

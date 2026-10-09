@@ -50,7 +50,7 @@ export const CEODashboard: React.FC<CEODashboardProps> = ({
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="px-4 py-2 glass-panel rounded-2xl border border-white/8 text-center">
+          <div className="px-4 py-2 glass-panel dashboard-card rounded-2xl border border-white/8 text-center">
             <span className="text-[10px] uppercase font-bold text-slate-400 block font-mono">Offer Rate</span>
             <span className="text-lg font-black text-emerald-400 tabular-nums">
               {candidates.length > 0 ? `${Math.round((offeredCount / Math.max(1, candidates.length)) * 100)}%` : '0%'}
@@ -64,7 +64,7 @@ export const CEODashboard: React.FC<CEODashboardProps> = ({
         <motion.div
           whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
           whileTap={{ scale: 0.99 }}
-          className="p-4 bg-[#17191D] text-white rounded-2xl border border-white/10 shadow-md hover:shadow-xl transition"
+          className="p-4 bg-[#17191D] dashboard-card text-white rounded-2xl border border-white/10 shadow-md hover:shadow-xl transition"
         >
           <span className="text-xs text-[#AEB4BC] block font-medium">Active Office Presence</span>
           <p className="text-2xl font-black text-white mt-1 tabular-nums">{activeCandidates.length}</p>
@@ -74,7 +74,7 @@ export const CEODashboard: React.FC<CEODashboardProps> = ({
         <motion.div
           whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
           whileTap={{ scale: 0.99 }}
-          className="p-4 bg-[#17191D] text-white rounded-2xl border border-white/10 shadow-md hover:shadow-xl transition"
+          className="p-4 bg-[#17191D] dashboard-card text-white rounded-2xl border border-white/10 shadow-md hover:shadow-xl transition"
         >
           <span className="text-xs text-[#AEB4BC] block font-medium">Interviews Live</span>
           <p className="text-2xl font-black text-white mt-1 tabular-nums">{inSessionCount}</p>
@@ -84,7 +84,7 @@ export const CEODashboard: React.FC<CEODashboardProps> = ({
         <motion.div
           whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
           whileTap={{ scale: 0.99 }}
-          className="p-4 bg-[#17191D] text-white rounded-2xl border border-white/10 shadow-md hover:shadow-xl transition"
+          className="p-4 bg-[#17191D] dashboard-card text-white rounded-2xl border border-white/10 shadow-md hover:shadow-xl transition"
         >
           <span className="text-xs text-[#AEB4BC] block font-medium">Leadership Offers / Hires</span>
           <p className="text-2xl font-black text-emerald-400 mt-1 tabular-nums">{offeredCount}</p>
@@ -94,7 +94,7 @@ export const CEODashboard: React.FC<CEODashboardProps> = ({
         <motion.div
           whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
           whileTap={{ scale: 0.99 }}
-          className="p-4 bg-[#17191D] text-white rounded-2xl border border-white/10 shadow-md hover:shadow-xl transition"
+          className="p-4 bg-[#17191D] dashboard-card text-white rounded-2xl border border-white/10 shadow-md hover:shadow-xl transition"
         >
           <span className="text-xs text-[#AEB4BC] block font-medium">Executive Boardrooms</span>
           <p className="text-2xl font-black text-white mt-1 tabular-nums">
@@ -124,7 +124,7 @@ export const CEODashboard: React.FC<CEODashboardProps> = ({
                 key={cand.id}
                 whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
                 whileTap={{ scale: 0.99 }}
-                className="p-5 bg-[#17191D] text-white rounded-2xl border border-white/10 space-y-3 shadow-xl transition"
+                className="p-5 bg-[#17191D] dashboard-card text-white rounded-2xl border border-white/10 space-y-3 shadow-xl transition"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">

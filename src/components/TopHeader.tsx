@@ -11,41 +11,45 @@ import {
   Wifi,
   Sparkles,
   Smartphone,
-  LogOut,
+  X,
 } from 'lucide-react';
-import type { UserRole, User } from '../types/index.ts';
+import type { UserRole } from '../types/index.ts';
 import { PWAInstallButton } from './PWAInstallButton.tsx';
+
+export interface OpenPanelItem {
+  id: string;
+  label: string;
+  onClose: () => void;
+}
 
 interface TopHeaderProps {
   pageTitle?: string;
   currentRole: UserRole;
-  currentUser?: User | null;
   unreadCount: number;
   unreadChatCount?: number;
   isRealtimeConnected: boolean;
+  openPanels?: OpenPanelItem[];
   onOpenNotifications: () => void;
   onOpenChat: () => void;
   onOpenQRPasses: () => void;
   onOpenCheckIn: () => void;
   onOpenWalkIn?: () => void;
   onToggleMobileMenu?: () => void;
-  onLogout?: () => void;
 }
 
 export const TopHeader: React.FC<TopHeaderProps> = ({
   pageTitle = 'Operations Command Center',
   currentRole,
-  currentUser,
   unreadCount,
   unreadChatCount = 0,
   isRealtimeConnected,
+  openPanels = [],
   onOpenNotifications,
   onOpenChat,
   onOpenQRPasses,
   onOpenCheckIn,
   onOpenWalkIn,
   onToggleMobileMenu,
-  onLogout,
 }) => {
   return (
     <header className="sticky top-0 z-20 px-4 sm:px-6 py-3 border-b border-white/6 glass-panel backdrop-blur-2xl transition-all">
@@ -69,7 +73,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
               </h1>
               <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/5 border border-white/8 text-amber-400">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                <span>Sector 65 HQ</span>
+                <span>Active Console</span>
               </span>
             </div>
             <p className="text-[11px] text-slate-400 hidden md:block">
@@ -145,24 +149,25 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
             )}
           </button>
 
-          {/* User Signout on Header for mobile/tablet */}
-          {currentUser && (
-            <div className="flex items-center gap-2 pl-1 border-l border-white/8">
-              <div className="hidden sm:flex flex-col text-right">
-                <span className="text-xs font-bold text-white truncate max-w-[110px]">
-                  {currentUser.name}
-                </span>
-                <span className="text-[10px] font-mono text-amber-400/90">{currentUser.role}</span>
-              </div>
-              {onLogout && (
-                <button
-                  onClick={onLogout}
-                  className="p-2 rounded-xl bg-white/4 hover:bg-rose-500/15 border border-white/8 hover:border-rose-500/30 text-slate-400 hover:text-rose-300 transition cursor-pointer"
-                  title="Sign out of staff console"
+          {/* Active In-App Panel Status & Close Control (Replaces redundant top-right login info) */}
+          {openPanels && openPanels.length > 0 && (
+            <div className="flex items-center gap-1.5 pl-2 border-l border-white/8">
+              {openPanels.map((panel) => (
+                <div
+                  key={panel.id}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-500/15 border border-amber-500/35 text-amber-300 text-xs font-semibold shadow-xs"
                 >
-                  <LogOut className="w-3.5 h-3.5" />
-                </button>
-              )}
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shrink-0" />
+                  <span className="truncate max-w-[110px]">{panel.label}</span>
+                  <button
+                    onClick={panel.onClose}
+                    className="p-0.5 rounded-md hover:bg-white/10 text-slate-300 hover:text-white transition cursor-pointer"
+                    title={`Close ${panel.label}`}
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
             </div>
           )}
 

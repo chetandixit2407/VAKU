@@ -16,7 +16,6 @@ import {
   User,
   Building,
   UserPlus,
-  ScanLine,
   CheckCircle2,
   Camera,
   Search,
@@ -41,7 +40,7 @@ export const QRPassModal: React.FC<QRPassModalProps> = ({
   onLaunchGeneralRegister,
   onLaunchPhotoCapture,
 }) => {
-  const [activeTab, setActiveTab] = useState<'SCANNER' | 'GENERAL' | 'SCHEDULED'>('SCANNER');
+  const [activeTab, setActiveTab] = useState<'GENERAL' | 'SCHEDULED'>('GENERAL');
   const [sessions, setSessions] = useState<CheckInSession[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
@@ -50,12 +49,6 @@ export const QRPassModal: React.FC<QRPassModalProps> = ({
   const [generalQrDataUrl, setGeneralQrDataUrl] = useState<string>('');
   const [scheduledQrDataUrl, setScheduledQrDataUrl] = useState<string>('');
   const [isStandeeMode, setIsStandeeMode] = useState<boolean>(false);
-
-  // Live QR Scanner State
-  const [manualScanToken, setManualScanToken] = useState<string>('WCR-APPT-901');
-  const [isScanning, setIsScanning] = useState<boolean>(true);
-  const [scannedCandidate, setScannedCandidate] = useState<CheckInSession | null>(null);
-  const [scannerStatus, setScannerStatus] = useState<string>('Scanning candidate QR...');
 
   // New Scheduled QR Generation state
   const [showNewPassForm, setShowNewPassForm] = useState<boolean>(false);
@@ -137,27 +130,6 @@ export const QRPassModal: React.FC<QRPassModalProps> = ({
     navigator.clipboard.writeText(url);
     setCopiedUrl(true);
     setTimeout(() => setCopiedUrl(false), 2000);
-  };
-
-  const handleExecuteScan = async (tokenToScan: string) => {
-    setIsScanning(true);
-    setScannerStatus(`Verifying pass token: ${tokenToScan}...`);
-
-    try {
-      const res = await fetch(`/api/qr/${encodeURIComponent(tokenToScan)}`);
-      const data = await res.json();
-      if (data.success && data.session) {
-        setTimeout(() => {
-          setScannedCandidate(data.session);
-          setScannerStatus('Candidate verified successfully');
-          setIsScanning(false);
-        }, 500);
-      } else {
-        setScannerStatus(data.error || 'Pass token not recognized in active registry.');
-      }
-    } catch (err) {
-      setScannerStatus('Pass lookup failed. Please check network.');
-    }
   };
 
   const handleCreateScheduledPass = async (e: React.FormEvent) => {
@@ -291,7 +263,7 @@ export const QRPassModal: React.FC<QRPassModalProps> = ({
                   WCR QR Station & Intake Hub
                 </h2>
                 <p className="text-[11px] text-slate-400">
-                  Live Optical Scanner &bull; Dual Standees &bull; Walk-In Self-Registration
+                  Dual Standees &bull; Walk-In Self-Registration &bull; Scheduled Passes
                 </p>
               </div>
             </div>
@@ -306,21 +278,6 @@ export const QRPassModal: React.FC<QRPassModalProps> = ({
 
         {/* Workflow Tab Selector */}
         <div className="p-2.5 bg-black/30 border-b border-white/6 flex gap-2">
-          <button
-            onClick={() => {
-              setActiveTab('SCANNER');
-              if (!scannedCandidate) handleExecuteScan('WCR-APPT-901');
-            }}
-            className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
-              activeTab === 'SCANNER'
-                ? 'bg-amber-500 text-slate-950 shadow-md'
-                : 'text-slate-400 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <ScanLine className="w-4 h-4" />
-            <span>Interactive QR Scanner</span>
-          </button>
-
           <button
             onClick={() => setActiveTab('GENERAL')}
             className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
@@ -347,165 +304,7 @@ export const QRPassModal: React.FC<QRPassModalProps> = ({
         </div>
 
         {/* ========================================================= */}
-        {/* TAB 1: LIVE INTERACTIVE OPTICAL SCANNER (AXLE JOURNEY STYLE) */}
-        {/* ========================================================= */}
-        {activeTab === 'SCANNER' && (
-          <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-            {/* Left: Optical Scanner Viewport */}
-            <div className="flex flex-col items-center justify-center space-y-4">
-              <div className="relative w-full max-w-[280px] aspect-square bg-[#05070A] rounded-3xl overflow-hidden border border-white/12 shadow-2xl flex items-center justify-center p-4">
-                {/* Background optical grid pattern */}
-                <div
-                  className="absolute inset-0 opacity-15"
-                  style={{
-                    backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.4) 1px, transparent 0)`,
-                    backgroundSize: '16px 16px',
-                  }}
-                />
-
-                {/* Corner Laser Brackets */}
-                <div className="absolute top-4 left-4 w-7 h-7 border-t-2 border-l-2 border-amber-400" />
-                <div className="absolute top-4 right-4 w-7 h-7 border-t-2 border-r-2 border-amber-400" />
-                <div className="absolute bottom-4 left-4 w-7 h-7 border-b-2 border-l-2 border-amber-400" />
-                <div className="absolute bottom-4 right-4 w-7 h-7 border-b-2 border-r-2 border-amber-400" />
-
-                {/* Animated Laser Scanning Line */}
-                <div className="absolute left-3 right-3 h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent shadow-[0_0_12px_#f59e0b] animate-laser pointer-events-none" />
-
-                {/* Central QR Reticle / Target */}
-                <div className="relative z-10 w-36 h-36 border border-dashed border-amber-400/40 rounded-2xl flex flex-col items-center justify-center text-center p-3 bg-black/40 backdrop-blur-xs">
-                  <QrCode className="w-12 h-12 text-amber-400/80 mb-1" />
-                  <span className="text-[10px] text-amber-300 font-mono tracking-wider uppercase">
-                    Align QR Here
-                  </span>
-                </div>
-
-                {/* Scanning Status Tag */}
-                <div className="absolute bottom-3 left-0 right-0 flex justify-center">
-                  <div className="px-3 py-1 rounded-full bg-slate-950/90 border border-amber-400/30 text-[10px] font-semibold text-amber-300 flex items-center gap-1.5 backdrop-blur-md shadow-lg">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
-                    <span>{scannerStatus}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Quick Preset Scan Selectors */}
-              <div className="w-full max-w-[280px] space-y-2">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block text-center">
-                  Simulate QR Scanner Feed:
-                </span>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => {
-                      setManualScanToken('WCR-APPT-901');
-                      handleExecuteScan('WCR-APPT-901');
-                    }}
-                    className="px-2.5 py-1.5 bg-white/6 hover:bg-white/10 text-slate-200 hover:text-amber-300 text-xs font-mono rounded-xl border border-white/8 transition cursor-pointer text-center"
-                  >
-                    WCR-APPT-901
-                  </button>
-                  <button
-                    onClick={() => {
-                      setManualScanToken('WCR-APPT-902');
-                      handleExecuteScan('WCR-APPT-902');
-                    }}
-                    className="px-2.5 py-1.5 bg-white/6 hover:bg-white/10 text-slate-200 hover:text-amber-300 text-xs font-mono rounded-xl border border-white/8 transition cursor-pointer text-center"
-                  >
-                    WCR-APPT-902
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Right: Candidate Found Reveal Card */}
-            <div className="space-y-4">
-              {scannedCandidate ? (
-                <motion.div
-                  initial={{ opacity: 0, y: 12, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                  className="glass-panel rounded-2xl p-5 border border-amber-500/30 space-y-4 shadow-xl"
-                >
-                  <div className="flex items-center justify-between pb-3 border-b border-white/8">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center">
-                        <CheckCircle2 className="w-4 h-4" />
-                      </div>
-                      <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider font-mono">
-                        Candidate Found
-                      </span>
-                    </div>
-                    <span className="px-2 py-0.5 rounded-full bg-white/6 text-amber-400 font-mono text-[10px] font-bold">
-                      {scannedCandidate.token}
-                    </span>
-                  </div>
-
-                  <div className="space-y-2.5">
-                    <div>
-                      <h3 className="text-lg font-bold text-white tracking-tight">
-                        {scannedCandidate.candidateName}
-                      </h3>
-                      <p className="text-xs font-medium text-amber-400">
-                        {scannedCandidate.position} &bull; {scannedCandidate.department || 'Corporate'}
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2 text-[11px] pt-1">
-                      <div className="p-2 bg-white/4 rounded-xl border border-white/6">
-                        <span className="text-slate-400 block text-[10px]">Interview Time</span>
-                        <strong className="text-white font-mono">{scannedCandidate.appointmentTime || '11:00 AM'}</strong>
-                      </div>
-                      <div className="p-2 bg-white/4 rounded-xl border border-white/6">
-                        <span className="text-slate-400 block text-[10px]">Interviewer</span>
-                        <strong className="text-white">{scannedCandidate.interviewerName || 'Nisha Verma'}</strong>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Actions Transition */}
-                  <div className="space-y-2 pt-2 border-t border-white/8">
-                    <button
-                      onClick={() => {
-                        onClose();
-                        onLaunchCheckIn(scannedCandidate.token);
-                      }}
-                      className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs rounded-xl shadow-lg transition cursor-pointer flex items-center justify-center gap-2"
-                    >
-                      <Smartphone className="w-4 h-4" />
-                      <span>Proceed to Arrival Check-In</span>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        onClose();
-                        onLaunchCheckIn(scannedCandidate.token);
-                      }}
-                      className="w-full py-2 bg-white/6 hover:bg-white/10 text-slate-300 hover:text-white font-medium text-xs rounded-xl border border-white/8 transition cursor-pointer flex items-center justify-center gap-1.5"
-                    >
-                      <Camera className="w-3.5 h-3.5 text-amber-400" />
-                      <span>Proceed to Live Photo Capture</span>
-                    </button>
-                  </div>
-                </motion.div>
-              ) : (
-                <div className="glass-panel rounded-2xl p-6 text-center space-y-3 border border-white/8 text-slate-400">
-                  <div className="w-12 h-12 rounded-2xl bg-white/4 border border-white/8 flex items-center justify-center mx-auto text-amber-400">
-                    <ScanLine className="w-6 h-6 animate-pulse" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-white">Awaiting Optical Match</h4>
-                    <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                      Present pass to terminal camera or click one of the quick test tokens above to reveal verified candidate data.
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* ========================================================= */}
-        {/* TAB 2: GENERAL NEW CANDIDATE QR (BLANK REGISTRATION) */}
+        {/* TAB 1: GENERAL NEW CANDIDATE QR (BLANK REGISTRATION) */}
         {/* ========================================================= */}
         {activeTab === 'GENERAL' && (
           <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 items-center">

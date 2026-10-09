@@ -18,7 +18,6 @@ import {
 } from 'lucide-react';
 import type { Candidate, Interview, Room, ActionTask } from '../../types/index.ts';
 import { authenticatedFetch } from '../../utils/apiClient.ts';
-import { OperationsCommandHeader } from '../OperationsCommandHeader.tsx';
 
 interface HRDashboardProps {
   candidates: Candidate[];
@@ -93,15 +92,6 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Cinematic Operations Command Header */}
-      <OperationsCommandHeader
-        candidates={candidates}
-        interviews={interviews}
-        rooms={rooms}
-        userName="HR Lead"
-        userRole="Recruitment & Office Ops"
-      />
-
       {/* Live Dispatched Action Alerts & Escort Status */}
       {activeHRTasks.length > 0 && (
         <motion.div
@@ -192,7 +182,7 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
                     key={cand.id}
                     whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
                     whileTap={{ scale: 0.99 }}
-                    className="p-4 sm:p-5 bg-[#17191D] text-white rounded-2xl shadow-xl transition border border-white/10"
+                    className="p-4 sm:p-5 bg-[#17191D] dashboard-card text-white rounded-2xl shadow-xl transition border border-white/10"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3.5">
@@ -287,7 +277,7 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
                     key={cand.id}
                     whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
                     whileTap={{ scale: 0.99 }}
-                    className="p-3.5 glass-panel rounded-2xl border border-blue-500/30 flex items-center justify-between text-xs shadow-lg hover:shadow-xl hover:shadow-blue-500/10"
+                    className="p-3.5 glass-panel dashboard-card rounded-2xl border border-blue-500/30 flex items-center justify-between text-xs shadow-lg hover:shadow-xl hover:shadow-blue-500/10"
                   >
                     <div>
                       <strong className="text-white block text-sm">{cand.fullName}</strong>
@@ -338,7 +328,7 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
                   key={room.id}
                   whileHover={{ scale: 1.02, y: -2, transition: { duration: 0.2, ease: 'easeOut' } }}
                   whileTap={{ scale: 0.99 }}
-                  className="p-3.5 glass-panel rounded-2xl space-y-1 text-xs border border-white/8 shadow-md hover:shadow-xl hover:shadow-amber-500/10"
+                  className="p-3.5 glass-panel dashboard-card rounded-2xl space-y-1 text-xs border border-white/8 shadow-md hover:shadow-xl hover:shadow-amber-500/10"
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-white">{room.name}</span>
@@ -376,7 +366,7 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
             <button
               type="button"
               onClick={onOpenChat}
-              className="w-full p-3.5 glass-panel hover:border-amber-500/40 rounded-2xl flex items-center justify-between text-xs text-white font-semibold transition shadow-md group cursor-pointer border border-white/8"
+              className="w-full p-3.5 glass-panel dashboard-card hover:border-amber-500/40 rounded-2xl flex items-center justify-between text-xs text-white font-semibold transition shadow-md group cursor-pointer border border-white/8"
             >
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 group-hover:scale-105 transition">
@@ -392,7 +382,7 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
           )}
 
           {/* HR Information Authority Card */}
-          <div className="p-4 glass-panel-subtle rounded-2xl space-y-1.5 text-xs border border-white/6">
+          <div className="p-4 glass-panel-subtle dashboard-card rounded-2xl space-y-1.5 text-xs border border-white/6">
             <div className="flex items-center gap-1.5 text-amber-400 font-bold text-[11px]">
               <Sparkles className="w-3.5 h-3.5" />
               <span>HR Information Authority</span>

@@ -1014,10 +1014,56 @@ export default function App() {
         <TopHeader
           pageTitle={`WCR Operations: ${currentRole.replace('_', ' ')} Console`}
           currentRole={currentRole}
-          currentUser={currentUser}
           unreadCount={unreadCount}
           unreadChatCount={unreadChatCount}
           isRealtimeConnected={isRealtimeConnected}
+          openPanels={[
+            ...(notificationDrawerOpen
+              ? [{ id: 'alerts', label: 'Alert Feed', onClose: () => setNotificationDrawerOpen(false) }]
+              : []),
+            ...(isChatOpen
+              ? [
+                  {
+                    id: 'chat',
+                    label: 'Office Chat',
+                    onClose: () => {
+                      setIsChatOpen(false);
+                      setChatPrefillCandidateId('');
+                      setChatPrefillRoomId('');
+                      setChatPrefillMessage('');
+                    },
+                  },
+                ]
+              : []),
+            ...(activeModal
+              ? [
+                  {
+                    id: 'modal',
+                    label:
+                      activeModal === 'CHECK_IN'
+                        ? 'Check-In Portal'
+                        : activeModal === 'QR_PASS'
+                        ? 'QR Pass Station'
+                        : activeModal === 'WALK_IN'
+                        ? 'Walk-In Entry'
+                        : activeModal === 'DOSSIER'
+                        ? 'Candidate Dossier'
+                        : activeModal === 'ASSIGN_ROOM'
+                        ? 'Room Assignment'
+                        : activeModal === 'END_INTERVIEW'
+                        ? 'Interview Decision'
+                        : activeModal === 'GENERAL_REGISTER'
+                        ? 'Self-Registration'
+                        : 'Active Panel',
+                    onClose: () => {
+                      setActiveModal(null);
+                      setSelectedCandidateId('');
+                      setSelectedInterview(null);
+                    },
+                  },
+                ]
+              : []),
+          ]}
           onOpenNotifications={() => setNotificationDrawerOpen(true)}
           onOpenChat={() => {
             setIsChatOpen(true);
@@ -1030,7 +1076,6 @@ export default function App() {
           }}
           onOpenWalkIn={() => setActiveModal('WALK_IN')}
           onToggleMobileMenu={() => setIsMobileNavOpen(true)}
-          onLogout={handleStaffLogout}
         />
 
         {/* Main Dashboard Container */}

@@ -90,6 +90,107 @@
   border-radius: 1rem;
 }
 
+/* ========================================================
+   MISTY-WHITE (#E9EDF2) DASHBOARD CARD HOVER SYSTEM
+   Smooth 250ms transition, lift translateY(-2px) scale(1.01),
+   with dark charcoal (#17191D) typography on hover
+   ======================================================== */
+.dashboard-card,
+.card-dark,
+.card-light {
+  position: relative;
+  transition: background-color 250ms cubic-bezier(0.16, 1, 0.3, 1),
+              color 250ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 250ms cubic-bezier(0.16, 1, 0.3, 1),
+              transform 250ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 250ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, background-color;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .dashboard-card:hover,
+  .card-dark:hover,
+  .card-light:hover {
+    background-color: #E9EDF2 !important;
+    border-color: rgba(255, 255, 255, 0.92) !important;
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 0 12px 28px -6px rgba(15, 23, 42, 0.16), 0 0 0 1px rgba(255, 255, 255, 0.7) !important;
+  }
+
+  /* Transition text and icons smoothly */
+  .dashboard-card *,
+  .card-dark *,
+  .card-light * {
+    transition: color 250ms cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 250ms cubic-bezier(0.16, 1, 0.3, 1),
+                background-color 250ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Headings, metrics, and primary text switch to dark charcoal (#17191D) on hover */
+  .dashboard-card:hover,
+  .card-dark:hover,
+  .card-light:hover,
+  .dashboard-card:hover h1,
+  .dashboard-card:hover h2,
+  .dashboard-card:hover h3,
+  .dashboard-card:hover h4,
+  .dashboard-card:hover h5,
+  .dashboard-card:hover strong,
+  .dashboard-card:hover b,
+  .dashboard-card:hover .text-white,
+  .dashboard-card:hover .text-slate-100,
+  .dashboard-card:hover .text-slate-200,
+  .dashboard-card:hover .text-slate-300,
+  .card-dark:hover .text-white,
+  .card-dark:hover .text-slate-100,
+  .card-dark:hover .text-slate-200,
+  .card-dark:hover .text-slate-300 {
+    color: #17191D !important;
+  }
+
+  /* Secondary descriptions smoothly shift to readable dark charcoal grey */
+  .dashboard-card:hover p,
+  .dashboard-card:hover .text-slate-400,
+  .dashboard-card:hover .text-slate-500,
+  .dashboard-card:hover .text-\[\#AEB4BC\],
+  .dashboard-card:hover .text-\[\#D5D8DD\],
+  .card-dark:hover p,
+  .card-dark:hover .text-slate-400,
+  .card-dark:hover .text-slate-500,
+  .card-dark:hover .text-\[\#AEB4BC\],
+  .card-dark:hover .text-\[\#D5D8DD\] {
+    color: #4A515E !important;
+  }
+
+  /* Tabular figures and monospace metric values */
+  .dashboard-card:hover .font-mono:not([class*="bg-"]):not([class*="badge"]),
+  .dashboard-card:hover .tabular-nums:not([class*="bg-"]):not([class*="badge"]),
+  .card-dark:hover .font-mono:not([class*="bg-"]):not([class*="badge"]),
+  .card-dark:hover .tabular-nums:not([class*="bg-"]):not([class*="badge"]) {
+    color: #17191D;
+  }
+
+  /* Translucent inner cards adapt cleanly to the misty-white card surface */
+  .dashboard-card:hover div.bg-black\/30,
+  .dashboard-card:hover div.bg-black\/20,
+  .dashboard-card:hover div.bg-white\/5,
+  .dashboard-card:hover div.bg-white\/4,
+  .dashboard-card:hover div.bg-slate-950\/40,
+  .card-dark:hover div.bg-black\/30,
+  .card-dark:hover div.bg-black\/20,
+  .card-dark:hover div.bg-white\/5,
+  .card-dark:hover div.bg-white\/4 {
+    background-color: rgba(255, 255, 255, 0.78) !important;
+    border-color: rgba(0, 0, 0, 0.08) !important;
+  }
+
+  /* Neutral SVGs transition nicely */
+  .dashboard-card:hover svg:not([class*="text-"]):not([class*="bg-"]),
+  .card-dark:hover svg:not([class*="text-"]):not([class*="bg-"]) {
+    color: #17191D !important;
+  }
+}
+
 .card-pill {
   background-color: #E7E9EC;
   color: #1C2430;
@@ -148,28 +249,6 @@
   box-shadow: 0 0 0 2px rgba(212, 163, 115, 0.25), 0 0 12px rgba(255, 255, 255, 0.15);
   outline: none;
   background: rgba(16, 21, 28, 0.85);
-}
-
-/* Cinematic Laser Scanner Keyframe */
-@keyframes laser-sweep {
-  0% {
-    top: 0%;
-    opacity: 0.2;
-  }
-  20% {
-    opacity: 1;
-  }
-  80% {
-    opacity: 1;
-  }
-  100% {
-    top: 98%;
-    opacity: 0.2;
-  }
-}
-
-.animate-laser {
-  animation: laser-sweep 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
 }
 
 /* Camera Reticle Pulse */

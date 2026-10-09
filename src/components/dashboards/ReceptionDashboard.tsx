@@ -341,7 +341,7 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
       )}
 
       {/* Filter & Search Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 bg-[#17191D] rounded-3xl border border-white/10 shadow-xl">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 bg-[#17191D] dashboard-card rounded-3xl border border-white/10 shadow-xl">
         <div className="flex items-center gap-2.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
           <button
             onClick={() => setActiveFilter('ALL')}
@@ -420,7 +420,7 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
                   whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
                   whileTap={{ scale: 0.99 }}
                   onClick={() => setSelectedProfileCandidateId(cand.id)}
-                  className="p-4 glass-panel hover:border-amber-500/50 rounded-2xl space-y-3 text-xs shadow-xl hover:shadow-2xl hover:shadow-amber-500/15 cursor-pointer transition border border-white/8"
+                  className="p-4 glass-panel dashboard-card hover:border-amber-500/50 rounded-2xl space-y-3 text-xs shadow-xl hover:shadow-2xl hover:shadow-amber-500/15 cursor-pointer transition border border-white/8"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
@@ -504,7 +504,7 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
                   key={cand.id}
                   whileHover={{ y: -2 }}
                   onClick={() => setSelectedProfileCandidateId(cand.id)}
-                  className="p-4 glass-panel border border-blue-500/30 hover:border-blue-500/60 rounded-2xl space-y-2.5 text-xs cursor-pointer transition shadow-md"
+                  className="p-4 glass-panel dashboard-card border border-blue-500/30 hover:border-blue-500/60 rounded-2xl space-y-2.5 text-xs cursor-pointer transition shadow-md"
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-white hover:text-cyan-300 flex items-center gap-1 text-sm">
@@ -534,7 +534,7 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
             {visitors.map((vis) => (
               <div
                 key={vis.id}
-                className="p-3.5 glass-panel-subtle rounded-2xl space-y-1 text-xs border border-white/6"
+                className="p-3.5 glass-panel-subtle dashboard-card rounded-2xl space-y-1 text-xs border border-white/6"
               >
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-white">{vis.fullName}</span>
@@ -571,7 +571,7 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
                   key={cand.id}
                   whileHover={{ y: -2 }}
                   onClick={() => setSelectedProfileCandidateId(cand.id)}
-                  className="p-4 glass-panel border border-emerald-500/40 hover:border-emerald-500 rounded-2xl space-y-3 text-xs shadow-lg cursor-pointer transition"
+                  className="p-4 glass-panel dashboard-card border border-emerald-500/40 hover:border-emerald-500 rounded-2xl space-y-3 text-xs shadow-lg cursor-pointer transition"
                 >
                   <div className="flex items-center justify-between">
                     <div>

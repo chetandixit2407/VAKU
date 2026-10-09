@@ -825,12 +825,24 @@ export const CandidateCheckInForm: React.FC<CandidateCheckInFormProps> = ({
           </p>
         </div>
 
-        {confirmedAppointment && (
-          <div className="self-start sm:self-center bg-white px-3 py-1.5 rounded-lg border border-slate-200 text-[11px] text-slate-600 flex items-center gap-1.5 shrink-0 shadow-xs">
-            <Calendar className="w-3.5 h-3.5 text-amber-600" />
-            <span>Scheduled: <strong className="text-slate-900">{confirmedAppointment.time}</strong></span>
-          </div>
-        )}
+        <div className="flex items-center gap-2 self-start sm:self-center">
+          {confirmedAppointment && (
+            <div className="bg-white px-3 py-1.5 rounded-lg border border-slate-200 text-[11px] text-slate-600 flex items-center gap-1.5 shrink-0 shadow-xs">
+              <Calendar className="w-3.5 h-3.5 text-amber-600" />
+              <span>Scheduled: <strong className="text-slate-900">{confirmedAppointment.time}</strong></span>
+            </div>
+          )}
+          {onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="p-1.5 rounded-xl text-slate-400 hover:text-slate-800 hover:bg-slate-200 transition cursor-pointer"
+              title="Close Check-In Pass Portal"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
+        </div>
       </div>
 
       {sessionLoading && (

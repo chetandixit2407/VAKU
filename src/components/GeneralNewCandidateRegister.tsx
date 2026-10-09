@@ -925,12 +925,24 @@ export const GeneralNewCandidateRegister: React.FC<GeneralNewCandidateRegisterPr
           </p>
         </div>
 
-        {timeRemainingText && sessionState === 'ACTIVE' && (
-          <div className="self-start sm:self-center bg-white px-3 py-1.5 rounded-lg border border-slate-200 text-[11px] text-slate-600 flex items-center gap-1.5 shrink-0 shadow-xs">
-            <Clock className="w-3.5 h-3.5 text-amber-600" />
-            <span>Valid for: <strong className="text-slate-900 font-mono">{timeRemainingText}</strong></span>
-          </div>
-        )}
+        <div className="flex items-center gap-2 self-start sm:self-center">
+          {timeRemainingText && sessionState === 'ACTIVE' && (
+            <div className="bg-white px-3 py-1.5 rounded-lg border border-slate-200 text-[11px] text-slate-600 flex items-center gap-1.5 shrink-0 shadow-xs">
+              <Clock className="w-3.5 h-3.5 text-amber-600" />
+              <span>Valid for: <strong className="text-slate-900 font-mono">{timeRemainingText}</strong></span>
+            </div>
+          )}
+          {onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="p-1.5 rounded-xl text-slate-400 hover:text-slate-800 hover:bg-slate-200 transition cursor-pointer"
+              title="Close Self-Registration Form"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
+        </div>
       </div>
 
       {generalSubmitError && (

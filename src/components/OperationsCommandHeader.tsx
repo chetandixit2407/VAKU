@@ -155,28 +155,26 @@ export const OperationsCommandHeader: React.FC<OperationsCommandHeaderProps> = (
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 pb-1">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-            <span className="text-[11px] font-semibold tracking-wider uppercase text-amber-400/90 font-mono">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+            <span className="text-[11px] font-bold tracking-wider uppercase text-[#17191D] font-mono">
               Live Operations Deck
             </span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-            {greeting}, <span className="text-amber-400">{userName.split(' ')[0]}</span>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-[#17191D] tracking-tight">
+            {greeting}, <span className="text-[#17191D]">{userName.split(' ')[0]}</span>
           </h2>
-          <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
+          <p className="text-xs sm:text-sm text-[#17191D] font-medium mt-0.5">
             White Collar Realty &mdash; Office Operations
           </p>
         </div>
 
-        {/* Live Clock / Location Tag */}
+        {/* Live Clock */}
         <div className="flex items-center gap-3">
-          <div className="glass-panel px-3.5 py-1.5 rounded-xl border border-white/8 flex items-center gap-2.5">
+          <div className="bg-[#17191D] text-white px-3.5 py-1.5 rounded-xl border border-white/10 shadow-md flex items-center gap-2.5">
             <Clock className="w-3.5 h-3.5 text-amber-400" />
-            <span className="text-xs font-mono font-medium text-slate-200 tabular-nums">
+            <span className="text-xs font-mono font-medium text-white tabular-nums">
               {timeString || '--:--:--'}
             </span>
-            <span className="text-slate-600">&bull;</span>
-            <span className="text-[11px] font-medium text-slate-400">Gurugram HQ</span>
           </div>
         </div>
       </div>
@@ -192,7 +190,7 @@ export const OperationsCommandHeader: React.FC<OperationsCommandHeaderProps> = (
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45, delay: idx * 0.07, ease: [0.16, 1, 0.3, 1] }}
               whileHover={{ y: -2, scale: 1.01, transition: { duration: 0.2 } }}
-              className="relative group glass-panel rounded-2xl p-4 border border-white/8 hover:border-white/16 transition-all overflow-hidden"
+              className="relative group glass-panel dashboard-card rounded-2xl p-4 border border-white/8 hover:border-white/16 transition-all overflow-hidden"
             >
               {/* Subtle Ambient Hover Glow */}
               <div

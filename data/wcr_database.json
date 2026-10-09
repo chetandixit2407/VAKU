@@ -87,7 +87,8 @@
       "isActive": true,
       "phone": "+91 98100 00003",
       "createdAt": "2026-10-06T10:05:37.533Z",
-      "updatedAt": "2026-10-06T10:05:37.533Z"
+      "updatedAt": "2026-10-06T10:05:37.533Z",
+      "lastLoginAt": "2026-10-09T05:26:00.063Z"
     },
     {
       "id": "usr-hr-shriyanshi",
@@ -152,7 +153,8 @@
       "isActive": true,
       "phone": "+91 98100 00005",
       "createdAt": "2026-10-06T10:05:37.533Z",
-      "updatedAt": "2026-10-06T10:05:37.533Z"
+      "updatedAt": "2026-10-06T10:05:37.533Z",
+      "lastLoginAt": "2026-10-09T05:10:53.275Z"
     },
     {
       "id": "usr-rec-ananya",
@@ -4883,6 +4885,58 @@
   ],
   "auditLogs": [
     {
+      "id": "aud-1791523583581",
+      "timestamp": "2026-10-09T05:26:23.581Z",
+      "actorType": "USER",
+      "actorName": "Admin / HR",
+      "action": "GENERATE_QR_PASS",
+      "details": "Generated appointment QR pass token WCR-APPT-884 for Vikram Malhotra (AVP - Commercial Leasing)."
+    },
+    {
+      "id": "aud-1791523560063-login",
+      "timestamp": "2026-10-09T05:26:00.063Z",
+      "actorUserId": "usr-hr-nisha",
+      "actorName": "Nisha",
+      "actorRole": "HR",
+      "action": "LOGIN",
+      "details": "Nisha (HR) logged in to operations console.",
+      "entityId": "usr-hr-nisha",
+      "entityType": "USER"
+    },
+    {
+      "id": "aud-1791523549063-login",
+      "timestamp": "2026-10-09T05:25:49.063Z",
+      "actorUserId": "usr-hr-nisha",
+      "actorName": "Nisha",
+      "actorRole": "HR",
+      "action": "LOGIN",
+      "details": "Nisha (HR) logged in to operations console.",
+      "entityId": "usr-hr-nisha",
+      "entityType": "USER"
+    },
+    {
+      "id": "aud-1791522653275-login",
+      "timestamp": "2026-10-09T05:10:53.275Z",
+      "actorUserId": "usr-admin-sameer",
+      "actorName": "Sameer Sir",
+      "actorRole": "ADMIN",
+      "action": "LOGIN",
+      "details": "Sameer Sir (ADMIN) logged in to operations console.",
+      "entityId": "usr-admin-sameer",
+      "entityType": "USER"
+    },
+    {
+      "id": "aud-1791522644487-logout",
+      "timestamp": "2026-10-09T05:10:44.486Z",
+      "actorUserId": "usr-hr-nisha",
+      "actorName": "Nisha",
+      "actorRole": "HR",
+      "action": "LOGOUT",
+      "details": "Nisha logged out.",
+      "entityId": "usr-hr-nisha",
+      "entityType": "USER"
+    },
+    {
       "id": "aud-1791349538378-created",
       "timestamp": "2026-10-07T05:05:38.377Z",
       "actorType": "SYSTEM",
@@ -6068,6 +6122,20 @@
   ],
   "checkInSessions": [
     {
+      "id": "session-1791523583581",
+      "token": "WCR-APPT-884",
+      "qrType": "APPOINTMENT",
+      "candidateName": "Vikram Malhotra",
+      "position": "AVP - Commercial Leasing",
+      "department": "Commercial Leasing",
+      "appointmentTime": "04:30 PM",
+      "interviewerName": "Nisha Verma",
+      "interviewRound": "Round 1 - Executive Discussion",
+      "status": "ACTIVE",
+      "expiresAt": "2026-10-10T05:26:23.581Z",
+      "createdAt": "2026-10-09T05:26:23.581Z"
+    },
+    {
       "id": "reg-sess-1791349538378-33548c5e8ff6",
       "token": "WCR-GEN-1791349538378-F9DC6ADA088088DC2D1D1078",
       "qrType": "NEW_CANDIDATE_REGISTRATION",
@@ -6707,7 +6775,7 @@
       "interviewerId": "usr-int-2",
       "interviewerName": "Rohan Gupta",
       "interviewRound": "Round 1 - Technical Assessment",
-      "status": "ACTIVE",
+      "status": "EXPIRED",
       "expiresAt": "2026-10-07T10:05:37.535Z",
       "createdAt": "2026-10-06T10:05:37.535Z",
       "openedAt": "2026-10-07T05:04:46.513Z"
@@ -8527,5 +8595,6 @@
       "roomName": "Elegance Suite",
       "isPriority": false
     }
-  ]
+  ],
+  "actionTasks": []
 }
