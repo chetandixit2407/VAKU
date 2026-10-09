@@ -34,7 +34,7 @@ import {
   FileCheck,
 } from 'lucide-react';
 import type { Candidate, Interview, TimelineEvent, UserRole } from '../types/index.ts';
-import { formatDateTime } from '../utils/dateFormatter.ts';
+import { formatDateTime, formatPhotoTimestamp } from '../utils/dateFormatter.ts';
 import { ResumeDocumentModal } from './ResumeDocumentModal.tsx';
 import { GovernmentIdModal } from './GovernmentIdModal.tsx';
 import { ReceptionPhotoModal } from './ReceptionPhotoModal.tsx';
@@ -297,23 +297,37 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
       >
         {/* Top Header Bar */}
         <div className="p-4 sm:p-5 border-b border-white/8 flex items-center justify-between bg-white/2 shrink-0">
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center gap-3.5 min-w-0">
             {/* Live photo or fallback avatar */}
-            <div className="relative shrink-0">
-              {candidate?.receptionPhotoUrl || candidate?.photoUrl ? (
-                <img
-                  src={candidate.receptionPhotoUrl || candidate.photoUrl}
-                  alt={candidate?.fullName}
-                  className="w-12 h-12 rounded-2xl object-cover border-2 border-amber-500/40 shadow-lg"
-                />
-              ) : (
-                <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center font-bold text-base">
-                  {(candidate?.fullName || 'WCR').slice(0, 2).toUpperCase()}
-                </div>
-              )}
-              {candidate?.receptionPhotoUrl && (
-                <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center ring-2 ring-[#07090C]" title="Authoritative Desk Photo Captured">
-                  <Check className="w-2.5 h-2.5 stroke-[3]" />
+            <div className="flex flex-col items-center shrink-0">
+              <div className="relative group">
+                {candidate?.receptionPhotoUrl || candidate?.photoUrl || candidate?.livePhoto || candidate?.arrivalPhoto ? (
+                  <img
+                    src={candidate.receptionPhotoUrl || candidate.photoUrl || candidate.livePhoto || candidate.arrivalPhoto}
+                    alt={candidate?.fullName}
+                    className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover border-2 border-amber-500 shadow-xl"
+                  />
+                ) : (
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center font-bold text-lg">
+                    {(candidate?.fullName || 'WCR').slice(0, 2).toUpperCase()}
+                  </div>
+                )}
+                {(candidate?.receptionPhotoUrl || candidate?.arrivalPhoto) && (
+                  <span
+                    className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center ring-2 ring-[#07090C] shadow-md"
+                    title="Authoritative Desk Photo Verified"
+                  >
+                    <Check className="w-3 h-3 stroke-[3]" />
+                  </span>
+                )}
+              </div>
+              {/* Capture Timestamp directly below the photo */}
+              {(candidate?.receptionPhotoCapturedAt || candidate?.arrivalPhotoCapturedAt || candidate?.livePhotoCapturedAt) && (
+                <span
+                  className="text-[9px] sm:text-[10px] text-amber-300 font-mono tracking-tight mt-1 truncate max-w-[110px] sm:max-w-[130px] text-center"
+                  title={`Captured: ${formatPhotoTimestamp(candidate.receptionPhotoCapturedAt || candidate.arrivalPhotoCapturedAt || candidate.livePhotoCapturedAt)}`}
+                >
+                  {formatPhotoTimestamp(candidate.receptionPhotoCapturedAt || candidate.arrivalPhotoCapturedAt || candidate.livePhotoCapturedAt)}
                 </span>
               )}
             </div>
@@ -326,10 +340,17 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
                 <span className="px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-[10px] font-bold text-amber-300 font-mono">
                   {candidate?.token || candidate?.id}
                 </span>
+                <span className="px-2 py-0.5 rounded-full bg-white/10 text-slate-200 border border-white/12 text-[10px] font-semibold">
+                  {candidate?.status || 'Active'}
+                </span>
               </div>
-              <p className="text-xs text-slate-400 truncate">
-                {candidate?.position} &bull; {candidate?.department || 'Operations'}
+              <p className="text-xs text-slate-300 truncate mt-0.5">
+                <strong className="text-white">{candidate?.position}</strong> &bull; {candidate?.department || 'Operations'}
               </p>
+              <div className="flex items-center gap-3 text-[11px] text-slate-400 mt-1 flex-wrap">
+                <span>Arrival: <strong className="text-slate-200 font-mono">{candidate?.arrivalTime || (candidate?.checkedInAt ? new Date(candidate.checkedInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Today')}</strong></span>
+                <span>Location: <strong className="text-slate-200">{candidate?.assignedRoomName || candidate?.currentLocation || 'Reception Area'}</strong></span>
+              </div>
             </div>
           </div>
 
@@ -541,27 +562,72 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
               </div>
 
               {/* Desk Photo Verification Block */}
-              <div className="p-4 glass-panel rounded-2xl border border-white/8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center">
-                    <Camera className="w-5 h-5" />
+              <div className="p-4 glass-panel rounded-2xl border border-white/8 space-y-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    {candidate?.receptionPhotoUrl || candidate?.photoUrl || candidate?.livePhoto || candidate?.arrivalPhoto ? (
+                      <div className="relative shrink-0">
+                        <img
+                          src={candidate.receptionPhotoUrl || candidate.photoUrl || candidate.livePhoto || candidate.arrivalPhoto}
+                          alt={`${candidate?.fullName} Desk Photo`}
+                          className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border-2 border-amber-500/70 shadow-2xl"
+                        />
+                        <span className="absolute -bottom-1.5 -right-1.5 bg-emerald-500 text-slate-950 p-1 rounded-full ring-2 ring-[#0B0E14] shadow">
+                          <Check className="w-3 h-3 stroke-[3]" />
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex flex-col items-center justify-center gap-1 shrink-0">
+                        <Camera className="w-7 h-7" />
+                        <span className="text-[10px] font-bold">No Photo</span>
+                      </div>
+                    )}
+
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h4 className="text-xs sm:text-sm font-bold text-white">Desk Live Photo Verification</h4>
+                        {candidate?.receptionPhotoUrl || candidate?.arrivalPhoto ? (
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold flex items-center gap-1">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                            Verified Record
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[10px] font-bold">
+                            Pending Verification
+                          </span>
+                        )}
+                      </div>
+
+                      <p className="text-xs text-amber-300 font-mono">
+                        {candidate?.receptionPhotoCapturedAt || candidate?.arrivalPhotoCapturedAt || candidate?.livePhotoCapturedAt
+                          ? `Captured: ${formatPhotoTimestamp(candidate.receptionPhotoCapturedAt || candidate.arrivalPhotoCapturedAt || candidate.livePhotoCapturedAt)}`
+                          : 'No desk verification photo captured yet'}
+                      </p>
+
+                      <p className="text-[11px] text-slate-400">
+                        Verified By:{' '}
+                        <strong className="text-slate-200">
+                          {candidate?.arrivalPhotoCapturedByName || candidate?.livePhotoCapturedBy || 'Front Desk Operations Staff'}
+                        </strong>
+                      </p>
+
+                      <p className="text-[11px] text-slate-400">
+                        Database Storage:{' '}
+                        <span className="text-emerald-400 font-semibold font-mono">
+                          {candidate?.photoUploadStatus === 'SUCCESS' || candidate?.receptionPhotoUrl ? 'PERSISTED (wcr_database)' : 'PENDING'}
+                        </span>
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-white">Desk Live Photo Verification</h4>
-                    <p className="text-[11px] text-slate-400">
-                      {candidate?.receptionPhotoUrl
-                        ? `Captured: ${formatDateTime(candidate.receptionPhotoCapturedAt || candidate.checkedInAt)}`
-                        : 'No desk verification photo captured yet'}
-                    </p>
-                  </div>
+
+                  <button
+                    onClick={() => setShowPhotoModal(true)}
+                    className="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs rounded-xl transition cursor-pointer flex items-center gap-2 shadow-lg shadow-amber-500/20 shrink-0"
+                  >
+                    <Camera className="w-4 h-4" />
+                    <span>{candidate?.receptionPhotoUrl || candidate?.arrivalPhoto ? 'Retake Desk Photo' : 'Capture Desk Photo'}</span>
+                  </button>
                 </div>
-                <button
-                  onClick={() => setShowPhotoModal(true)}
-                  className="px-3.5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs rounded-xl transition cursor-pointer flex items-center gap-1.5"
-                >
-                  <Camera className="w-3.5 h-3.5" />
-                  <span>{candidate?.receptionPhotoUrl ? 'Recapture Desk Photo' : 'Capture Desk Photo'}</span>
-                </button>
               </div>
             </div>
           )}

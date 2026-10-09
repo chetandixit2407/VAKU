@@ -30,6 +30,7 @@ import type { Candidate, Room, Visitor, ActionTask } from '../../types/index.ts'
 import { ReceptionPhotoModal } from '../ReceptionPhotoModal.tsx';
 import { CandidateDossierModal } from '../CandidateDossierModal.tsx';
 import { VisitorArrivalTimeline } from '../VisitorArrivalTimeline.tsx';
+import { formatPhotoTimestamp } from '../../utils/dateFormatter.ts';
 
 interface ReceptionDashboardProps {
   candidates: Candidate[];
@@ -637,17 +638,27 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      {cand.receptionPhotoUrl || cand.photoUrl ? (
-                        <img
-                          src={cand.receptionPhotoUrl || cand.photoUrl}
-                          alt={cand.fullName}
-                          className="w-12 h-12 rounded-xl object-cover border border-amber-500 shadow-md shrink-0"
-                        />
-                      ) : (
-                        <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 font-bold bg-[#25272B] border border-white/10 text-white">
-                          {cand.fullName.slice(0, 2).toUpperCase()}
-                        </div>
-                      )}
+                      <div className="flex flex-col items-center shrink-0">
+                        {cand.receptionPhotoUrl || cand.photoUrl || cand.livePhoto || cand.arrivalPhoto ? (
+                          <img
+                            src={cand.receptionPhotoUrl || cand.photoUrl || cand.livePhoto || cand.arrivalPhoto}
+                            alt={cand.fullName}
+                            className="w-12 h-12 rounded-xl object-cover border-2 border-amber-500 shadow-md shrink-0"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 font-bold bg-[#25272B] border border-white/10 text-white">
+                            {cand.fullName.slice(0, 2).toUpperCase()}
+                          </div>
+                        )}
+                        {(cand.receptionPhotoCapturedAt || cand.arrivalPhotoCapturedAt || cand.livePhotoCapturedAt) && (
+                          <span
+                            className="text-[9px] text-amber-300 font-mono tracking-tight mt-1 text-center truncate max-w-[85px]"
+                            title={`Captured: ${formatPhotoTimestamp(cand.receptionPhotoCapturedAt || cand.arrivalPhotoCapturedAt || cand.livePhotoCapturedAt)}`}
+                          >
+                            {formatPhotoTimestamp(cand.receptionPhotoCapturedAt || cand.arrivalPhotoCapturedAt || cand.livePhotoCapturedAt).split(',')[0]}
+                          </span>
+                        )}
+                      </div>
                       <div>
                         <h4 className="font-bold text-sm flex items-center gap-1 text-white">
                           {cand.fullName}
@@ -680,11 +691,18 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
 
                   {/* Desk Photo Verification status & Action */}
                   <div className="pt-2 border-t flex items-center justify-between gap-2 border-white/10">
-                    {cand.receptionPhotoUrl ? (
-                      <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                        Desk Photo Verified
-                      </span>
+                    {cand.receptionPhotoUrl || cand.arrivalPhoto ? (
+                      <div className="flex flex-col">
+                        <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                          Desk Photo Verified
+                        </span>
+                        {(cand.receptionPhotoCapturedAt || cand.arrivalPhotoCapturedAt) && (
+                          <span className="text-[9px] text-amber-300 font-mono">
+                            Captured: {formatPhotoTimestamp(cand.receptionPhotoCapturedAt || cand.arrivalPhotoCapturedAt)}
+                          </span>
+                        )}
+                      </div>
                     ) : (
                       <span className="text-[10px] italic text-amber-300 font-medium">
                         Desk Photo Required
@@ -700,7 +718,7 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
                         className="px-2.5 py-1.5 rounded-xl border font-bold text-xs flex items-center gap-1.5 transition cursor-pointer bg-cyan-500/20 hover:bg-cyan-500/30 border-cyan-500/40 text-cyan-300 shadow-xs"
                       >
                         <Camera className="w-3.5 h-3.5" />
-                        <span>{cand.receptionPhotoUrl ? 'Retake' : 'Capture'}</span>
+                        <span>{cand.receptionPhotoUrl || cand.arrivalPhoto ? 'Retake Photo' : 'Capture Desk Photo'}</span>
                       </button>
 
                       {isCheckoutReady && (

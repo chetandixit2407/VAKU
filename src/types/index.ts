@@ -164,7 +164,9 @@ export interface CandidatePhotoMetadata {
   capturedAt: string;
   capturedBy: string;
   capturedByName?: string;
-  captureSource: 'RECEPTION_LIVE_CAMERA' | 'CANDIDATE_SELF_REGISTRATION';
+  captureSource: 'RECEPTION_LIVE_CAMERA' | 'CANDIDATE_SELF_REGISTRATION' | 'LIVE_CAMERA';
+  uploadStatus?: string;
+  uploadedAt?: string;
 }
 
 
@@ -301,6 +303,8 @@ export interface Candidate {
   receptionPhotoUrl?: string;
   receptionPhotoCapturedAt?: string;
   photoUrl?: string;
+  photoUploadStatus?: 'PENDING' | 'SUCCESS' | 'FAILED' | string;
+  photoUploadedAt?: string;
   checkedInAt?: string;
   assignedInterviewerName?: string;
   assignedInterviewerId?: string;

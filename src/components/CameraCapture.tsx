@@ -7,14 +7,12 @@ import {
   AlertTriangle,
   RotateCcw,
   FlipHorizontal,
-  Upload,
   X,
   Check,
-  UserCheck,
-  Shield,
-  Sparkles,
-  Zap,
+  Clock,
+  ShieldCheck,
 } from 'lucide-react';
+import { formatPhotoTimestamp } from '../utils/dateFormatter.ts';
 
 export type PhotoCaptureSource = 'LIVE_CAMERA' | 'FILE_UPLOAD' | 'RECEPTION_ASSISTED';
 
@@ -22,7 +20,7 @@ interface CameraCaptureProps {
   preferredFacingMode?: 'user' | 'environment';
   title?: string;
   subtitle?: string;
-  onCapture: (dataUrl: string, source: PhotoCaptureSource) => void;
+  onCapture: (dataUrl: string, source: PhotoCaptureSource, capturedAtIso?: string) => void;
   onSelectReceptionAssisted?: () => void;
   onCancel?: () => void;
 }
@@ -40,10 +38,11 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>(preferredFacingMode);
   const [cameraState, setCameraState] = useState<CameraState>('INITIALIZING');
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
+  const [capturedIsoTimestamp, setCapturedIsoTimestamp] = useState<string>('');
   const [captureSource, setCaptureSource] = useState<PhotoCaptureSource>('LIVE_CAMERA');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isRetrying, setIsRetrying] = useState<boolean>(false);
-  const [captureTimestamp, setCaptureTimestamp] = useState<string>('');
+  const [captureDisplayTimestamp, setCaptureDisplayTimestamp] = useState<string>('');
   const [showFlash, setShowFlash] = useState<boolean>(false);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -90,10 +89,11 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
       if (
         typeof window !== 'undefined' &&
         window.isSecureContext === false &&
-        window.location.hostname !== 'localhost'
+        window.location.hostname !== 'localhost' &&
+        window.location.hostname !== '127.0.0.1'
       ) {
         if (isMountedRef.current) {
-          setErrorMessage('Camera access requires an HTTPS connection. Please access via secure URL.');
+          setErrorMessage('Camera access requires an HTTPS secure connection. Please access via secure URL.');
           setCameraState('ERROR');
           setIsRetrying(false);
         }
@@ -102,7 +102,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
 
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         if (isMountedRef.current) {
-          setErrorMessage('Your browser hardware environment does not support camera access.');
+          setErrorMessage('Your browser environment does not support device camera access (getUserMedia API unavailable).');
           setCameraState('ERROR');
           setIsRetrying(false);
         }
@@ -110,14 +110,23 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
       }
 
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: targetMode,
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-          },
-          audio: false,
-        });
+        let stream: MediaStream | null = null;
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: { ideal: targetMode },
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+            },
+            audio: false,
+          });
+        } catch (initialErr: any) {
+          console.warn('Initial facingMode camera constraint failed, attempting fallback to basic video:', initialErr);
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: false,
+          });
+        }
 
         if (!isMountedRef.current) {
           stopAllMediaTracks(stream);
@@ -128,22 +137,37 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
 
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
-          videoRef.current.onloadedmetadata = async () => {
-            if (isMountedRef.current && videoRef.current) {
-              try {
-                await videoRef.current.play();
-                setCameraState('STREAMING');
-              } catch (playErr) {
-                console.warn('Video play error', playErr);
+          try {
+            await videoRef.current.play();
+            if (isMountedRef.current) {
+              setCameraState('STREAMING');
+            }
+          } catch (playErr) {
+            console.warn('Video play error, attaching onloadedmetadata listener', playErr);
+            videoRef.current.onloadedmetadata = async () => {
+              if (isMountedRef.current && videoRef.current) {
+                try {
+                  await videoRef.current.play();
+                } catch (e) {
+                  console.warn('Secondary video play error', e);
+                }
                 setCameraState('STREAMING');
               }
-            }
-          };
+            };
+          }
         }
       } catch (err: any) {
         console.warn('Camera stream error', err);
+        let friendlyMsg = err.message || 'Unable to access device camera. Please check permissions.';
+        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+          friendlyMsg = 'Camera permission was denied. Please allow camera permissions in your browser URL bar or device settings and retry.';
+        } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+          friendlyMsg = 'No video camera device detected. Please connect a webcam or enable camera hardware.';
+        } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+          friendlyMsg = 'The camera is currently locked or in use by another application. Please close other camera tabs and retry.';
+        }
         if (isMountedRef.current) {
-          setErrorMessage(err.message || 'Unable to access device camera. Please check permissions.');
+          setErrorMessage(friendlyMsg);
           setCameraState('ERROR');
         }
       } finally {
@@ -172,14 +196,17 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
   const handleSnapPhoto = () => {
     if (!videoRef.current || cameraState !== 'STREAMING') return;
 
+    const video = videoRef.current;
+    const width = video.videoWidth || 1280;
+    const height = video.videoHeight || 720;
+
     // Trigger flash animation
     setShowFlash(true);
     setTimeout(() => setShowFlash(false), 280);
 
-    const video = videoRef.current;
     const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth || 640;
-    canvas.height = video.videoHeight || 480;
+    canvas.width = width;
+    canvas.height = height;
     const ctx = canvas.getContext('2d');
 
     if (ctx) {
@@ -188,56 +215,30 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
         ctx.scale(-1, 1);
       }
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
 
+      const isoNow = new Date().toISOString();
       setCapturedPhoto(dataUrl);
       setCaptureSource('LIVE_CAMERA');
+      setCapturedIsoTimestamp(isoNow);
       setCameraState('CAPTURED');
-      setCaptureTimestamp(
-        new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-      );
+      setCaptureDisplayTimestamp(formatPhotoTimestamp(isoNow));
     }
   };
 
   const handleRetake = () => {
     setCapturedPhoto(null);
+    setCapturedIsoTimestamp('');
+    setCaptureDisplayTimestamp('');
     setCameraState('INITIALIZING');
     initializeCamera(facingMode);
   };
 
-  const handleFallbackFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const dataUrl = event.target?.result as string;
-      if (dataUrl) {
-        stopAllMediaTracks();
-        setCapturedPhoto(dataUrl);
-        setCaptureSource('FILE_UPLOAD');
-        setCameraState('CAPTURED');
-        setCaptureTimestamp(
-          new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-        );
-      }
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleConfirmReceptionAssisted = () => {
-    stopAllMediaTracks();
-    if (onSelectReceptionAssisted) {
-      onSelectReceptionAssisted();
-    } else {
-      onCapture('', 'RECEPTION_ASSISTED');
-    }
-  };
-
   const handleConfirmPhoto = () => {
     if (capturedPhoto) {
+      const recordedTimestamp = capturedIsoTimestamp || new Date().toISOString();
       stopAllMediaTracks();
-      onCapture(capturedPhoto, captureSource);
+      onCapture(capturedPhoto, captureSource, recordedTimestamp);
     }
   };
 
@@ -290,26 +291,6 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
                 <RefreshCw className={`w-3.5 h-3.5 ${isRetrying ? 'animate-spin' : ''}`} />
                 Retry Camera
               </button>
-
-              <label className="px-3 py-1.5 bg-white/8 hover:bg-white/12 text-slate-200 font-medium rounded-xl flex items-center gap-1.5 transition text-xs cursor-pointer border border-white/10">
-                <Upload className="w-3.5 h-3.5 text-amber-400" />
-                Upload Photo File
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleFallbackFileUpload}
-                />
-              </label>
-
-              <button
-                type="button"
-                onClick={handleConfirmReceptionAssisted}
-                className="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-semibold rounded-xl flex items-center gap-1.5 transition text-xs cursor-pointer border border-amber-500/30"
-              >
-                <UserCheck className="w-3.5 h-3.5 text-amber-400" />
-                Reception Assisted
-              </button>
             </div>
           </div>
         )}
@@ -333,7 +314,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
             <div className="relative w-full h-full">
               <img
                 src={capturedPhoto}
-                alt="Captured preview"
+                alt="Captured live preview"
                 className="w-full h-full object-cover"
               />
 
@@ -345,12 +326,13 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
                 className="absolute top-3 right-3 bg-emerald-500/90 backdrop-blur-md text-slate-950 font-black px-3 py-1 rounded-xl text-xs flex items-center gap-1.5 shadow-xl border border-emerald-400"
               >
                 <CheckCircle2 className="w-4 h-4" />
-                <span>PHOTO VERIFIED</span>
+                <span>PHOTO CAPTURED</span>
               </motion.div>
 
-              {captureTimestamp && (
-                <div className="absolute bottom-3 left-3 bg-slate-950/80 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] text-amber-300 font-mono border border-white/10">
-                  {captureTimestamp}
+              {captureDisplayTimestamp && (
+                <div className="absolute bottom-3 left-3 bg-slate-950/85 backdrop-blur-md px-2.5 py-1.5 rounded-xl text-[10px] text-amber-300 font-mono border border-white/10 flex items-center gap-1.5 shadow-lg">
+                  <Clock className="w-3 h-3 text-amber-400 shrink-0" />
+                  <span>Captured: {captureDisplayTimestamp}</span>
                 </div>
               )}
             </div>
@@ -369,7 +351,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
               {cameraState === 'INITIALIZING' && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#07090C] text-slate-300 p-4">
                   <div className="w-9 h-9 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
-                  <p className="text-xs font-medium text-slate-300">Connecting optical hardware...</p>
+                  <p className="text-xs font-medium text-slate-300">Opening device live camera...</p>
                 </div>
               )}
 
@@ -378,7 +360,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
                   {/* Status Overlay */}
                   <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 bg-slate-950/80 backdrop-blur-md rounded-xl text-[10px] font-bold text-emerald-400 border border-emerald-500/30">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    LIVE OPTICAL FEED
+                    LIVE CAMERA FEED
                   </div>
 
                   {/* Switch Camera */}
@@ -424,7 +406,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
                 className="flex-1 py-2.5 px-4 bg-white/6 hover:bg-white/10 text-slate-200 hover:text-white font-semibold text-xs rounded-xl border border-white/10 transition flex items-center justify-center gap-2 cursor-pointer"
               >
                 <RotateCcw className="w-4 h-4" />
-                Retake
+                Retake Photo
               </button>
 
               <button
@@ -433,12 +415,12 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
                 className="flex-1 py-2.5 px-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Check className="w-4 h-4 stroke-[3]" />
-                Confirm & Continue
+                Confirm & Save Photo
               </button>
             </div>
           ) : (
             <div className="flex flex-col items-center gap-3">
-              {/* Premium Circular Shutter Button */}
+              {/* Shutter Button */}
               <motion.button
                 type="button"
                 whileHover={{ scale: 1.05 }}
@@ -446,7 +428,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
                 disabled={cameraState !== 'STREAMING'}
                 onClick={handleSnapPhoto}
                 className="relative w-16 h-16 rounded-full bg-gradient-to-tr from-amber-500 to-amber-400 text-slate-950 flex items-center justify-center shadow-2xl shadow-amber-500/30 ring-4 ring-white/10 disabled:opacity-40 disabled:pointer-events-none cursor-pointer group"
-                title="Capture Candidate Photo"
+                title="Capture Desk Photo"
               >
                 <div className="w-12 h-12 rounded-full border-2 border-slate-950/60 flex items-center justify-center group-hover:scale-95 transition-transform">
                   <Camera className="w-6 h-6 text-slate-950" />
@@ -454,7 +436,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
               </motion.button>
 
               <p className="text-[11px] text-slate-400 font-medium">
-                Tap button to capture high-resolution photo
+                Tap button to take live desk photograph
               </p>
             </div>
           )}
@@ -463,3 +445,4 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
     </div>
   );
 };
+

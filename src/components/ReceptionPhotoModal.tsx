@@ -31,9 +31,11 @@ export const ReceptionPhotoModal: React.FC<ReceptionPhotoModalProps> = ({
   const [uploading, setUploading] = useState<boolean>(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
-  const handleCaptureConfirmed = async (photoDataUrl: string) => {
+  const handleCaptureConfirmed = async (photoDataUrl: string, _source?: any, capturedAtIso?: string) => {
     setUploading(true);
     setUploadError(null);
+
+    const actualCaptureTimestamp = capturedAtIso || new Date().toISOString();
 
     try {
       const res = await authenticatedFetch(`/api/candidates/${candidate.id}/reception-photo`, {
@@ -41,6 +43,7 @@ export const ReceptionPhotoModal: React.FC<ReceptionPhotoModalProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           photo: photoDataUrl,
+          capturedAt: actualCaptureTimestamp,
           receptionistId: receptionistId || 'usr-rec-1',
           receptionistName: receptionistName || 'Ananya Sen (Reception)',
         }),
@@ -51,7 +54,20 @@ export const ReceptionPhotoModal: React.FC<ReceptionPhotoModalProps> = ({
         throw new Error(data.error || 'Failed to save reception live photo to database.');
       }
 
-      onSuccess(data.candidate);
+      const updatedCandidate = data.candidate || {
+        ...candidate,
+        receptionPhotoUrl: photoDataUrl,
+        receptionPhotoCapturedAt: actualCaptureTimestamp,
+        photoUrl: photoDataUrl,
+        livePhoto: photoDataUrl,
+        livePhotoCapturedAt: actualCaptureTimestamp,
+        arrivalPhoto: photoDataUrl,
+        arrivalPhotoCapturedAt: actualCaptureTimestamp,
+        photoUploadStatus: 'SUCCESS',
+        photoUploadedAt: data.uploadedAt || new Date().toISOString(),
+      };
+
+      onSuccess(updatedCandidate);
     } catch (err: any) {
       setUploadError(err.message || 'Photo upload failed. Please retry.');
       setUploading(false);

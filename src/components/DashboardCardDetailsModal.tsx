@@ -33,6 +33,7 @@ import type {
   ActionTask,
 } from '../types/index.ts';
 import { computeArrivalStage, type ArrivalStage } from './VisitorArrivalTimeline.tsx';
+import { formatPhotoTimestamp } from '../utils/dateFormatter.ts';
 
 export type DashboardModalTarget =
   | 'stage_EXPECTED'
@@ -456,17 +457,27 @@ export const DashboardCardDetailsModal: React.FC<DashboardCardDetailsModalProps>
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex items-center gap-3">
-                            {cand.receptionPhotoUrl || cand.photoUrl ? (
-                              <img
-                                src={cand.receptionPhotoUrl || cand.photoUrl}
-                                alt={cand.fullName}
-                                className="w-12 h-12 rounded-xl object-cover border-2 border-amber-500 shadow-md shrink-0"
-                              />
-                            ) : (
-                              <div className="w-12 h-12 rounded-xl bg-[#252B36] border border-[#343D4C] flex items-center justify-center font-bold text-sm text-amber-300 shrink-0">
-                                {cand.fullName.slice(0, 2).toUpperCase()}
-                              </div>
-                            )}
+                            <div className="flex flex-col items-center shrink-0">
+                              {cand.receptionPhotoUrl || cand.photoUrl || cand.livePhoto || cand.arrivalPhoto ? (
+                                <img
+                                  src={cand.receptionPhotoUrl || cand.photoUrl || cand.livePhoto || cand.arrivalPhoto}
+                                  alt={cand.fullName}
+                                  className="w-12 h-12 rounded-xl object-cover border-2 border-amber-500 shadow-md shrink-0"
+                                />
+                              ) : (
+                                <div className="w-12 h-12 rounded-xl bg-[#252B36] border border-[#343D4C] flex items-center justify-center font-bold text-sm text-amber-300 shrink-0">
+                                  {cand.fullName.slice(0, 2).toUpperCase()}
+                                </div>
+                              )}
+                              {(cand.receptionPhotoCapturedAt || cand.arrivalPhotoCapturedAt || cand.livePhotoCapturedAt) && (
+                                <span
+                                  className="text-[9px] text-amber-300 font-mono tracking-tight mt-1 text-center truncate max-w-[85px]"
+                                  title={`Captured: ${formatPhotoTimestamp(cand.receptionPhotoCapturedAt || cand.arrivalPhotoCapturedAt || cand.livePhotoCapturedAt)}`}
+                                >
+                                  {formatPhotoTimestamp(cand.receptionPhotoCapturedAt || cand.arrivalPhotoCapturedAt || cand.livePhotoCapturedAt).split(',')[0]}
+                                </span>
+                              )}
+                            </div>
 
                             <div>
                               <div className="flex items-center gap-2 flex-wrap">

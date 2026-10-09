@@ -1474,9 +1474,11 @@ class EventWorkflowEngine {
     candidateId: string,
     arrivalPhoto: string,
     capturedBy: string,
-    capturedByName: string
+    capturedByName: string,
+    capturedAtIso?: string
   ) {
-    const timestamp = new Date().toISOString();
+    const timestamp = capturedAtIso || new Date().toISOString();
+    const uploadTimestamp = new Date().toISOString();
     let candName = 'Candidate';
 
     dbService.update((draft) => {
@@ -1487,10 +1489,24 @@ class EventWorkflowEngine {
       cand.arrivalPhotoCapturedAt = timestamp;
       cand.arrivalPhotoCapturedBy = capturedBy;
       cand.arrivalPhotoCapturedByName = capturedByName;
-      if (!cand.livePhoto) {
-        cand.livePhoto = arrivalPhoto;
-      }
-      cand.updatedAt = timestamp;
+      cand.receptionPhotoUrl = arrivalPhoto;
+      cand.receptionPhotoCapturedAt = timestamp;
+      cand.photoUrl = arrivalPhoto;
+      cand.livePhoto = arrivalPhoto;
+      cand.livePhotoCapturedAt = timestamp;
+      cand.livePhotoCapturedBy = capturedByName;
+      cand.photoUploadStatus = 'SUCCESS';
+      cand.photoUploadedAt = uploadTimestamp;
+      cand.photoMetadata = {
+        photoUrl: arrivalPhoto,
+        capturedAt: timestamp,
+        capturedBy: capturedBy || 'RECEPTION',
+        capturedByName: capturedByName || 'Reception Staff',
+        captureSource: 'RECEPTION_LIVE_CAMERA',
+        uploadStatus: 'SUCCESS',
+        uploadedAt: uploadTimestamp,
+      };
+      cand.updatedAt = uploadTimestamp;
 
       draft.timelineEvents.unshift({
         id: `tl-${Date.now()}-photo`,
@@ -1504,7 +1520,7 @@ class EventWorkflowEngine {
 
       draft.auditLogs.unshift({
         id: `aud-${Date.now()}-rec-photo`,
-        timestamp,
+        timestamp: uploadTimestamp,
         actorType: 'USER',
         actorName: capturedByName || 'Reception Staff',
         actorRole: 'RECEPTION',
@@ -1524,7 +1540,9 @@ class EventWorkflowEngine {
         candidateId,
         candidateName: candName,
         capturedAt: timestamp,
+        uploadedAt: uploadTimestamp,
         capturedByName,
+        photoUrl: arrivalPhoto,
       },
     });
   }

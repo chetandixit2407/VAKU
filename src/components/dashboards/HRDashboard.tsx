@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import type { Candidate, Interview, Room, ActionTask } from '../../types/index.ts';
 import { authenticatedFetch } from '../../utils/apiClient.ts';
+import { formatPhotoTimestamp } from '../../utils/dateFormatter.ts';
 
 interface HRDashboardProps {
   candidates: Candidate[];
@@ -185,17 +186,27 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3.5">
-                        {cand.receptionPhotoUrl || cand.photoUrl ? (
-                          <img
-                            src={cand.receptionPhotoUrl || cand.photoUrl}
-                            alt={cand.fullName}
-                            className="w-13 h-13 rounded-2xl object-cover border-2 border-amber-500 shadow-md shrink-0"
-                          />
-                        ) : (
-                          <div className="candidate-avatar w-13 h-13 rounded-2xl flex items-center justify-center shrink-0 font-bold bg-[#25272B] border border-white/10 text-white shadow-xs">
-                            {cand.fullName.slice(0, 2).toUpperCase()}
-                          </div>
-                        )}
+                        <div className="flex flex-col items-center shrink-0">
+                          {cand.receptionPhotoUrl || cand.photoUrl || cand.livePhoto || cand.arrivalPhoto ? (
+                            <img
+                              src={cand.receptionPhotoUrl || cand.photoUrl || cand.livePhoto || cand.arrivalPhoto}
+                              alt={cand.fullName}
+                              className="w-13 h-13 rounded-2xl object-cover border-2 border-amber-500 shadow-md shrink-0"
+                            />
+                          ) : (
+                            <div className="candidate-avatar w-13 h-13 rounded-2xl flex items-center justify-center shrink-0 font-bold bg-[#25272B] border border-white/10 text-white shadow-xs">
+                              {cand.fullName.slice(0, 2).toUpperCase()}
+                            </div>
+                          )}
+                          {(cand.receptionPhotoCapturedAt || cand.arrivalPhotoCapturedAt || cand.livePhotoCapturedAt) && (
+                            <span
+                              className="text-[9px] text-amber-300 font-mono tracking-tight mt-1 text-center truncate max-w-[90px]"
+                              title={`Captured: ${formatPhotoTimestamp(cand.receptionPhotoCapturedAt || cand.arrivalPhotoCapturedAt || cand.livePhotoCapturedAt)}`}
+                            >
+                              {formatPhotoTimestamp(cand.receptionPhotoCapturedAt || cand.arrivalPhotoCapturedAt || cand.livePhotoCapturedAt).split(',')[0]}
+                            </span>
+                          )}
+                        </div>
                         <div>
                           <div className="flex items-center gap-2">
                             <h3 className="candidate-name text-base font-bold text-white tracking-tight">

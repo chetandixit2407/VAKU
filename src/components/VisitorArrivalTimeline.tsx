@@ -42,7 +42,7 @@ export function computeArrivalStage(candidate: Candidate): {
   if (candidate.assignedInterviewerName || candidate.assignedRoomName) {
     return { currentStage: 'HOST_NOTIFIED', stageIndex: 4 };
   }
-  if (candidate.receptionPhotoUrl || candidate.photoUrl) {
+  if (candidate.receptionPhotoUrl || candidate.photoUrl || candidate.livePhoto || candidate.arrivalPhoto) {
     return { currentStage: 'PHOTO_CAPTURED', stageIndex: 3 };
   }
   if (candidate.checkedInAt || candidate.qrVerificationStatus === 'VERIFIED') {

@@ -20,6 +20,7 @@ import { VisitorArrivalTimeline } from './VisitorArrivalTimeline.tsx';
 import { CandidateDossierModal } from './CandidateDossierModal.tsx';
 import { ReceptionPhotoModal } from './ReceptionPhotoModal.tsx';
 import { useSettings } from '../context/SettingsContext.tsx';
+import { formatPhotoTimestamp } from '../utils/dateFormatter.ts';
 
 interface SecondaryOperationsMoreViewProps {
   candidates: Candidate[];
@@ -202,17 +203,27 @@ export const SecondaryOperationsMoreView: React.FC<SecondaryOperationsMoreViewPr
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
-                        {cand.receptionPhotoUrl || cand.photoUrl ? (
-                          <img
-                            src={cand.receptionPhotoUrl || cand.photoUrl}
-                            alt={cand.fullName}
-                            className="w-12 h-12 rounded-xl object-cover border border-amber-500 shadow-md shrink-0"
-                          />
-                        ) : (
-                          <div className="candidate-avatar w-12 h-12 rounded-xl flex items-center justify-center shrink-0 font-bold bg-[#25272B] border border-white/10 text-white">
-                            {cand.fullName.slice(0, 2).toUpperCase()}
-                          </div>
-                        )}
+                        <div className="flex flex-col items-center shrink-0">
+                          {cand.receptionPhotoUrl || cand.photoUrl || cand.livePhoto || cand.arrivalPhoto ? (
+                            <img
+                              src={cand.receptionPhotoUrl || cand.photoUrl || cand.livePhoto || cand.arrivalPhoto}
+                              alt={cand.fullName}
+                              className="w-12 h-12 rounded-xl object-cover border-2 border-amber-500 shadow-md shrink-0"
+                            />
+                          ) : (
+                            <div className="candidate-avatar w-12 h-12 rounded-xl flex items-center justify-center shrink-0 font-bold bg-[#25272B] border border-white/10 text-white">
+                              {cand.fullName.slice(0, 2).toUpperCase()}
+                            </div>
+                          )}
+                          {(cand.receptionPhotoCapturedAt || cand.arrivalPhotoCapturedAt || cand.livePhotoCapturedAt) && (
+                            <span
+                              className="text-[9px] text-amber-300 font-mono tracking-tight mt-1 text-center truncate max-w-[85px]"
+                              title={`Captured: ${formatPhotoTimestamp(cand.receptionPhotoCapturedAt || cand.arrivalPhotoCapturedAt || cand.livePhotoCapturedAt)}`}
+                            >
+                              {formatPhotoTimestamp(cand.receptionPhotoCapturedAt || cand.arrivalPhotoCapturedAt || cand.livePhotoCapturedAt).split(',')[0]}
+                            </span>
+                          )}
+                        </div>
                         <div>
                           <h4 className="candidate-name font-bold text-sm flex items-center gap-1 text-white">
                             {cand.fullName}
@@ -237,11 +248,18 @@ export const SecondaryOperationsMoreView: React.FC<SecondaryOperationsMoreViewPr
 
                     {/* Desk Photo Verification status & Action */}
                     <div className="card-divider pt-2 border-t flex items-center justify-between gap-2 border-white/10">
-                      {cand.receptionPhotoUrl ? (
-                        <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                          Desk Photo Verified
-                        </span>
+                      {cand.receptionPhotoUrl || cand.arrivalPhoto ? (
+                        <div className="flex flex-col">
+                          <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                            Desk Photo Verified
+                          </span>
+                          {(cand.receptionPhotoCapturedAt || cand.arrivalPhotoCapturedAt) && (
+                            <span className="text-[9px] text-amber-300 font-mono">
+                              Captured: {formatPhotoTimestamp(cand.receptionPhotoCapturedAt || cand.arrivalPhotoCapturedAt)}
+                            </span>
+                          )}
+                        </div>
                       ) : (
                         <span className="text-[10px] italic text-amber-300 font-medium">
                           Desk Photo Required
@@ -256,7 +274,7 @@ export const SecondaryOperationsMoreView: React.FC<SecondaryOperationsMoreViewPr
                         className="px-3 py-1.5 rounded-xl border font-bold text-xs flex items-center gap-1.5 transition cursor-pointer bg-cyan-500/20 hover:bg-cyan-500/30 border-cyan-500/40 text-cyan-300 shadow-xs"
                       >
                         <Camera className="w-3.5 h-3.5" />
-                        <span>{cand.receptionPhotoUrl ? 'Retake' : 'Capture Desk Photo'}</span>
+                        <span>{cand.receptionPhotoUrl || cand.arrivalPhoto ? 'Retake Photo' : 'Capture Desk Photo'}</span>
                       </button>
                     </div>
                   </motion.div>
