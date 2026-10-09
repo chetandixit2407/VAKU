@@ -12,9 +12,11 @@ import {
   Sparkles,
   Smartphone,
   X,
+  MoreHorizontal,
 } from 'lucide-react';
 import type { UserRole } from '../types/index.ts';
 import { PWAInstallButton } from './PWAInstallButton.tsx';
+import { useSettings } from '../context/SettingsContext.tsx';
 
 export interface OpenPanelItem {
   id: string;
@@ -35,6 +37,8 @@ interface TopHeaderProps {
   onOpenCheckIn: () => void;
   onOpenWalkIn?: () => void;
   onToggleMobileMenu?: () => void;
+  onOpenMore?: () => void;
+  isMoreActive?: boolean;
 }
 
 export const TopHeader: React.FC<TopHeaderProps> = ({
@@ -50,7 +54,11 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   onOpenCheckIn,
   onOpenWalkIn,
   onToggleMobileMenu,
+  onOpenMore,
+  isMoreActive = false,
 }) => {
+  const { t } = useSettings();
+
   return (
     <header className="sticky top-0 z-20 px-4 sm:px-6 py-3 border-b border-[#252A32] bg-[#0B0F14] transition-all">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
@@ -73,7 +81,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
               </h1>
               <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#1B2028] border border-[#252A32] text-amber-400">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                <span>Active Console</span>
+                <span>{t('app_active_console')}</span>
               </span>
             </div>
             <p className="text-[11px] text-[#AEB7C4] hidden md:block">
@@ -97,7 +105,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                 isRealtimeConnected ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'
               }`}
             />
-            <span>{isRealtimeConnected ? 'Live Real-Time' : 'Syncing'}</span>
+            <span>{isRealtimeConnected ? t('app_live_realtime') : t('app_reconnecting')}</span>
           </div>
 
           {/* Quick Intake Button */}
@@ -119,6 +127,22 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
             <QrCode className="w-3.5 h-3.5 text-amber-400" />
             <span>QR Station</span>
           </button>
+
+          {/* More Navigation Button for Laptop, Desktop & Tablet */}
+          {onOpenMore && (
+            <button
+              onClick={onOpenMore}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition cursor-pointer ${
+                isMoreActive
+                  ? 'bg-amber-500 text-slate-950 border-amber-400 font-bold shadow-md ring-2 ring-amber-400/40'
+                  : 'bg-[#141820] hover:bg-[#1B2028] border-[#252A32] text-[#AEB7C4] hover:text-[#F5F6F8]'
+              }`}
+              title="Secondary Dashboard Sections (Lounge, Active Meetings, Physical Check-Out)"
+            >
+              <MoreHorizontal className="w-3.5 h-3.5 text-amber-400" />
+              <span>More</span>
+            </button>
+          )}
 
           {/* Office Internal Chat */}
           <button

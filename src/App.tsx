@@ -56,6 +56,9 @@ import { InterviewerDashboard } from './components/dashboards/InterviewerDashboa
 import { SeniorHRDashboard } from './components/dashboards/SeniorHRDashboard.tsx';
 import { ReceptionDashboard } from './components/dashboards/ReceptionDashboard.tsx';
 import { PantryDashboard } from './components/dashboards/PantryDashboard.tsx';
+import { useSettings } from './context/SettingsContext.tsx';
+import { ApplicationSettingsView } from './components/ApplicationSettingsView.tsx';
+import { SecondaryOperationsMoreView } from './components/SecondaryOperationsMoreView.tsx';
 
 import {
   Sparkles,
@@ -72,6 +75,7 @@ import {
 } from 'lucide-react';
 
 export default function App() {
+  const { settings, t } = useSettings();
   const [routePath, setRoutePath] = useState<string>(() => window.location.pathname);
   const [currentRole, setCurrentRole] = useState<UserRole>('HR');
   const [currentUserId, setCurrentUserId] = useState<string>('usr-hr-nisha');
@@ -116,6 +120,7 @@ export default function App() {
 
   // Active Navigation & Cinematic Stage Filter States
   const [activeSection, setActiveSection] = useState<NavSection>('dashboard');
+  const [moreInitialTab, setMoreInitialTab] = useState<'all' | 'lounge' | 'meetings' | 'checkout'>('all');
   const [isMobileNavOpen, setIsMobileNavOpen] = useState<boolean>(false);
   const [filterStage, setFilterStage] = useState<ArrivalStage | null>(null);
   const [dashboardDetailsModalTarget, setDashboardDetailsModalTarget] = useState<DashboardModalTarget | null>(null);
@@ -570,8 +575,15 @@ export default function App() {
     } else if (section === 'hospitality') {
       handleSelectRole('PANTRY');
     } else if (section === 'settings') {
-      setActiveModal('STAFF_LOGIN');
+      setActiveSection('settings');
+    } else if (section === 'more') {
+      setMoreInitialTab('all');
     }
+  };
+
+  const handleOpenMore = (subTab: 'all' | 'lounge' | 'meetings' | 'checkout' = 'all') => {
+    setMoreInitialTab(subTab);
+    setActiveSection('more');
   };
 
   // Staff Login Handler
@@ -1017,12 +1029,27 @@ export default function App() {
       <div className="flex-1 min-w-0 flex flex-col h-[100dvh] overflow-y-auto lg:ml-64 relative z-10">
         {/* Top Operations Header */}
         <TopHeader
-          pageTitle={`WCR Operations: ${currentRole.replace('_', ' ')} Console`}
+          pageTitle={
+            activeSection === 'settings'
+              ? `${t('nav_settings')} • Application Preferences`
+              : activeSection === 'more'
+              ? 'WCR Operations • More: Secondary Sections'
+              : `WCR Operations: ${currentRole.replace('_', ' ')} Console`
+          }
           currentRole={currentRole}
           unreadCount={unreadCount}
           unreadChatCount={unreadChatCount}
           isRealtimeConnected={isRealtimeConnected}
           openPanels={[
+            ...(activeSection === 'more'
+              ? [
+                  {
+                    id: 'more-panel',
+                    label: 'More Sections',
+                    onClose: () => setActiveSection('dashboard'),
+                  },
+                ]
+              : []),
             ...(notificationDrawerOpen
               ? [{ id: 'alerts', label: 'Alert Feed', onClose: () => setNotificationDrawerOpen(false) }]
               : []),
@@ -1081,26 +1108,47 @@ export default function App() {
           }}
           onOpenWalkIn={() => setActiveModal('WALK_IN')}
           onToggleMobileMenu={() => setIsMobileNavOpen(true)}
+          onOpenMore={() => {
+            if (activeSection === 'more') {
+              setActiveSection('dashboard');
+            } else {
+              handleOpenMore('all');
+            }
+          }}
+          isMoreActive={activeSection === 'more'}
         />
 
         {/* Main Dashboard Container */}
         <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
-          {/* Operations Command Header with Live KPIs & Clock */}
-          <OperationsCommandHeader
-            candidates={candidates}
-            interviews={interviews}
-            rooms={rooms}
-            pantryTasks={pantryTasks}
-            visitors={visitors}
-            userName={currentUser?.name || 'Officer'}
-            userRole={currentRole}
-            onSelectKpi={(kpiId) => {
-              if (kpiId === 'lobby') setDashboardDetailsModalTarget('kpi_lobby');
-              else if (kpiId === 'interviews') setDashboardDetailsModalTarget('kpi_interviews');
-              else if (kpiId === 'rooms') setDashboardDetailsModalTarget('kpi_rooms');
-              else if (kpiId === 'pantry') setDashboardDetailsModalTarget('kpi_pantry');
-            }}
-          />
+          {activeSection === 'settings' ? (
+            <ApplicationSettingsView onBackToDashboard={() => setActiveSection('dashboard')} />
+          ) : activeSection === 'more' ? (
+            <SecondaryOperationsMoreView
+              candidates={candidates}
+              visitors={visitors}
+              onCheckout={handleCheckout}
+              onBackToDashboard={() => setActiveSection('dashboard')}
+              onRefresh={fetchAllData}
+              initialTab={moreInitialTab}
+            />
+          ) : (
+            <>
+              {/* Operations Command Header with Live KPIs & Clock */}
+              <OperationsCommandHeader
+                candidates={candidates}
+                interviews={interviews}
+                rooms={rooms}
+                pantryTasks={pantryTasks}
+                visitors={visitors}
+                userName={currentUser?.name || 'Officer'}
+                userRole={currentRole}
+                onSelectKpi={(kpiId) => {
+                  if (kpiId === 'lobby') setDashboardDetailsModalTarget('kpi_lobby');
+                  else if (kpiId === 'interviews') setDashboardDetailsModalTarget('kpi_interviews');
+                  else if (kpiId === 'rooms') setDashboardDetailsModalTarget('kpi_rooms');
+                  else if (kpiId === 'pantry') setDashboardDetailsModalTarget('kpi_pantry');
+                }}
+              />
 
           {/* Visitor Arrival Journey Flow Filter Banner */}
           <VisitorJourneyOverview
@@ -1161,7 +1209,7 @@ export default function App() {
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
                 <strong className="text-white font-bold text-sm tracking-tight">
-                  WCR Dual QR Architecture & Desk Photo Verification
+                  {t('quick_architecture_title')}
                 </strong>
               </div>
               <p className="text-[#E0E0E0] text-xs">
@@ -1179,7 +1227,7 @@ export default function App() {
                 title="Test General WCR Blank Self-Registration"
               >
                 <UserPlus className="w-3.5 h-3.5" />
-                <span>Test Blank Registration</span>
+                <span>{t('quick_test_blank')}</span>
               </button>
 
               {/* Scheduled Check-In */}
@@ -1191,7 +1239,7 @@ export default function App() {
                 className="px-3 py-2 bg-white/5 hover:bg-white/10 border border-amber-500/40 text-amber-300 font-semibold text-xs rounded-xl transition cursor-pointer flex items-center gap-1.5"
               >
                 <Smartphone className="w-3.5 h-3.5 text-amber-400" />
-                <span>Scheduled Check-In</span>
+                <span>{t('quick_scheduled_checkin')}</span>
               </button>
 
               {/* Dual QR Station Standee */}
@@ -1200,7 +1248,7 @@ export default function App() {
                 className="px-3 py-2 bg-white/5 hover:bg-white/10 text-slate-200 font-semibold text-xs rounded-xl border border-white/8 transition cursor-pointer flex items-center gap-1.5"
               >
                 <QrCode className="w-3.5 h-3.5 text-amber-400" />
-                <span>QR Standees</span>
+                <span>{t('quick_qr_standees')}</span>
               </button>
 
               {/* Staff Login Modal */}
@@ -1209,7 +1257,7 @@ export default function App() {
                 className="px-3 py-2 bg-white/4 hover:bg-white/8 border border-white/8 text-slate-400 hover:text-white font-semibold text-xs rounded-xl transition cursor-pointer flex items-center gap-1.5"
               >
                 <Key className="w-3.5 h-3.5 text-purple-400" />
-                <span>Staff Login</span>
+                <span>{t('quick_staff_login')}</span>
               </button>
             </div>
           </div>
@@ -1346,6 +1394,7 @@ export default function App() {
                 }}
                 onOpenChatWithContext={openChatWithContext}
                 onRefresh={fetchAllData}
+                onOpenMore={handleOpenMore}
               />
             )}
 
@@ -1367,6 +1416,8 @@ export default function App() {
               />
             )}
           </motion.div>
+            </>
+          )}
         </main>
       </div>
 

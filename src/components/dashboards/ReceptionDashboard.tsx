@@ -21,6 +21,10 @@ import {
   Search,
   MessageSquare,
   Building2,
+  ChevronDown,
+  Layers,
+  ChevronRight,
+  EyeOff,
 } from 'lucide-react';
 import type { Candidate, Room, Visitor, ActionTask } from '../../types/index.ts';
 import { ReceptionPhotoModal } from '../ReceptionPhotoModal.tsx';
@@ -47,6 +51,7 @@ interface ReceptionDashboardProps {
     initialMessage?: string;
   }) => void;
   onRefresh?: () => void;
+  onOpenMore?: (section?: 'all' | 'lounge' | 'meetings' | 'checkout') => void;
 }
 
 export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
@@ -63,11 +68,36 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
   onOpenChat,
   onOpenChatWithContext,
   onRefresh,
+  onOpenMore,
 }) => {
   const [selectedPhotoCandidate, setSelectedPhotoCandidate] = useState<Candidate | null>(null);
   const [selectedProfileCandidateId, setSelectedProfileCandidateId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [activeFilter, setActiveFilter] = useState<'ALL' | 'WAITING' | 'IN_MEETING' | 'CHECKOUT'>('ALL');
+  const [activeFilter, setActiveFilter] = useState<'ALL' | 'WAITING' | 'IN_MEETING' | 'CHECKOUT' | 'WALK_IN' | 'PRIORITY'>('ALL');
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+  const [showSecondarySections, setShowSecondarySections] = useState(false);
+  const moreMenuRef = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) {
+        setIsMoreMenuOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsMoreMenuOpen(false);
+      }
+    };
+    if (isMoreMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isMoreMenuOpen]);
 
   // Filter reception-targeted actionable alert tasks
   const receptionTasks = actionTasks.filter(
@@ -112,6 +142,10 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
     if (activeFilter === 'IN_MEETING') return c.status === 'IN_INTERVIEW' || c.status === 'ROOM_ASSIGNED';
     if (activeFilter === 'CHECKOUT')
       return c.status === 'COMPLETED' || c.status === 'OFFERED' || c.status === 'REJECTED';
+    if (activeFilter === 'WALK_IN')
+      return (c as any).registrationSource === 'WALK_IN' || (c as any).isWalkIn;
+    if (activeFilter === 'PRIORITY')
+      return c.status === 'ARRIVED' || (c as any).isPriority;
     return c.status !== 'CHECKED_OUT';
   });
 
@@ -124,6 +158,12 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
   const roomAssignedCandidates = candidates.filter((c) => c.status === 'ROOM_ASSIGNED');
   const readyForCheckout = candidates.filter(
     (c) => c.status === 'COMPLETED' || c.status === 'OFFERED' || c.status === 'REJECTED'
+  );
+  const walkInCandidates = candidates.filter(
+    (c) => ((c as any).registrationSource === 'WALK_IN' || (c as any).isWalkIn) && c.status !== 'CHECKED_OUT'
+  );
+  const priorityCandidates = candidates.filter(
+    (c) => (c.status === 'ARRIVED' || (c as any).isPriority) && c.status !== 'CHECKED_OUT'
   );
 
   return (
@@ -341,48 +381,146 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
       )}
 
       {/* Filter & Search Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 bg-[#0B0B0D] dashboard-card rounded-3xl border border-white/10 shadow-xl">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 bg-[#0B0B0D] dashboard-card card-dark rounded-3xl border border-white/10 shadow-xl">
         <div className="flex items-center gap-2.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
           <button
             onClick={() => setActiveFilter('ALL')}
-            className={`px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer shrink-0 ${
+            className={`wcr-filter-tab px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer shrink-0 border ${
               activeFilter === 'ALL'
-                ? 'bg-amber-500 text-slate-950 shadow-md ring-2 ring-amber-400/50'
-                : 'card-pill'
+                ? 'is-active bg-amber-500 text-slate-950 shadow-md ring-2 ring-amber-400/50 border-amber-400 font-black'
+                : 'bg-[#0B0B0D] text-white border-white/15 hover:bg-white hover:text-black hover:border-black/20'
             }`}
           >
             All Active ({activeCandidates.length})
           </button>
           <button
             onClick={() => setActiveFilter('WAITING')}
-            className={`px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer shrink-0 ${
+            className={`wcr-filter-tab px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer shrink-0 border ${
               activeFilter === 'WAITING'
-                ? 'bg-amber-500 text-slate-950 shadow-md ring-2 ring-amber-400/50'
-                : 'card-pill'
+                ? 'is-active bg-amber-500 text-slate-950 shadow-md ring-2 ring-amber-400/50 border-amber-400 font-black'
+                : 'bg-[#0B0B0D] text-white border-white/15 hover:bg-white hover:text-black hover:border-black/20'
             }`}
           >
             Waiting Lounge ({waitingCandidates.length})
           </button>
+          {/* Primary Tab 3: In Meetings */}
           <button
             onClick={() => setActiveFilter('IN_MEETING')}
-            className={`px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer shrink-0 ${
+            className={`wcr-filter-tab px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer shrink-0 border ${
               activeFilter === 'IN_MEETING'
-                ? 'bg-amber-500 text-slate-950 shadow-md ring-2 ring-amber-400/50'
-                : 'card-pill'
+                ? 'is-active bg-amber-500 text-slate-950 shadow-md ring-2 ring-amber-400/50 border-amber-400 font-black'
+                : 'bg-[#0B0B0D] text-white border-white/15 hover:bg-white hover:text-black hover:border-black/20'
             }`}
           >
             In Meetings ({candidates.filter((c) => c.status === 'IN_INTERVIEW' || c.status === 'ROOM_ASSIGNED').length})
           </button>
-          <button
-            onClick={() => setActiveFilter('CHECKOUT')}
-            className={`px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer shrink-0 ${
-              activeFilter === 'CHECKOUT'
-                ? 'bg-amber-500 text-slate-950 shadow-md ring-2 ring-amber-400/50'
-                : 'card-pill'
-            }`}
-          >
-            Ready Checkout ({readyForCheckout.length})
-          </button>
+
+          {/* More Menu Dropdown Anchor */}
+          <div className="relative shrink-0" ref={moreMenuRef}>
+            {(() => {
+              const isMoreActive = activeFilter === 'CHECKOUT' || activeFilter === 'WALK_IN' || activeFilter === 'PRIORITY';
+              const activeMoreLabel =
+                activeFilter === 'CHECKOUT'
+                  ? `Ready Checkout (${readyForCheckout.length})`
+                  : activeFilter === 'WALK_IN'
+                  ? `Walk-Ins (${walkInCandidates.length})`
+                  : activeFilter === 'PRIORITY'
+                  ? `Priority (${priorityCandidates.length})`
+                  : null;
+
+              return (
+                <button
+                  type="button"
+                  onClick={() => setIsMoreMenuOpen((prev) => !prev)}
+                  aria-expanded={isMoreMenuOpen}
+                  aria-haspopup="true"
+                  className={`wcr-filter-tab px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer shrink-0 border flex items-center gap-1.5 ${
+                    isMoreActive
+                      ? 'is-active bg-amber-500 text-slate-950 shadow-md ring-2 ring-amber-400/50 border-amber-400 font-black'
+                      : isMoreMenuOpen
+                      ? 'bg-white text-black border-black/20'
+                      : 'bg-[#0B0B0D] text-white border-white/15 hover:bg-white hover:text-black hover:border-black/20'
+                  }`}
+                >
+                  <span>{isMoreActive ? `More: ${activeMoreLabel}` : 'More'}</span>
+                  <ChevronDown
+                    className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                      isMoreMenuOpen ? 'rotate-180' : ''
+                    }`}
+                  />
+                </button>
+              );
+            })()}
+
+            {/* Dropdown Panel */}
+            {isMoreMenuOpen && (
+              <div
+                role="menu"
+                className="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 w-60 bg-[#0B0B0D] border border-white/20 rounded-2xl shadow-2xl p-1.5 z-50 space-y-1 animate-in fade-in zoom-in-95 duration-150"
+              >
+                <div className="text-[10px] font-bold text-white/50 px-2.5 py-1 uppercase tracking-wider">
+                  Additional Reception Filters
+                </div>
+
+                {/* Ready Checkout */}
+                <button
+                  role="menuitem"
+                  onClick={() => {
+                    setActiveFilter('CHECKOUT');
+                    setIsMoreMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold transition cursor-pointer text-left ${
+                    activeFilter === 'CHECKOUT'
+                      ? 'bg-amber-500 text-slate-950 font-black'
+                      : 'text-white/80 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  <span>Ready Checkout</span>
+                  <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-white/20">
+                    {readyForCheckout.length}
+                  </span>
+                </button>
+
+                {/* Walk-In Candidates */}
+                <button
+                  role="menuitem"
+                  onClick={() => {
+                    setActiveFilter('WALK_IN');
+                    setIsMoreMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold transition cursor-pointer text-left ${
+                    activeFilter === 'WALK_IN'
+                      ? 'bg-amber-500 text-slate-950 font-black'
+                      : 'text-white/80 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  <span>Walk-In Candidates</span>
+                  <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-white/20">
+                    {walkInCandidates.length}
+                  </span>
+                </button>
+
+                {/* Priority / Immediate Arrivals */}
+                <button
+                  role="menuitem"
+                  onClick={() => {
+                    setActiveFilter('PRIORITY');
+                    setIsMoreMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold transition cursor-pointer text-left ${
+                    activeFilter === 'PRIORITY'
+                      ? 'bg-amber-500 text-slate-950 font-black'
+                      : 'text-white/80 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  <span>Priority Arrivals</span>
+                  <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-white/20">
+                    {priorityCandidates.length}
+                  </span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="relative w-full sm:w-64">
@@ -392,228 +530,352 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search candidates / mobile..."
-            className="w-full pl-8 pr-3 py-1.5 glass-input rounded-xl text-xs text-white"
+            className="wcr-search-input w-full pl-8 pr-3 py-1.5 bg-[#111317] border border-white/15 rounded-xl text-xs text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50"
           />
         </div>
       </div>
 
-      {/* Reception Radar Columns with Visitor Timeline */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Waiting Lounge Column */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between pb-1 border-b border-black/10">
-            <h3 className="text-sm font-bold text-[#111318] flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-amber-500" />
-              Lounge Waiting Area ({waitingCandidates.length})
+      {/* Secondary Dashboard Sections Summary Banner (Hidden by default, accessible via More) */}
+      <div className="p-4 bg-[#0B0B0D] card-dark rounded-2xl border border-white/10 shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+            <Layers className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-white">Secondary Dashboard Sections</span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-white/10 text-white/70">
+                Hidden by Default
+              </span>
+            </div>
+            <p className="text-white/60 text-[11px] mt-0.5">
+              Lounge Waiting Area, In Active Meetings, and Physical Check-Out terminal are preserved behind More navigation.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => {
+              if (onOpenMore) onOpenMore('lounge');
+              else setShowSecondarySections(true);
+            }}
+            className="px-2.5 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 font-semibold text-xs transition cursor-pointer flex items-center gap-1.5"
+            title="Open Lounge Waiting Area"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+            <span>Lounge ({waitingCandidates.length})</span>
+          </button>
+          <button
+            onClick={() => {
+              if (onOpenMore) onOpenMore('meetings');
+              else setShowSecondarySections(true);
+            }}
+            className="px-2.5 py-1.5 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-300 font-semibold text-xs transition cursor-pointer flex items-center gap-1.5"
+            title="Open In Active Meetings"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+            <span>Meetings ({candidates.filter((c) => c.status === 'IN_INTERVIEW' || c.status === 'ROOM_ASSIGNED').length})</span>
+          </button>
+          <button
+            onClick={() => {
+              if (onOpenMore) onOpenMore('checkout');
+              else setShowSecondarySections(true);
+            }}
+            className="px-2.5 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 font-semibold text-xs transition cursor-pointer flex items-center gap-1.5"
+            title="Open Physical Check-Out"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            <span>Check-Out ({readyForCheckout.length})</span>
+          </button>
+          <button
+            onClick={() => {
+              if (onOpenMore) onOpenMore('all');
+              else setShowSecondarySections((prev) => !prev);
+            }}
+            className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition shadow cursor-pointer flex items-center gap-1.5"
+          >
+            <span>{showSecondarySections ? 'Collapse Sections' : 'Open in More →'}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Primary Candidate Intake & Verification Roster */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between pb-1 border-b border-white/10">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-cyan-400" />
+            <h3 className="text-sm font-bold text-white flex items-center gap-2">
+              <span>Primary Candidate Intake Queue</span>
+              <span className="px-2 py-0.5 rounded-full text-xs font-mono bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
+                {filteredCandidates.length}
+              </span>
             </h3>
           </div>
+          <span className="text-[11px] text-white/50">
+            Filtered by: {activeFilter === 'ALL' ? 'All Active' : activeFilter}
+          </span>
+        </div>
 
-          <div className="space-y-3">
-            {waitingCandidates.length === 0 ? (
-              <div className="p-8 text-center card-dark bg-[#0B0B0D] rounded-2xl text-xs text-[#E0E0E0] border border-white/10">
-                Lounge is currently clear.
-              </div>
-            ) : (
-              waitingCandidates.map((cand) => {
-                return (
-                  <motion.div
-                    key={cand.id}
-                    whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
-                    whileTap={{ scale: 0.99 }}
-                    onClick={() => setSelectedProfileCandidateId(cand.id)}
-                    className="p-4 rounded-2xl space-y-3 text-xs shadow-xl cursor-pointer transition card-dark bg-[#0B0B0D] text-white border border-white/10"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        {cand.receptionPhotoUrl || cand.photoUrl ? (
-                          <img
-                            src={cand.receptionPhotoUrl || cand.photoUrl}
-                            alt={cand.fullName}
-                            className="w-12 h-12 rounded-xl object-cover border border-amber-500/40 shadow-md shrink-0"
-                          />
-                        ) : (
-                          <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 font-bold bg-white/5 border border-white/10 text-slate-300">
-                            {cand.fullName.slice(0, 2).toUpperCase()}
-                          </div>
-                        )}
-                        <div>
-                          <h4 className="font-bold text-sm flex items-center gap-1 text-white hover:text-amber-400">
-                            {cand.fullName}
-                            <Eye className="w-3 h-3 text-slate-400" />
-                          </h4>
-                          <p className="text-[11px] font-medium text-amber-400">{cand.position}</p>
-                          <p className="text-[10px] mt-0.5 text-[#E0E0E0]">
-                            Arrived: {cand.checkedInAt ? new Date(cand.checkedInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Today'}
-                          </p>
-                        </div>
-                      </div>
+        {filteredCandidates.length === 0 ? (
+          <div className="p-10 text-center bg-[#0B0B0D] card-dark rounded-2xl text-xs text-white/60 border border-white/10 shadow-lg">
+            No candidates matching current filter or search query.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredCandidates.map((cand) => {
+              const isWaiting = cand.status === 'ARRIVED' || cand.status === 'WAITING';
+              const isInMeeting = cand.status === 'IN_INTERVIEW' || cand.status === 'ROOM_ASSIGNED';
+              const isCheckoutReady = cand.status === 'COMPLETED' || cand.status === 'OFFERED' || cand.status === 'REJECTED';
 
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 font-mono bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                        Waiting
-                      </span>
-                    </div>
-
-                    {/* Visitor Lifecycle Stage Tracker */}
-                    <div className="pt-2 border-t border-white/8">
-                      <VisitorArrivalTimeline candidate={cand} compact={true} />
-                    </div>
-
-                    {/* Desk Photo Verification status & Action */}
-                    <div className="pt-2 border-t flex items-center justify-between gap-2 border-white/8">
-                      {cand.receptionPhotoUrl ? (
-                        <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          Desk Photo Verified
-                        </span>
+              return (
+                <motion.div
+                  key={cand.id}
+                  whileHover={{ scale: 1.01, y: -2, transition: { duration: 0.15 } }}
+                  onClick={() => setSelectedProfileCandidateId(cand.id)}
+                  className="p-4 rounded-2xl space-y-3 text-xs shadow-xl cursor-pointer transition bg-[#0B0B0D] card-dark text-white border border-white/10 hover:border-amber-400/40"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      {cand.receptionPhotoUrl || cand.photoUrl ? (
+                        <img
+                          src={cand.receptionPhotoUrl || cand.photoUrl}
+                          alt={cand.fullName}
+                          className="w-12 h-12 rounded-xl object-cover border border-amber-500 shadow-md shrink-0"
+                        />
                       ) : (
-                        <span className="text-[10px] italic text-amber-300">
-                          Desk Photo Required
-                        </span>
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 font-bold bg-[#25272B] border border-white/10 text-white">
+                          {cand.fullName.slice(0, 2).toUpperCase()}
+                        </div>
                       )}
+                      <div>
+                        <h4 className="font-bold text-sm flex items-center gap-1 text-white">
+                          {cand.fullName}
+                          <Eye className="w-3.5 h-3.5 text-slate-400" />
+                        </h4>
+                        <p className="text-[11px] font-semibold text-white/80">{cand.position}</p>
+                        <p className="text-[10px] mt-0.5 text-white/50">
+                          Arrived: {cand.checkedInAt ? new Date(cand.checkedInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Today'}
+                        </p>
+                      </div>
+                    </div>
 
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 font-mono border ${
+                      isWaiting
+                        ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                        : isInMeeting
+                        ? 'bg-blue-500/15 text-blue-300 border-blue-500/30'
+                        : isCheckoutReady
+                        ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                        : 'bg-white/10 text-white/80 border-white/15'
+                    }`}>
+                      {cand.status}
+                    </span>
+                  </div>
+
+                  {/* Visitor Lifecycle Stage Tracker */}
+                  <div className="pt-2 border-t border-white/10">
+                    <VisitorArrivalTimeline candidate={cand} compact={true} />
+                  </div>
+
+                  {/* Desk Photo Verification status & Action */}
+                  <div className="pt-2 border-t flex items-center justify-between gap-2 border-white/10">
+                    {cand.receptionPhotoUrl ? (
+                      <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                        Desk Photo Verified
+                      </span>
+                    ) : (
+                      <span className="text-[10px] italic text-amber-300 font-medium">
+                        Desk Photo Required
+                      </span>
+                    )}
+
+                    <div className="flex items-center gap-2">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelectedPhotoCandidate(cand);
                         }}
-                        className="px-3 py-1.5 rounded-xl border font-bold text-xs flex items-center gap-1.5 transition cursor-pointer bg-cyan-500/15 hover:bg-cyan-500/25 border-cyan-500/40 text-cyan-300"
+                        className="px-2.5 py-1.5 rounded-xl border font-bold text-xs flex items-center gap-1.5 transition cursor-pointer bg-cyan-500/20 hover:bg-cyan-500/30 border-cyan-500/40 text-cyan-300 shadow-xs"
                       >
                         <Camera className="w-3.5 h-3.5" />
-                        <span>{cand.receptionPhotoUrl ? 'Retake' : 'Capture Desk Photo'}</span>
+                        <span>{cand.receptionPhotoUrl ? 'Retake' : 'Capture'}</span>
                       </button>
+
+                      {isCheckoutReady && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onCheckout(cand.id);
+                          }}
+                          className="px-2.5 py-1.5 rounded-xl border font-bold text-xs flex items-center gap-1 transition cursor-pointer bg-emerald-500/20 hover:bg-emerald-500/30 border-emerald-500/40 text-emerald-300"
+                        >
+                          <LogOut className="w-3.5 h-3.5" />
+                          <span>Check-Out</span>
+                        </button>
+                      )}
                     </div>
-                  </motion.div>
-                );
-              })
-            )}
-          </div>
-        </div>
-
-        {/* In-Session Meetings Column */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between pb-1 border-b border-black/10">
-            <h3 className="text-sm font-bold text-[#111318] flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-blue-500" />
-              In Active Meetings ({candidates.filter((c) => c.status === 'IN_INTERVIEW' || c.status === 'ROOM_ASSIGNED').length})
-            </h3>
-          </div>
-
-          <div className="space-y-3">
-            {candidates
-              .filter((c) => c.status === 'IN_INTERVIEW' || c.status === 'ROOM_ASSIGNED')
-              .map((cand) => {
-                return (
-                  <motion.div
-                    key={cand.id}
-                    whileHover={{ y: -2 }}
-                    onClick={() => setSelectedProfileCandidateId(cand.id)}
-                    className="p-4 rounded-2xl space-y-2.5 text-xs cursor-pointer transition shadow-md card-dark bg-[#0B0B0D] border border-blue-500/30 text-white"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold flex items-center gap-1 text-sm text-white hover:text-cyan-300">
-                        {cand.fullName}
-                        <Eye className="w-3 h-3 text-slate-400" />
-                      </span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold font-mono text-blue-300 bg-blue-500/15 border border-blue-500/30">
-                        {cand.status}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between text-[11px] text-[#E0E0E0]">
-                      <span>{cand.position}</span>
-                      <span className="font-semibold flex items-center gap-1 text-amber-400">
-                        <MapPin className="w-3 h-3" />
-                        {cand.assignedRoomName || cand.currentLocation || 'Cabin'}
-                      </span>
-                    </div>
-
-                    {/* Compact Timeline */}
-                    <div className="pt-2 border-t border-white/8">
-                      <VisitorArrivalTimeline candidate={cand} compact={true} />
-                    </div>
-                  </motion.div>
-                );
-              })}
-
-            {visitors.map((vis) => {
-              return (
-                <div
-                  key={vis.id}
-                  className="p-3.5 rounded-2xl space-y-1 text-xs card-dark bg-[#0B0B0D] text-white border border-white/10"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-white">{vis.fullName}</span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold font-mono text-purple-300 bg-purple-500/15">
-                      {vis.visitorType}
-                    </span>
                   </div>
-                  <div className="flex items-center justify-between text-[11px] text-[#E0E0E0]">
-                    <span>Host: {vis.hostName}</span>
-                    <span>{vis.company || 'Official Visit'}</span>
-                  </div>
-                </div>
+                </motion.div>
               );
             })}
           </div>
-        </div>
-
-        {/* Physical Checkout Terminal Column */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between pb-1 border-b border-black/10">
-            <h3 className="text-sm font-bold text-[#111318] flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              Physical Check-Out ({readyForCheckout.length})
-            </h3>
-          </div>
-
-          <div className="space-y-3">
-            {readyForCheckout.length === 0 ? (
-              <div className="p-8 text-center card-dark bg-[#0B0B0D] rounded-2xl text-xs text-[#E0E0E0] border border-white/10">
-                No visitors currently awaiting checkout.
-              </div>
-            ) : (
-              readyForCheckout.map((cand) => {
-                return (
-                  <motion.div
-                    key={cand.id}
-                    whileHover={{ y: -2 }}
-                    onClick={() => setSelectedProfileCandidateId(cand.id)}
-                    className="p-4 rounded-2xl space-y-3 text-xs shadow-lg cursor-pointer transition card-dark bg-[#0B0B0D] text-white border border-emerald-500/40"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-bold flex items-center gap-1 text-sm text-white hover:text-emerald-300">
-                          {cand.fullName}
-                          <Eye className="w-3 h-3 text-slate-400" />
-                        </h4>
-                        <p className="text-[11px] text-[#E0E0E0]">{cand.position}</p>
-                      </div>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                        Completed
-                      </span>
-                    </div>
-
-                    <div className="pt-1">
-                      <VisitorArrivalTimeline candidate={cand} compact={true} />
-                    </div>
-
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onCheckout(cand.id);
-                      }}
-                      className="w-full py-2.5 px-3 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-black text-xs rounded-xl shadow-md transition cursor-pointer flex items-center justify-center gap-1.5"
-                    >
-                      <LogOut className="w-3.5 h-3.5" />
-                      <span>Complete Physical Checkout</span>
-                    </button>
-                  </motion.div>
-                );
-              })
-            )}
-          </div>
-        </div>
+        )}
       </div>
+
+      {/* Expandable Inline Secondary Sections (Hidden by default, shown only when explicitly toggled) */}
+      {showSecondarySections && (
+        <div className="space-y-4 pt-4 border-t border-white/10">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-bold text-amber-400 flex items-center gap-2">
+              <Layers className="w-4 h-4" />
+              <span>Secondary Sections Inline View</span>
+            </h3>
+            <button
+              onClick={() => setShowSecondarySections(false)}
+              className="text-xs text-white/60 hover:text-white px-2.5 py-1 rounded-lg bg-white/5 border border-white/10"
+            >
+              Hide Secondary Sections
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Waiting Lounge Column */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between pb-1 border-b border-black/10">
+                <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-amber-500" />
+                  Lounge Waiting Area ({waitingCandidates.length})
+                </h3>
+              </div>
+
+              <div className="space-y-3">
+                {waitingCandidates.length === 0 ? (
+                  <div className="p-8 text-center bg-[#0B0B0D] card-dark rounded-2xl text-xs text-white/60 border border-white/10 shadow-lg">
+                    Lounge is currently clear.
+                  </div>
+                ) : (
+                  waitingCandidates.map((cand) => (
+                    <motion.div
+                      key={cand.id}
+                      onClick={() => setSelectedProfileCandidateId(cand.id)}
+                      className="p-4 rounded-2xl space-y-3 text-xs shadow-xl cursor-pointer bg-[#0B0B0D] card-dark text-white border border-white/10"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          {cand.receptionPhotoUrl || cand.photoUrl ? (
+                            <img
+                              src={cand.receptionPhotoUrl || cand.photoUrl}
+                              alt={cand.fullName}
+                              className="w-10 h-10 rounded-xl object-cover border border-amber-500 shrink-0"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded-xl flex items-center justify-center font-bold bg-[#25272B] border border-white/10 text-white shrink-0">
+                              {cand.fullName.slice(0, 2).toUpperCase()}
+                            </div>
+                          )}
+                          <div>
+                            <h4 className="font-bold text-sm text-white">{cand.fullName}</h4>
+                            <p className="text-[11px] text-white/70">{cand.position}</p>
+                          </div>
+                        </div>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                          Waiting
+                        </span>
+                      </div>
+                      <VisitorArrivalTimeline candidate={cand} compact={true} />
+                    </motion.div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* In-Session Meetings Column */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between pb-1 border-b border-black/10">
+                <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-blue-500" />
+                  In Active Meetings ({candidates.filter((c) => c.status === 'IN_INTERVIEW' || c.status === 'ROOM_ASSIGNED').length})
+                </h3>
+              </div>
+
+              <div className="space-y-3">
+                {candidates
+                  .filter((c) => c.status === 'IN_INTERVIEW' || c.status === 'ROOM_ASSIGNED')
+                  .map((cand) => (
+                    <motion.div
+                      key={cand.id}
+                      onClick={() => setSelectedProfileCandidateId(cand.id)}
+                      className="p-4 rounded-2xl space-y-2.5 text-xs cursor-pointer shadow-xl bg-[#0B0B0D] card-dark border border-blue-500/30 text-white"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-sm text-white">{cand.fullName}</span>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold font-mono text-blue-300 bg-blue-500/15 border border-blue-500/30">
+                          {cand.status}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-[11px] text-white/80">
+                        <span>{cand.position}</span>
+                        <span className="font-semibold text-amber-400">
+                          {cand.assignedRoomName || cand.currentLocation || 'Cabin'}
+                        </span>
+                      </div>
+                      <VisitorArrivalTimeline candidate={cand} compact={true} />
+                    </motion.div>
+                  ))}
+              </div>
+            </div>
+
+            {/* Physical Checkout Terminal Column */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between pb-1 border-b border-black/10">
+                <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                  Physical Check-Out ({readyForCheckout.length})
+                </h3>
+              </div>
+
+              <div className="space-y-3">
+                {readyForCheckout.length === 0 ? (
+                  <div className="p-8 text-center bg-[#0B0B0D] card-dark rounded-2xl text-xs text-white/60 border border-white/10 shadow-lg">
+                    No visitors currently awaiting checkout.
+                  </div>
+                ) : (
+                  readyForCheckout.map((cand) => (
+                    <motion.div
+                      key={cand.id}
+                      onClick={() => setSelectedProfileCandidateId(cand.id)}
+                      className="p-4 rounded-2xl space-y-3 text-xs shadow-xl cursor-pointer bg-[#0B0B0D] card-dark text-white border border-emerald-500/30"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-bold text-sm text-white">{cand.fullName}</h4>
+                          <p className="text-[11px] text-white/70">{cand.position}</p>
+                        </div>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                          Completed
+                        </span>
+                      </div>
+                      <VisitorArrivalTimeline candidate={cand} compact={true} />
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onCheckout(cand.id);
+                        }}
+                        className="w-full py-2 px-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-slate-950 font-bold text-xs rounded-xl shadow transition cursor-pointer flex items-center justify-center gap-1.5"
+                      >
+                        <LogOut className="w-3.5 h-3.5" />
+                        <span>Complete Physical Checkout</span>
+                      </button>
+                    </motion.div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Reception Candidate Profile Modal */}
       {selectedProfileCandidateId && (

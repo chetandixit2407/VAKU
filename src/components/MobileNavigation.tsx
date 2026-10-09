@@ -16,9 +16,12 @@ import {
   Smartphone,
   Shield,
   Award,
+  Layers,
+  MoreHorizontal,
 } from 'lucide-react';
 import type { UserRole, User } from '../types/index.ts';
 import type { NavSection } from './SidebarNav.tsx';
+import { useSettings } from '../context/SettingsContext.tsx';
 
 interface MobileNavigationProps {
   isOpen: boolean;
@@ -49,21 +52,24 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
   onOpenCheckIn,
   onLogout,
 }) => {
+  const { t } = useSettings();
+
   const navItems: {
     id: NavSection;
     label: string;
     icon: React.ComponentType<{ className?: string }>;
     badge?: number;
   }[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'reception', label: 'Reception', icon: Building2 },
-    { id: 'visitors', label: 'Visitors', icon: Users2 },
-    { id: 'interviews', label: 'Interviews', icon: CalendarClock },
-    { id: 'candidates', label: 'Candidates', icon: UserCheck },
-    { id: 'rooms', label: 'Rooms', icon: DoorOpen },
-    { id: 'hospitality', label: 'Hospitality', icon: Coffee },
-    { id: 'notifications', label: 'Notifications', icon: Bell, badge: unreadCount },
-    { id: 'settings', label: 'Settings', icon: Settings },
+    { id: 'dashboard', label: t('nav_dashboard'), icon: LayoutDashboard },
+    { id: 'reception', label: t('nav_reception'), icon: Building2 },
+    { id: 'candidates', label: t('nav_candidates'), icon: UserCheck },
+    { id: 'interviews', label: t('nav_interviews'), icon: CalendarClock },
+    { id: 'more', label: 'Secondary Sections', icon: Layers },
+    { id: 'visitors', label: t('nav_visitors'), icon: Users2 },
+    { id: 'rooms', label: t('nav_rooms'), icon: DoorOpen },
+    { id: 'hospitality', label: t('nav_hospitality'), icon: Coffee },
+    { id: 'notifications', label: t('nav_notifications'), icon: Bell, badge: unreadCount },
+    { id: 'settings', label: t('nav_settings'), icon: Settings },
   ];
 
   const allRoles: { role: UserRole; label: string; icon: any; color: string }[] = [
@@ -121,10 +127,12 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
         </button>
 
         <button
-          onClick={onClose}
-          className="flex flex-col items-center py-1 px-3 rounded-xl text-[#AEB7C4] hover:text-[#F5F6F8]"
+          onClick={() => onSelectSection('more')}
+          className={`flex flex-col items-center py-1 px-3 rounded-xl transition ${
+            activeSection === 'more' ? 'text-amber-400 font-bold' : 'text-[#AEB7C4] hover:text-[#F5F6F8]'
+          }`}
         >
-          <Settings className="w-4 h-4" />
+          <MoreHorizontal className="w-4 h-4" />
           <span className="text-[10px] font-semibold mt-0.5">More</span>
         </button>
       </nav>

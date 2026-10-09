@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   LayoutDashboard,
@@ -17,10 +17,11 @@ import {
   QrCode,
   UserPlus,
   Sparkles,
-  Wifi,
-  WifiOff,
+  Layers,
+  MoreHorizontal,
 } from 'lucide-react';
 import type { UserRole, User } from '../types/index.ts';
+import { useSettings } from '../context/SettingsContext.tsx';
 
 export type NavSection =
   | 'dashboard'
@@ -31,7 +32,8 @@ export type NavSection =
   | 'rooms'
   | 'hospitality'
   | 'notifications'
-  | 'settings';
+  | 'settings'
+  | 'more';
 
 interface SidebarNavProps {
   currentRole: UserRole;
@@ -44,7 +46,7 @@ interface SidebarNavProps {
   isRealtimeConnected: boolean;
   onOpenNotifications: () => void;
   onOpenQRPasses: () => void;
-  onOpenWalkIn: () => void;
+  onOpenWalkIn?: () => void;
   onOpenBlankRegister: () => void;
   onLogout?: () => void;
 }
@@ -65,23 +67,89 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
   onLogout,
 }) => {
   const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+  const moreMenuRef = useRef<HTMLDivElement>(null);
+  const { t } = useSettings();
 
-  const navItems: {
+  // Close More menu on outside click or Escape key
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(e.target as Node)) {
+        setIsMoreMenuOpen(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsMoreMenuOpen(false);
+        setRoleDropdownOpen(false);
+      }
+    };
+    if (isMoreMenuOpen) {
+      document.addEventListener('mousedown', handleOutsideClick);
+      document.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isMoreMenuOpen]);
+
+  // Primary navigation items (always visible)
+  const primaryNavItems: {
     id: NavSection;
     label: string;
     icon: React.ComponentType<{ className?: string }>;
     badge?: number;
   }[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'reception', label: 'Reception', icon: Building2 },
-    { id: 'visitors', label: 'Visitors', icon: Users2 },
-    { id: 'interviews', label: 'Interviews', icon: CalendarClock },
-    { id: 'candidates', label: 'Candidates', icon: UserCheck },
-    { id: 'rooms', label: 'Rooms', icon: DoorOpen },
-    { id: 'hospitality', label: 'Hospitality', icon: Coffee },
-    { id: 'notifications', label: 'Notifications', icon: Bell, badge: unreadCount },
-    { id: 'settings', label: 'Settings', icon: Settings },
+    { id: 'dashboard', label: t('nav_dashboard'), icon: LayoutDashboard },
+    { id: 'reception', label: t('nav_reception'), icon: Building2 },
+    { id: 'candidates', label: t('nav_candidates'), icon: UserCheck },
+    { id: 'interviews', label: t('nav_interviews'), icon: CalendarClock },
   ];
+
+  // Secondary items housed under "More"
+  const secondaryNavItems: {
+    id: NavSection;
+    label: string;
+    description: string;
+    icon: React.ComponentType<{ className?: string }>;
+    badge?: number;
+  }[] = [
+    {
+      id: 'more',
+      label: 'Secondary Sections',
+      description: 'Lounge, Active Meetings & Check-Out',
+      icon: Layers,
+    },
+    {
+      id: 'visitors',
+      label: t('nav_visitors'),
+      description: 'Client & vendor logs',
+      icon: Users2,
+    },
+    {
+      id: 'rooms',
+      label: t('nav_rooms'),
+      description: 'Facility & room monitor',
+      icon: DoorOpen,
+    },
+    {
+      id: 'hospitality',
+      label: t('nav_hospitality'),
+      description: 'Pantry beverage steward',
+      icon: Coffee,
+    },
+    {
+      id: 'notifications',
+      label: t('nav_notifications'),
+      description: 'System & intake alerts',
+      icon: Bell,
+      badge: unreadCount,
+    },
+  ];
+
+  const isSecondaryActive = secondaryNavItems.some((item) => item.id === activeSection);
+  const activeSecondaryItem = secondaryNavItems.find((item) => item.id === activeSection);
 
   const allRoles: { role: UserRole; label: string; icon: any; color: string }[] = [
     { role: 'HR', label: 'HR Lead', icon: Users2, color: 'text-amber-400' },
@@ -121,7 +189,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
                 </span>
               </div>
               <span className="text-[10px] text-amber-400/90 font-mono tracking-wider uppercase block">
-                Command Center
+                {t('app_subbrand')}
               </span>
             </div>
           </div>
@@ -131,26 +199,21 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
             className={`w-2 h-2 rounded-full ${
               isRealtimeConnected ? 'bg-emerald-400 animate-pulse' : 'bg-rose-500'
             }`}
-            title={isRealtimeConnected ? 'SSE Live Synced' : 'Reconnecting'}
+            title={isRealtimeConnected ? t('app_live_synced') : t('app_reconnecting')}
           />
         </div>
 
         {/* Navigation Sections */}
         <nav className="flex-1 py-3.5 space-y-1 overflow-y-auto">
-          {navItems.map((item) => {
+          {/* Primary Nav Items */}
+          {primaryNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeSection === item.id;
 
             return (
               <button
                 key={item.id}
-                onClick={() => {
-                  if (item.id === 'notifications') {
-                    onOpenNotifications();
-                  } else {
-                    onSelectSection(item.id);
-                  }
-                }}
+                onClick={() => onSelectSection(item.id)}
                 className={`relative w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all group cursor-pointer ${
                   isActive
                     ? 'bg-[#1B2028] text-[#F5F6F8] font-semibold'
@@ -183,6 +246,144 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
               </button>
             );
           })}
+
+          {/* More Menu Dropdown Anchor */}
+          <div className="relative pt-1" ref={moreMenuRef}>
+            <button
+              type="button"
+              onClick={() => setIsMoreMenuOpen((prev) => !prev)}
+              aria-expanded={isMoreMenuOpen}
+              aria-haspopup="true"
+              className={`relative w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+                isSecondaryActive
+                  ? 'bg-[#1B2028] text-[#F5F6F8] font-semibold'
+                  : isMoreMenuOpen
+                  ? 'bg-[#1B2028]/80 text-[#F5F6F8]'
+                  : 'text-[#AEB7C4] hover:text-[#F5F6F8] hover:bg-[#1B2028]/60'
+              }`}
+            >
+              {isSecondaryActive && (
+                <div className="absolute inset-0 border-l-2 border-amber-400 rounded-xl pointer-events-none" />
+              )}
+
+              <div className="flex items-center gap-2.5 relative z-10">
+                <MoreHorizontal
+                  className={`w-4 h-4 transition-colors ${
+                    isSecondaryActive ? 'text-amber-400' : 'text-[#AEB7C4]'
+                  }`}
+                />
+                <span className="tracking-tight">
+                  {isSecondaryActive && activeSecondaryItem
+                    ? `${t('btn_more')}: ${activeSecondaryItem.label}`
+                    : t('btn_more')}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-1.5 relative z-10">
+                {unreadCount > 0 && (
+                  <span className="px-1.5 py-0.5 rounded-full bg-amber-500 text-slate-950 font-bold text-[10px] tabular-nums">
+                    {unreadCount}
+                  </span>
+                )}
+                <ChevronDown
+                  className={`w-3.5 h-3.5 text-[#AEB7C4] transition-transform duration-200 ${
+                    isMoreMenuOpen ? 'rotate-180 text-amber-400' : ''
+                  }`}
+                />
+              </div>
+            </button>
+
+            {/* Expandable More Dropdown Panel */}
+            <AnimatePresence>
+              {isMoreMenuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                  transition={{ duration: 0.15 }}
+                  role="menu"
+                  className="absolute left-0 right-0 top-full mt-1 bg-[#111722] border border-[#252A32] rounded-2xl shadow-2xl p-1.5 z-50 space-y-1"
+                >
+                  <div className="text-[10px] font-bold text-[#AEB7C4] px-2.5 py-1 uppercase tracking-wider">
+                    Additional Tabs & Sections
+                  </div>
+
+                  {secondaryNavItems.map((sec) => {
+                    const SecIcon = sec.icon;
+                    const isSecActive = activeSection === sec.id;
+                    return (
+                      <button
+                        key={sec.id}
+                        role="menuitem"
+                        onClick={() => {
+                          if (sec.id === 'notifications') {
+                            onOpenNotifications();
+                          } else {
+                            onSelectSection(sec.id);
+                          }
+                          setIsMoreMenuOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs transition cursor-pointer text-left ${
+                          isSecActive
+                            ? 'bg-amber-500/20 text-amber-300 font-bold border-l-2 border-amber-400'
+                            : 'text-[#AEB7C4] hover:text-[#F5F6F8] hover:bg-[#1B2028]'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <SecIcon
+                            className={`w-3.5 h-3.5 ${
+                              isSecActive ? 'text-amber-400' : 'text-[#AEB7C4]'
+                            }`}
+                          />
+                          <div>
+                            <div className="leading-tight">{sec.label}</div>
+                            <div className="text-[10px] text-white/50">{sec.description}</div>
+                          </div>
+                        </div>
+
+                        {sec.badge !== undefined && sec.badge > 0 && (
+                          <span className="px-1.5 py-0.2 rounded-full bg-amber-500 text-slate-950 font-bold text-[10px]">
+                            {sec.badge}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Settings Section (Functional Application Settings) */}
+          <div className="pt-1">
+            <button
+              onClick={() => onSelectSection('settings')}
+              className={`relative w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all group cursor-pointer ${
+                activeSection === 'settings'
+                  ? 'bg-[#1B2028] text-[#F5F6F8] font-semibold'
+                  : 'text-[#AEB7C4] hover:text-[#F5F6F8] hover:bg-[#1B2028]/60'
+              }`}
+            >
+              {activeSection === 'settings' && (
+                <motion.div
+                  layoutId="sidebar-active-indicator"
+                  className="absolute inset-0 border-l-2 border-amber-400 rounded-xl pointer-events-none"
+                  transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                />
+              )}
+
+              <div className="flex items-center gap-2.5 relative z-10">
+                <Settings
+                  className={`w-4 h-4 transition-colors ${
+                    activeSection === 'settings'
+                      ? 'text-amber-400'
+                      : 'text-[#AEB7C4] group-hover:text-[#F5F6F8]'
+                  }`}
+                />
+                <span className="tracking-tight">{t('nav_settings')}</span>
+              </div>
+            </button>
+          </div>
         </nav>
 
         {/* Quick Launch Terminals */}
@@ -192,7 +393,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
             className="w-full flex items-center gap-2 px-3 py-2 rounded-xl bg-[#141820] hover:bg-[#1B2028] border border-[#252A32] text-[#F5F6F8] text-xs font-semibold transition cursor-pointer"
           >
             <QrCode className="w-3.5 h-3.5 text-amber-400" />
-            <span className="truncate">QR Station Standee</span>
+            <span className="truncate">{t('btn_qr_standee')}</span>
           </button>
 
           <button
@@ -200,7 +401,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
             className="w-full flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-950/40 hover:bg-emerald-900/40 border border-emerald-500/30 text-emerald-300 text-xs font-semibold transition cursor-pointer"
           >
             <UserPlus className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="truncate">Blank Intake Form</span>
+            <span className="truncate">{t('btn_blank_register')}</span>
           </button>
         </div>
 
@@ -229,7 +430,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
                     className="absolute bottom-full left-0 right-0 mb-1 bg-[#141820] rounded-2xl p-1.5 z-50 border border-[#252A32] shadow-2xl max-h-56 overflow-y-auto"
                   >
                     <div className="text-[10px] font-bold text-[#AEB7C4] px-2 py-1 uppercase tracking-wider">
-                      Switch Active Role
+                      {t('btn_switch_role')}
                     </div>
                     {allRoles.map((r) => (
                       <button
@@ -254,18 +455,19 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
             </div>
           )}
 
-          {/* User profile card */}
+          {/* User Profile Block */}
           {currentUser && (
-            <div className="flex items-center justify-between p-2 rounded-2xl bg-[#141820] border border-[#252A32]">
+            <div className="flex items-center justify-between p-2 rounded-xl bg-[#141820] border border-[#252A32]">
               <div className="min-w-0 pr-2">
                 <p className="text-xs font-bold text-[#F5F6F8] truncate">{currentUser.name}</p>
-                <p className="text-[10px] text-[#AEB7C4] font-mono truncate">{currentUser.email}</p>
+                <p className="text-[10px] text-[#AEB7C4] font-mono truncate">{currentUser.role}</p>
               </div>
+
               {onLogout && (
                 <button
                   onClick={onLogout}
                   className="p-1.5 rounded-lg text-[#AEB7C4] hover:text-rose-400 hover:bg-rose-500/10 transition cursor-pointer"
-                  title="Sign out"
+                  title={t('btn_sign_out')}
                 >
                   <LogOut className="w-3.5 h-3.5" />
                 </button>

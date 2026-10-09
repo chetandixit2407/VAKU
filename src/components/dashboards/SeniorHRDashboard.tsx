@@ -125,10 +125,10 @@ export const SeniorHRDashboard: React.FC<SeniorHRDashboardProps> = ({
       <div className="flex items-center gap-2.5 overflow-x-auto pb-2">
         <button
           onClick={() => setFilterTab('pending')}
-          className={`px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer flex items-center gap-2 shrink-0 ${
+          className={`wcr-filter-tab px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer flex items-center gap-2 shrink-0 border ${
             filterTab === 'pending'
-              ? 'bg-amber-500 text-slate-950 shadow-md ring-2 ring-amber-400/50'
-              : 'card-pill'
+              ? 'is-active bg-amber-500 text-slate-950 shadow-md ring-2 ring-amber-400/50 border-amber-400 font-black'
+              : 'bg-[#0B0B0D] text-white border-white/15 hover:bg-white hover:text-black hover:border-black/20'
           }`}
         >
           <span>Pending Senior Interviews</span>
@@ -139,10 +139,10 @@ export const SeniorHRDashboard: React.FC<SeniorHRDashboardProps> = ({
 
         <button
           onClick={() => setFilterTab('active')}
-          className={`px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer flex items-center gap-2 shrink-0 ${
+          className={`wcr-filter-tab px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer flex items-center gap-2 shrink-0 border ${
             filterTab === 'active'
-              ? 'bg-amber-500 text-slate-950 shadow-md ring-2 ring-amber-400/50'
-              : 'card-pill'
+              ? 'is-active bg-amber-500 text-slate-950 shadow-md ring-2 ring-amber-400/50 border-amber-400 font-black'
+              : 'bg-[#0B0B0D] text-white border-white/15 hover:bg-white hover:text-black hover:border-black/20'
           }`}
         >
           <span>In Active Session</span>
@@ -153,10 +153,10 @@ export const SeniorHRDashboard: React.FC<SeniorHRDashboardProps> = ({
 
         <button
           onClick={() => setFilterTab('completed')}
-          className={`px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer flex items-center gap-2 shrink-0 ${
+          className={`wcr-filter-tab px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer flex items-center gap-2 shrink-0 border ${
             filterTab === 'completed'
-              ? 'bg-amber-500 text-slate-950 shadow-md ring-2 ring-amber-400/50'
-              : 'card-pill'
+              ? 'is-active bg-amber-500 text-slate-950 shadow-md ring-2 ring-amber-400/50 border-amber-400 font-black'
+              : 'bg-[#0B0B0D] text-white border-white/15 hover:bg-white hover:text-black hover:border-black/20'
           }`}
         >
           <span>Completed Evaluations</span>

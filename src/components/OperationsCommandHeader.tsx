@@ -13,6 +13,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import type { Candidate, Interview, Room, PantryTask, Visitor } from '../types/index.ts';
+import { useSettings } from '../context/SettingsContext.tsx';
 
 interface OperationsCommandHeaderProps {
   candidates: Candidate[];
@@ -64,6 +65,7 @@ export const OperationsCommandHeader: React.FC<OperationsCommandHeaderProps> = (
   userRole = 'Operations',
   onSelectKpi,
 }) => {
+  const { t, formatTime } = useSettings();
   const [greeting, setGreeting] = useState<'Good Morning' | 'Good Afternoon' | 'Good Evening'>('Good Morning');
   const [timeString, setTimeString] = useState<string>('');
 
@@ -75,15 +77,13 @@ export const OperationsCommandHeader: React.FC<OperationsCommandHeaderProps> = (
       else if (hours < 17) setGreeting('Good Afternoon');
       else setGreeting('Good Evening');
 
-      setTimeString(
-        now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-      );
+      setTimeString(formatTime(now));
     };
 
     updateTime();
     const interval = setInterval(updateTime, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [formatTime]);
 
   // Compute metrics from actual data
   const waitingCandidates = candidates.filter(
@@ -163,7 +163,7 @@ export const OperationsCommandHeader: React.FC<OperationsCommandHeaderProps> = (
             </span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-[#111318] tracking-tight">
-            {greeting}, <span className="text-[#111318]">{userName.split(' ')[0]}</span>
+            {greeting === 'Good Morning' ? t('greet_morning') : greeting === 'Good Afternoon' ? t('greet_afternoon') : t('greet_evening')}, <span className="text-[#111318]">{userName.split(' ')[0]}</span>
           </h2>
           <p className="text-xs sm:text-sm text-[#252A32] font-medium mt-0.5">
             White Collar Realty &mdash; Office Operations

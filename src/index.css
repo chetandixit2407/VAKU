@@ -74,77 +74,55 @@
 }
 
 /* ========================================================
-   DASHBOARD CARD & INNER BOX STYLING SYSTEM
-   1. Default: Solid black / near-black (#0B0B0D) background for cards
-   2. Inner boxes: Solid dark-grey (#25272B) background
-   3. Text Hierarchy:
-      - Primary text, headings, titles, counts: #FFFFFF
-      - Secondary text, descriptions, details: #E0E0E0
-      - Muted text, tiny labels, captions, helper text: #BDBDBD
-   4. Hover on card: Smooth 200-250ms transition to mist-white (#F1F3F5)
-      with high-contrast dark typography (#17191C)
-   5. Inner boxes stay #25272B with high-contrast text on card hover; on direct hover #35383D
-   6. Preserves independent Visitor & Candidate Intake Flow
+   WCR GLOBAL CARD STYLING & HOVER SYSTEM
+   Rule 1: Default Card Design
+   - All dashboard cards, KPI cards, navigation filter tabs, candidate cards,
+     room cards, visitor cards, interview cards, hospitality cards,
+     notification cards, and dashboard panels have a black background (#0B0B0D).
+   - All text on black backgrounds is pure white (#FFFFFF) or high-contrast light (#E0E0E0, #BDBDBD).
+   - Headings are bold and clearly visible (#FFFFFF).
+   - Preserves status accents (orange, green, blue, purple) with high contrast.
+
+   Rule 2: Card Hover Effect — Black to White
+   - When hovered, background transitions smoothly (200-250ms) to pure white (#FFFFFF).
+   - Headings, candidate names, titles, bold text -> dark black (#111111).
+   - Body text, roles, descriptions -> dark grey (#374151).
+   - Secondary metadata, dates, locations, labels -> readable grey (#4B5563).
+   - Dossier links -> visible dark blue (#1D4ED8) with underline.
+   - Action buttons retain their vibrant, readable colors.
+   - When the mouse leaves, returns smoothly to black background with white text.
+
+   Rule 3: Filter Tabs and Search Bar
+   - Inactive tabs: black background, white text.
+   - Hovered tab: white background, black text.
+   - Active tab: orange background, high-contrast dark text.
+   - Search field: dark background, white typed text, clear placeholder, focus outline.
    ======================================================== */
 
 .card-dark,
-.dashboard-card {
+.dashboard-card,
+.candidate-card,
+.wcr-card,
+.card-light,
+.candidate-card-light {
   background-color: #0B0B0D !important;
   color: #FFFFFF !important;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-top: 1px solid rgba(255, 255, 255, 0.22);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.25),
-              0 2px 4px -1px rgba(0, 0, 0, 0.12),
-              0 14px 28px -4px rgba(0, 0, 0, 0.38);
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.24) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.35),
+              0 2px 4px -1px rgba(0, 0, 0, 0.2),
+              0 14px 28px -4px rgba(0, 0, 0, 0.45) !important;
   border-radius: 1rem;
   position: relative;
   transition: background-color 220ms cubic-bezier(0.16, 1, 0.3, 1),
               color 220ms cubic-bezier(0.16, 1, 0.3, 1),
               border-color 220ms cubic-bezier(0.16, 1, 0.3, 1),
               transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1);
+              box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1) !important;
   will-change: transform, background-color;
 }
 
-/* ========================================================
-   LIGHT CANDIDATE CARDS & PANELS (.card-light)
-   White/light background with readable, high-contrast dark typography:
-   - Primary Headings & Candidate Name: #111827
-   - Job Designation: #374151
-   - Candidate Details, Experience, Notice values: #1F2937
-   - Location, secondary labels, bullets: #4B5563
-   ======================================================== */
-.card-light,
-.candidate-card-light {
-  background-color: #FFFFFF !important;
-  color: #111827 !important;
-  border: 1px solid #E5E7EB !important;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.05) !important;
-  border-radius: 1rem;
-  position: relative;
-  transition: background-color 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
-}
-
-.card-light h1, .card-light h2, .card-light h3, .card-light h4, .card-light h5, .card-light h6,
-.candidate-card-light h1, .candidate-card-light h2, .candidate-card-light h3, .candidate-card-light h4 {
-  color: #111827 !important;
-}
-
-.card-light p,
-.candidate-card-light p {
-  color: #374151 !important;
-}
-
-.card-light strong, .card-light b,
-.candidate-card-light strong, .candidate-card-light b {
-  color: #1F2937 !important;
-}
-
-/* ========================================================
-   1. WHITE & HIGH-CONTRAST LIGHT TEXT ON EVERY BLACK DASHBOARD CARD
-   Ensures ALL text inside black dashboard cards is crisp and readable,
-   overriding Tailwind dark utilities (text-black, text-slate-*, etc.)
-   ======================================================== */
+/* Base unhovered text contrast on black cards */
 .card-dark:not(:hover) h1,
 .card-dark:not(:hover) h2,
 .card-dark:not(:hover) h3,
@@ -155,11 +133,7 @@
 .card-dark:not(:hover) b,
 .card-dark:not(:hover) th,
 .card-dark:not(:hover) .font-bold,
-.card-dark:not(:hover) .font-black,
-.card-dark:not(:hover) .font-extrabold,
-.card-dark:not(:hover) .font-semibold,
-.card-dark:not(:hover) .tabular-nums,
-.card-dark:not(:hover) .font-mono:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]):not([class*="badge"]),
+.card-dark:not(:hover) .candidate-name,
 .dashboard-card:not(:hover) h1,
 .dashboard-card:not(:hover) h2,
 .dashboard-card:not(:hover) h3,
@@ -170,110 +144,124 @@
 .dashboard-card:not(:hover) b,
 .dashboard-card:not(:hover) th,
 .dashboard-card:not(:hover) .font-bold,
-.dashboard-card:not(:hover) .font-black,
-.dashboard-card:not(:hover) .font-extrabold,
-.dashboard-card:not(:hover) .font-semibold,
-.dashboard-card:not(:hover) .tabular-nums,
-.dashboard-card:not(:hover) .font-mono:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]):not([class*="badge"]) {
+.dashboard-card:not(:hover) .candidate-name,
+.candidate-card:not(:hover) h1,
+.candidate-card:not(:hover) h2,
+.candidate-card:not(:hover) h3,
+.candidate-card:not(:hover) h4,
+.candidate-card:not(:hover) h5,
+.candidate-card:not(:hover) h6,
+.candidate-card:not(:hover) strong,
+.candidate-card:not(:hover) b,
+.candidate-card:not(:hover) .candidate-name,
+.card-light:not(:hover) h1,
+.card-light:not(:hover) h2,
+.card-light:not(:hover) h3,
+.card-light:not(:hover) h4,
+.card-light:not(:hover) strong,
+.card-light:not(:hover) b,
+.card-light:not(:hover) .candidate-name,
+.candidate-card-light:not(:hover) h1,
+.candidate-card-light:not(:hover) h2,
+.candidate-card-light:not(:hover) h3,
+.candidate-card-light:not(:hover) strong,
+.candidate-card-light:not(:hover) .candidate-name {
   color: #FFFFFF !important;
 }
 
-/* Secondary text, descriptions, lists, labels, and table cells */
+/* Secondary descriptions, labels, and roles on default black cards */
 .card-dark:not(:hover) p,
 .card-dark:not(:hover) li,
-.card-dark:not(:hover) label,
-.card-dark:not(:hover) small,
 .card-dark:not(:hover) td,
+.card-dark:not(:hover) .candidate-role,
 .dashboard-card:not(:hover) p,
 .dashboard-card:not(:hover) li,
-.dashboard-card:not(:hover) label,
-.dashboard-card:not(:hover) small,
 .dashboard-card:not(:hover) td,
-.card-dark:not(:hover) span:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]):not([class*="badge"]):not([class*="tracking-"]),
-.dashboard-card:not(:hover) span:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]):not([class*="badge"]):not([class*="tracking-"]) {
+.dashboard-card:not(:hover) .candidate-role,
+.candidate-card:not(:hover) p,
+.candidate-card:not(:hover) .candidate-role,
+.card-light:not(:hover) p,
+.candidate-card-light:not(:hover) p {
   color: #E0E0E0 !important;
 }
 
-/* Override dark and low-contrast text utilities on default unhovered black cards */
-.card-dark:not(:hover) .text-\[\#111318\],
-.card-dark:not(:hover) .text-\[\#343A40\],
-.card-dark:not(:hover) .text-\[\#252A32\],
-.card-dark:not(:hover) .text-black,
-.card-dark:not(:hover) .text-slate-900,
-.card-dark:not(:hover) .text-slate-800,
-.card-dark:not(:hover) .text-slate-700,
-.card-dark:not(:hover) .text-gray-900,
-.card-dark:not(:hover) .text-gray-800,
-.card-dark:not(:hover) .text-gray-700,
-.dashboard-card:not(:hover) .text-\[\#111318\],
-.dashboard-card:not(:hover) .text-\[\#343A40\],
-.dashboard-card:not(:hover) .text-\[\#252A32\],
-.dashboard-card:not(:hover) .text-black,
-.dashboard-card:not(:hover) .text-slate-900,
-.dashboard-card:not(:hover) .text-slate-800,
-.dashboard-card:not(:hover) .text-slate-700,
-.dashboard-card:not(:hover) .text-gray-900,
-.dashboard-card:not(:hover) .text-gray-800,
-.dashboard-card:not(:hover) .text-gray-700 {
-  color: #FFFFFF !important;
-}
-
-/* Muted secondary and metadata text (guaranteed high contrast #BDBDBD) */
-.card-dark:not(:hover) .text-slate-400,
-.card-dark:not(:hover) .text-slate-500,
-.card-dark:not(:hover) .text-slate-600,
-.card-dark:not(:hover) .text-gray-400,
-.card-dark:not(:hover) .text-gray-500,
-.card-dark:not(:hover) .text-gray-600,
-.card-dark:not(:hover) .text-zinc-400,
-.card-dark:not(:hover) .text-zinc-500,
-.card-dark:not(:hover) .text-\[\#AEB4BC\],
-.card-dark:not(:hover) .text-\[\#D5D8DD\],
-.card-dark:not(:hover) .text-\[\#D5DAE2\],
-.dashboard-card:not(:hover) .text-slate-400,
-.dashboard-card:not(:hover) .text-slate-500,
-.dashboard-card:not(:hover) .text-slate-600,
-.dashboard-card:not(:hover) .text-gray-400,
-.dashboard-card:not(:hover) .text-gray-500,
-.dashboard-card:not(:hover) .text-gray-600,
-.dashboard-card:not(:hover) .text-zinc-400,
-.dashboard-card:not(:hover) .text-zinc-500,
-.dashboard-card:not(:hover) .text-\[\#AEB4BC\],
-.dashboard-card:not(:hover) .text-\[\#D5D8DD\],
-.dashboard-card:not(:hover) .text-\[\#D5DAE2\] {
+/* Muted metadata, location, dates on default black cards */
+.card-dark:not(:hover) small,
+.card-dark:not(:hover) label,
+.card-dark:not(:hover) .candidate-meta,
+.card-dark:not(:hover) .candidate-detail,
+.dashboard-card:not(:hover) small,
+.dashboard-card:not(:hover) label,
+.dashboard-card:not(:hover) .candidate-meta,
+.dashboard-card:not(:hover) .candidate-detail,
+.candidate-card:not(:hover) small,
+.candidate-card:not(:hover) .candidate-meta,
+.candidate-card:not(:hover) .candidate-detail,
+.card-light:not(:hover) small,
+.candidate-card-light:not(:hover) small {
   color: #BDBDBD !important;
 }
 
-/* Neutral icons inside default black cards */
-.card-dark:not(:hover) svg:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]):not([class*="text-green-"]):not([class*="text-red-"]):not([class*="text-orange-"]),
-.dashboard-card:not(:hover) svg:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]):not([class*="text-green-"]):not([class*="text-red-"]):not([class*="text-orange-"]) {
+/* Candidate avatar box on default black card */
+.candidate-avatar,
+.card-dark:not(:hover) .candidate-avatar,
+.dashboard-card:not(:hover) .candidate-avatar,
+.candidate-card:not(:hover) .candidate-avatar,
+.card-light:not(:hover) .candidate-avatar,
+.candidate-card-light:not(:hover) .candidate-avatar {
+  background-color: #25272B !important;
+  color: #FFFFFF !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Dossier link on default black card */
+.candidate-dossier-link,
+.card-dark:not(:hover) .candidate-dossier-link,
+.dashboard-card:not(:hover) .candidate-dossier-link,
+.candidate-card:not(:hover) .candidate-dossier-link {
+  color: #60A5FA !important;
+  text-decoration: underline !important;
+}
+
+/* Assign Room button on any card */
+.btn-assign-room,
+button[class*="from-amber-"] {
+  background: linear-gradient(to right, #F36515, #EA580C) !important;
+  color: #020617 !important;
+  font-weight: 700 !important;
+}
+.btn-assign-room svg,
+button[class*="from-amber-"] svg {
+  color: #020617 !important;
+}
+
+/* Route to Kimmi Mam button */
+.btn-route-kimmi,
+button.btn-route-kimmi,
+button[class*="bg-[#1F2937]"] {
+  background-color: #1F2937 !important;
+  color: #FFFFFF !important;
+  border-color: #374151 !important;
+}
+
+/* Neutral icons on default black cards */
+.card-dark:not(:hover) svg:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]):not([class*="text-orange-"]):not([class*="fill-"]),
+.dashboard-card:not(:hover) svg:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]):not([class*="text-orange-"]):not([class*="fill-"]),
+.candidate-card:not(:hover) svg:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]):not([class*="text-orange-"]):not([class*="fill-"]) {
   color: #E0E0E0 !important;
 }
 
-/* Prevent low opacity from washing out text inside black cards */
-.card-dark:not(:hover) [class*="opacity-"],
-.dashboard-card:not(:hover) [class*="opacity-"] {
-  opacity: 1 !important;
-}
-
-/* Base inner box styling inside dashboard cards: #25272B */
+/* Base inner box styling: #25272B */
 .card-inner,
 .inner-box,
-[class*="bg-[#25272B]"],
-.bg-\[\#25272B\],
+[class*="bg-[#25272B]"]:not(button):not(.btn-route-kimmi),
 .dashboard-card div.bg-black\/30,
 .dashboard-card div.bg-black\/40,
 .dashboard-card div.bg-black\/20,
 .dashboard-card div.bg-white\/5,
-.dashboard-card div.bg-white\/4,
-.dashboard-card div.bg-slate-950\/40,
-.dashboard-card div.bg-slate-50,
 .card-dark div.bg-black\/30,
 .card-dark div.bg-black\/40,
-.card-dark div.bg-black\/20,
-.card-dark div.bg-white\/5,
-.card-dark div.bg-white\/4,
-.card-dark div.bg-slate-50 {
+.card-dark div.bg-white\/5 {
   background-color: #25272B !important;
   border-color: rgba(255, 255, 255, 0.12) !important;
   color: #FFFFFF !important;
@@ -282,240 +270,348 @@
 
 .card-inner h1, .card-inner h2, .card-inner h3, .card-inner h4, .card-inner strong, .card-inner b,
 .inner-box h1, .inner-box h2, .inner-box h3, .inner-box h4, .inner-box strong, .inner-box b,
-[class*="bg-[#25272B]"] h1, [class*="bg-[#25272B]"] h2, [class*="bg-[#25272B]"] h3, [class*="bg-[#25272B]"] h4, [class*="bg-[#25272B]"] strong, [class*="bg-[#25272B]"] b,
-.bg-\[\#25272B\] h1, .bg-\[\#25272B\] h2, .bg-\[\#25272B\] h3, .bg-\[\#25272B\] h4, .bg-\[\#25272B\] strong, .bg-\[\#25272B\] b,
-.dashboard-card div.bg-black\/30 strong,
-.dashboard-card div.bg-black\/40 strong,
-.dashboard-card div.bg-slate-50 strong,
-.card-dark div.bg-black\/30 strong,
-.card-dark div.bg-black\/40 strong,
-.card-dark div.bg-slate-50 strong {
+[class*="bg-[#25272B]"]:not(button):not(.btn-route-kimmi) strong,
+[class*="bg-[#25272B]"]:not(button):not(.btn-route-kimmi) b {
   color: #FFFFFF !important;
 }
 
 .card-inner p, .inner-box p,
-[class*="bg-[#25272B]"] p, .bg-\[\#25272B\] p,
-.card-inner li, .inner-box li,
-.card-inner label, .inner-box label,
-.dashboard-card div.bg-black\/30 p,
-.dashboard-card div.bg-black\/40 p,
-.dashboard-card div.bg-slate-50 p,
-.card-dark div.bg-black\/30 p,
-.card-dark div.bg-black\/40 p,
-.card-dark div.bg-slate-50 p {
+[class*="bg-[#25272B]"]:not(button):not(.btn-route-kimmi) p {
   color: #E0E0E0 !important;
 }
 
-.card-inner span:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]),
-.inner-box span:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]),
-[class*="bg-[#25272B]"] span:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]),
-.bg-\[\#25272B\] span:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]),
-.dashboard-card div.bg-black\/30 span:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]),
-.dashboard-card div.bg-black\/40 span:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]),
-.dashboard-card div.bg-slate-50 span:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]),
-.card-dark div.bg-black\/30 span:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]),
-.card-dark div.bg-black\/40 span:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]),
-.card-dark div.bg-slate-50 span:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]) {
+.card-inner span:not([class*="text-"]):not([class*="badge"]),
+.inner-box span:not([class*="text-"]):not([class*="badge"]),
+[class*="bg-[#25272B]"]:not(button):not(.btn-route-kimmi) span:not([class*="text-"]):not([class*="badge"]) {
   color: #BDBDBD !important;
 }
 
-/* Hovering directly on an inner box: slightly lighter grey #35383D */
-.card-inner:hover,
-.inner-box:hover,
-[class*="bg-[#25272B]"]:hover,
-.bg-\[\#25272B\]:hover,
-.dashboard-card div.bg-black\/30:hover,
-.dashboard-card div.bg-black\/40:hover,
-.dashboard-card div.bg-black\/20:hover,
-.dashboard-card div.bg-white\/5:hover,
-.dashboard-card div.bg-white\/4:hover,
-.dashboard-card div.bg-slate-50:hover,
-.card-dark div.bg-black\/30:hover,
-.card-dark div.bg-black\/40:hover,
-.card-dark div.bg-black\/20:hover,
-.card-dark div.bg-white\/5:hover,
-.card-dark div.bg-white\/4:hover,
-.card-dark div.bg-slate-50:hover {
-  background-color: #35383D !important;
-  border-color: rgba(255, 255, 255, 0.22) !important;
-  color: #FFFFFF !important;
-}
-
 /* ========================================================
-   AUTOMATIC HOVER EFFECT ON ANY DASHBOARD CARD
-   Background -> Mist-white (#F1F3F5)
-   Text/Icons -> Suitable dark colors (#17191C)
-   Smooth 200-250ms transition
-   Inner boxes maintain their dark-grey (#25272B) background!
+   RULE 2: CARD HOVER EFFECT — BLACK TO WHITE (200-250ms)
+   Smooth transition from black to pure white (#FFFFFF),
+   all text changes to dark black (#111111) and dark grey (#374151).
    ======================================================== */
 @media (hover: hover) and (pointer: fine) {
   .dashboard-card:not(.intake-flow-container):not(.intake-stage-card):hover,
-  .card-dark:not(.intake-flow-container):not(.intake-stage-card):hover {
-    background-color: #F1F3F5 !important;
-    border-color: rgba(0, 0, 0, 0.15) !important;
-    transform: translateY(-3px) scale(1.01);
+  .card-dark:not(.intake-flow-container):not(.intake-stage-card):hover,
+  .candidate-card:not(.intake-flow-container):not(.intake-stage-card):hover,
+  .wcr-card:not(.intake-flow-container):not(.intake-stage-card):hover,
+  .card-light:not(.intake-flow-container):not(.intake-stage-card):hover,
+  .candidate-card-light:not(.intake-flow-container):not(.intake-stage-card):hover {
+    background-color: #FFFFFF !important;
+    border-color: rgba(0, 0, 0, 0.16) !important;
+    transform: translateY(-2px) scale(1.005);
     box-shadow: 0 16px 32px -6px rgba(15, 23, 42, 0.22),
                 0 4px 8px -2px rgba(15, 23, 42, 0.12),
                 0 0 0 1px rgba(0, 0, 0, 0.08) !important;
-    color: #17191C !important;
+    color: #111111 !important;
   }
 
-  /* Transition text and icons smoothly (excluding intake flow and inner boxes) */
-  .dashboard-card:not(.intake-flow-container) *:not(.intake-stage-card):not(.intake-stage-card *):not(.card-inner):not(.card-inner *):not(.inner-box):not(.inner-box *),
-  .card-dark:not(.intake-flow-container) *:not(.intake-stage-card):not(.intake-stage-card *):not(.card-inner):not(.card-inner *):not(.inner-box):not(.inner-box *) {
+  /* Transition elements smoothly */
+  .dashboard-card:not(.intake-flow-container) *:not(.intake-stage-card):not(.intake-stage-card *),
+  .card-dark:not(.intake-flow-container) *:not(.intake-stage-card):not(.intake-stage-card *),
+  .candidate-card:not(.intake-flow-container) *:not(.intake-stage-card):not(.intake-stage-card *),
+  .wcr-card:not(.intake-flow-container) *:not(.intake-stage-card):not(.intake-stage-card *) {
     transition: color 220ms cubic-bezier(0.16, 1, 0.3, 1),
                 border-color 220ms cubic-bezier(0.16, 1, 0.3, 1),
                 background-color 220ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  /* Headings, metrics, and primary text switch to dark (#17191C) on card hover (excluding inner boxes) */
-  .dashboard-card:not(.intake-flow-container):hover > h1,
-  .dashboard-card:not(.intake-flow-container):hover > h2,
-  .dashboard-card:not(.intake-flow-container):hover > h3,
-  .dashboard-card:not(.intake-flow-container):hover > h4,
-  .dashboard-card:not(.intake-flow-container):hover > h5,
-  .dashboard-card:not(.intake-flow-container):hover h1:not(.card-inner *):not(.inner-box *),
-  .dashboard-card:not(.intake-flow-container):hover h2:not(.card-inner *):not(.inner-box *),
-  .dashboard-card:not(.intake-flow-container):hover h3:not(.intake-flow-title):not(.card-inner *):not(.inner-box *),
-  .dashboard-card:not(.intake-flow-container):hover h4:not(.card-inner *):not(.inner-box *),
-  .dashboard-card:not(.intake-flow-container):hover h5:not(.card-inner *):not(.inner-box *),
-  .dashboard-card:not(.intake-flow-container):hover strong:not(.card-inner *):not(.inner-box *),
-  .dashboard-card:not(.intake-flow-container):hover b:not(.card-inner *):not(.inner-box *),
-  .dashboard-card:not(.intake-flow-container):hover .text-white:not(.intake-stage-count):not(.intake-stage-label):not(.card-inner *):not(.inner-box *),
-  .dashboard-card:not(.intake-flow-container):hover .text-slate-100:not(.card-inner *):not(.inner-box *),
-  .dashboard-card:not(.intake-flow-container):hover .text-slate-200:not(.card-inner *):not(.inner-box *),
-  .dashboard-card:not(.intake-flow-container):hover .text-slate-300:not(.card-inner *):not(.inner-box *),
-  .card-dark:not(.intake-flow-container):hover h1:not(.card-inner *):not(.inner-box *),
-  .card-dark:not(.intake-flow-container):hover h2:not(.card-inner *):not(.inner-box *),
-  .card-dark:not(.intake-flow-container):hover h3:not(.card-inner *):not(.inner-box *),
-  .card-dark:not(.intake-flow-container):hover h4:not(.card-inner *):not(.inner-box *),
-  .card-dark:not(.intake-flow-container):hover strong:not(.card-inner *):not(.inner-box *),
-  .card-dark:not(.intake-flow-container):hover b:not(.card-inner *):not(.inner-box *),
-  .card-dark:not(.intake-flow-container):hover .text-white:not(.intake-stage-count):not(.intake-stage-label):not(.card-inner *):not(.inner-box *),
-  .card-dark:not(.intake-flow-container):hover .text-slate-100:not(.card-inner *):not(.inner-box *),
-  .card-dark:not(.intake-flow-container):hover .text-slate-200:not(.card-inner *):not(.inner-box *),
-  .card-dark:not(.intake-flow-container):hover .text-slate-300:not(.card-inner *):not(.inner-box *) {
-    color: #17191C !important;
+  /* Headings, Candidate Name, and Primary Bold Text switch to Dark Black (#111111) on card hover */
+  .dashboard-card:not(.intake-flow-container):hover h1,
+  .dashboard-card:not(.intake-flow-container):hover h2,
+  .dashboard-card:not(.intake-flow-container):hover h3,
+  .dashboard-card:not(.intake-flow-container):hover h4,
+  .dashboard-card:not(.intake-flow-container):hover h5,
+  .dashboard-card:not(.intake-flow-container):hover strong:not(.btn-assign-room *):not(.btn-route-kimmi *),
+  .dashboard-card:not(.intake-flow-container):hover b,
+  .dashboard-card:not(.intake-flow-container):hover .candidate-name,
+  .card-dark:not(.intake-flow-container):hover h1,
+  .card-dark:not(.intake-flow-container):hover h2,
+  .card-dark:not(.intake-flow-container):hover h3,
+  .card-dark:not(.intake-flow-container):hover h4,
+  .card-dark:not(.intake-flow-container):hover strong:not(.btn-assign-room *):not(.btn-route-kimmi *),
+  .card-dark:not(.intake-flow-container):hover b,
+  .card-dark:not(.intake-flow-container):hover .candidate-name,
+  .candidate-card:not(.intake-flow-container):hover h1,
+  .candidate-card:not(.intake-flow-container):hover h2,
+  .candidate-card:not(.intake-flow-container):hover h3,
+  .candidate-card:not(.intake-flow-container):hover h4,
+  .candidate-card:not(.intake-flow-container):hover strong:not(.btn-assign-room *):not(.btn-route-kimmi *),
+  .candidate-card:not(.intake-flow-container):hover b,
+  .candidate-card:not(.intake-flow-container):hover .candidate-name,
+  .card-light:not(.intake-flow-container):hover h1,
+  .card-light:not(.intake-flow-container):hover h2,
+  .card-light:not(.intake-flow-container):hover h3,
+  .card-light:not(.intake-flow-container):hover h4,
+  .card-light:not(.intake-flow-container):hover strong,
+  .card-light:not(.intake-flow-container):hover .candidate-name {
+    color: #111111 !important;
   }
 
-  /* Secondary descriptions smoothly shift to readable dark charcoal grey #343A40 */
-  .dashboard-card:not(.intake-flow-container):hover p:not(.intake-stage-label):not(.card-inner *):not(.inner-box *),
-  .dashboard-card:not(.intake-flow-container):hover .text-slate-400:not(.card-inner *):not(.inner-box *),
-  .dashboard-card:not(.intake-flow-container):hover .text-slate-500:not(.card-inner *):not(.inner-box *),
-  .dashboard-card:not(.intake-flow-container):hover .text-\[\#AEB4BC\]:not(.card-inner *):not(.inner-box *),
-  .dashboard-card:not(.intake-flow-container):hover .text-\[\#D5D8DD\]:not(.card-inner *):not(.inner-box *),
-  .dashboard-card:not(.intake-flow-container):hover .text-\[\#D5DAE2\]:not(.card-inner *):not(.inner-box *),
-  .card-dark:not(.intake-flow-container):hover p:not(.intake-stage-label):not(.card-inner *):not(.inner-box *),
-  .card-dark:not(.intake-flow-container):hover .text-slate-400:not(.card-inner *):not(.inner-box *),
-  .card-dark:not(.intake-flow-container):hover .text-slate-500:not(.card-inner *):not(.inner-box *),
-  .card-dark:not(.intake-flow-container):hover .text-\[\#AEB4BC\]:not(.card-inner *):not(.inner-box *),
-  .card-dark:not(.intake-flow-container):hover .text-\[\#D5D8DD\]:not(.card-inner *):not(.inner-box *),
-  .card-dark:not(.intake-flow-container):hover .text-\[\#D5DAE2\]:not(.card-inner *):not(.inner-box *) {
-    color: #343A40 !important;
+  /* Text overrides on hover: Tailwind white/slate text flips to dark */
+  .dashboard-card:not(.intake-flow-container):hover .text-white:not(.btn-route-kimmi *):not(.badge):not([class*="bg-amber-"]):not([class*="bg-emerald-"]):not([class*="bg-rose-"]):not([class*="bg-blue-"]):not([class*="bg-purple-"]),
+  .card-dark:not(.intake-flow-container):hover .text-white:not(.btn-route-kimmi *):not(.badge):not([class*="bg-amber-"]):not([class*="bg-emerald-"]):not([class*="bg-rose-"]):not([class*="bg-blue-"]):not([class*="bg-purple-"]),
+  .candidate-card:not(.intake-flow-container):hover .text-white:not(.btn-route-kimmi *):not(.badge):not([class*="bg-amber-"]):not([class*="bg-emerald-"]):not([class*="bg-rose-"]):not([class*="bg-blue-"]):not([class*="bg-purple-"]),
+  .dashboard-card:not(.intake-flow-container):hover .text-slate-100,
+  .card-dark:not(.intake-flow-container):hover .text-slate-100,
+  .candidate-card:not(.intake-flow-container):hover .text-slate-100 {
+    color: #111111 !important;
   }
 
-  /* Tabular figures and monospace metric values */
-  .dashboard-card:not(.intake-flow-container):hover .font-mono:not([class*="bg-"]):not([class*="badge"]):not(.intake-stage-count):not(.card-inner *):not(.inner-box *),
-  .dashboard-card:not(.intake-flow-container):hover .tabular-nums:not([class*="bg-"]):not([class*="badge"]):not(.intake-stage-count):not(.card-inner *):not(.inner-box *),
-  .card-dark:not(.intake-flow-container):hover .font-mono:not([class*="bg-"]):not([class*="badge"]):not(.intake-stage-count):not(.card-inner *):not(.inner-box *),
-  .card-dark:not(.intake-flow-container):hover .tabular-nums:not([class*="bg-"]):not([class*="badge"]):not(.intake-stage-count):not(.card-inner *):not(.inner-box *) {
-    color: #17191C !important;
+  /* Secondary descriptions, roles, paragraphs switch to Dark Grey (#374151) on card hover */
+  .dashboard-card:not(.intake-flow-container):hover p,
+  .dashboard-card:not(.intake-flow-container):hover li,
+  .dashboard-card:not(.intake-flow-container):hover .candidate-role,
+  .dashboard-card:not(.intake-flow-container):hover [class*="text-[#E0E0E0]"],
+  .card-dark:not(.intake-flow-container):hover p,
+  .card-dark:not(.intake-flow-container):hover li,
+  .card-dark:not(.intake-flow-container):hover .candidate-role,
+  .card-dark:not(.intake-flow-container):hover [class*="text-[#E0E0E0]"],
+  .candidate-card:not(.intake-flow-container):hover p,
+  .candidate-card:not(.intake-flow-container):hover li,
+  .candidate-card:not(.intake-flow-container):hover .candidate-role,
+  .candidate-card:not(.intake-flow-container):hover [class*="text-[#E0E0E0]"] {
+    color: #374151 !important;
   }
 
-  /* CRITICAL: INNER BOXES REMAIN DARK GREY (#25272B) WHEN PARENT CARD IS HOVERED */
-  .dashboard-card:hover .card-inner:not(:hover),
-  .dashboard-card:hover .inner-box:not(:hover),
-  .dashboard-card:hover [class*="bg-[#25272B]"]:not(:hover),
-  .dashboard-card:hover .bg-\[\#25272B\]:not(:hover),
-  .dashboard-card:hover div.bg-black\/30:not(:hover),
-  .dashboard-card:hover div.bg-black\/40:not(:hover),
-  .dashboard-card:hover div.bg-black\/20:not(:hover),
-  .dashboard-card:hover div.bg-white\/5:not(:hover),
-  .dashboard-card:hover div.bg-white\/4:not(:hover),
-  .dashboard-card:hover div.bg-slate-950\/40:not(:hover),
-  .dashboard-card:hover div.bg-slate-50:not(:hover),
-  .card-dark:hover .card-inner:not(:hover),
-  .card-dark:hover .inner-box:not(:hover),
-  .card-dark:hover [class*="bg-[#25272B]"]:not(:hover),
-  .card-dark:hover .bg-\[\#25272B\]:not(:hover),
-  .card-dark:hover div.bg-black\/30:not(:hover),
-  .card-dark:hover div.bg-black\/40:not(:hover),
-  .card-dark:hover div.bg-black\/20:not(:hover),
-  .card-dark:hover div.bg-white\/5:not(:hover),
-  .card-dark:hover div.bg-white\/4:not(:hover),
-  .card-dark:hover div.bg-slate-50:not(:hover) {
-    background-color: #25272B !important;
-    border-color: rgba(255, 255, 255, 0.12) !important;
-    color: #FFFFFF !important;
+  /* Metadata, labels, location, dates, muted text switch to Readable Medium Grey (#4B5563) on card hover */
+  .dashboard-card:not(.intake-flow-container):hover small,
+  .dashboard-card:not(.intake-flow-container):hover label,
+  .dashboard-card:not(.intake-flow-container):hover .candidate-meta,
+  .dashboard-card:not(.intake-flow-container):hover .candidate-detail,
+  .dashboard-card:not(.intake-flow-container):hover [class*="text-[#BDBDBD]"],
+  .dashboard-card:not(.intake-flow-container):hover .text-slate-400,
+  .dashboard-card:not(.intake-flow-container):hover .text-gray-400,
+  .dashboard-card:not(.intake-flow-container):hover .text-slate-500,
+  .card-dark:not(.intake-flow-container):hover small,
+  .card-dark:not(.intake-flow-container):hover label,
+  .card-dark:not(.intake-flow-container):hover .candidate-meta,
+  .card-dark:not(.intake-flow-container):hover .candidate-detail,
+  .card-dark:not(.intake-flow-container):hover [class*="text-[#BDBDBD]"],
+  .card-dark:not(.intake-flow-container):hover .text-slate-400,
+  .card-dark:not(.intake-flow-container):hover .text-gray-400,
+  .candidate-card:not(.intake-flow-container):hover small,
+  .candidate-card:not(.intake-flow-container):hover label,
+  .candidate-card:not(.intake-flow-container):hover .candidate-meta,
+  .candidate-card:not(.intake-flow-container):hover .candidate-detail,
+  .candidate-card:not(.intake-flow-container):hover [class*="text-[#BDBDBD]"],
+  .candidate-card:not(.intake-flow-container):hover .text-slate-400,
+  .candidate-card:not(.intake-flow-container):hover .text-gray-400 {
+    color: #4B5563 !important;
   }
 
-  /* Inner box text stays crisp light when parent is hovered */
-  .dashboard-card:hover .card-inner:not(:hover) strong,
-  .dashboard-card:hover .card-inner:not(:hover) b,
-  .dashboard-card:hover .inner-box:not(:hover) strong,
-  .dashboard-card:hover .inner-box:not(:hover) b,
-  .dashboard-card:hover [class*="bg-[#25272B]"]:not(:hover) strong,
-  .dashboard-card:hover [class*="bg-[#25272B]"]:not(:hover) b,
-  .dashboard-card:hover .bg-\[\#25272B\]:not(:hover) strong,
-  .dashboard-card:hover .bg-\[\#25272B\]:not(:hover) b,
-  .dashboard-card:hover div.bg-black\/30:not(:hover) strong,
-  .dashboard-card:hover div.bg-black\/40:not(:hover) strong,
-  .dashboard-card:hover div.bg-slate-50:not(:hover) strong,
-  .card-dark:hover .card-inner:not(:hover) strong,
-  .card-dark:hover .inner-box:not(:hover) strong,
-  .card-dark:hover [class*="bg-[#25272B]"]:not(:hover) strong,
-  .card-dark:hover [class*="bg-[#25272B]"]:not(:hover) b,
-  .card-dark:hover .bg-\[\#25272B\]:not(:hover) strong,
-  .card-dark:hover .bg-\[\#25272B\]:not(:hover) b,
-  .card-dark:hover div.bg-black\/30:not(:hover) strong,
-  .card-dark:hover div.bg-black\/40:not(:hover) strong,
-  .card-dark:hover div.bg-slate-50:not(:hover) strong {
-    color: #FFFFFF !important;
+  /* Internal dividers switch to clean light grey on card hover */
+  .dashboard-card:not(.intake-flow-container):hover div[class*="border-t"],
+  .dashboard-card:not(.intake-flow-container):hover div[class*="border-b"],
+  .dashboard-card:not(.intake-flow-container):hover .card-divider,
+  .card-dark:not(.intake-flow-container):hover div[class*="border-t"],
+  .card-dark:not(.intake-flow-container):hover div[class*="border-b"],
+  .card-dark:not(.intake-flow-container):hover .card-divider,
+  .candidate-card:not(.intake-flow-container):hover div[class*="border-t"],
+  .candidate-card:not(.intake-flow-container):hover div[class*="border-b"],
+  .candidate-card:not(.intake-flow-container):hover .card-divider {
+    border-color: #E5E7EB !important;
   }
 
-  .dashboard-card:hover .card-inner:not(:hover) span,
-  .dashboard-card:hover .inner-box:not(:hover) span,
-  .dashboard-card:hover [class*="bg-[#25272B]"]:not(:hover) span,
-  .dashboard-card:hover .bg-\[\#25272B\]:not(:hover) span,
-  .dashboard-card:hover div.bg-black\/30:not(:hover) span,
-  .dashboard-card:hover div.bg-black\/40:not(:hover) span,
-  .dashboard-card:hover div.bg-slate-50:not(:hover) span,
-  .card-dark:hover .card-inner:not(:hover) span,
-  .card-dark:hover .inner-box:not(:hover) span,
-  .card-dark:hover [class*="bg-[#25272B]"]:not(:hover) span,
-  .card-dark:hover .bg-\[\#25272B\]:not(:hover) span,
-  .card-dark:hover div.bg-black\/30:not(:hover) span,
-  .card-dark:hover div.bg-black\/40:not(:hover) span,
-  .card-dark:hover div.bg-slate-50:not(:hover) span {
-    color: #BDBDBD !important;
+  /* Neutral icons shift to #374151 on card hover */
+  .dashboard-card:not(.intake-flow-container):hover svg:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-orange-"]):not([class*="fill-"]):not(.btn-assign-room *):not(.btn-route-kimmi *),
+  .card-dark:not(.intake-flow-container):hover svg:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-orange-"]):not([class*="fill-"]):not(.btn-assign-room *):not(.btn-route-kimmi *),
+  .candidate-card:not(.intake-flow-container):hover svg:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-orange-"]):not([class*="fill-"]):not(.btn-assign-room *):not(.btn-route-kimmi *) {
+    color: #374151 !important;
   }
 
-  /* Neutral SVGs transition cleanly on parent hover (outside inner box) */
-  .dashboard-card:not(.intake-flow-container):hover svg:not([class*="text-"]):not([class*="bg-"]):not(.card-inner *):not(.inner-box *),
-  .card-dark:not(.intake-flow-container):hover svg:not([class*="text-"]):not([class*="bg-"]):not(.card-inner *):not(.inner-box *) {
-    color: #17191C !important;
+  /* Candidate Avatar Box shifts to clean light gray on card hover */
+  .dashboard-card:hover .candidate-avatar,
+  .card-dark:hover .candidate-avatar,
+  .candidate-card:hover .candidate-avatar,
+  .dashboard-card:hover div[class*="bg-[#25272B]"]:not(button):not(.btn-route-kimmi),
+  .card-dark:hover div[class*="bg-[#25272B]"]:not(button):not(.btn-route-kimmi),
+  .candidate-card:hover div[class*="bg-[#25272B]"]:not(button):not(.btn-route-kimmi) {
+    background-color: #F3F4F6 !important;
+    color: #111827 !important;
+    border-color: #D1D5DB !important;
   }
 
-  /* Nested cards preserve solid black when only parent card is hovered */
-  .dashboard-card:hover .card-dark:not(:hover) {
-    background-color: #0B0B0D !important;
-    color: #FFFFFF !important;
-    border-color: rgba(255, 255, 255, 0.12) !important;
+  /* View Full Dossier Link shifts to Visible Dark Blue (#1D4ED8) with underline on card hover */
+  .dashboard-card:hover .candidate-dossier-link,
+  .card-dark:hover .candidate-dossier-link,
+  .candidate-card:hover .candidate-dossier-link,
+  .dashboard-card:hover button[class*="underline"],
+  .card-dark:hover button[class*="underline"],
+  .candidate-card:hover button[class*="underline"] {
+    color: #1D4ED8 !important;
+    text-decoration: underline !important;
+    font-weight: 600 !important;
   }
-  .dashboard-card:hover .card-dark:not(:hover) h1,
-  .dashboard-card:hover .card-dark:not(:hover) h2,
-  .dashboard-card:hover .card-dark:not(:hover) h3,
-  .dashboard-card:hover .card-dark:not(:hover) strong,
-  .dashboard-card:hover .card-light:not(:hover) h1,
-  .dashboard-card:hover .card-light:not(:hover) h2,
-  .dashboard-card:hover .card-light:not(:hover) h3,
-  .dashboard-card:hover .card-light:not(:hover) strong {
-    color: #FFFFFF !important;
+  .dashboard-card:hover .candidate-dossier-link:hover,
+  .card-dark:hover .candidate-dossier-link:hover,
+  .candidate-card:hover .candidate-dossier-link:hover {
+    color: #1E40AF !important;
   }
-  .dashboard-card:hover .card-dark:not(:hover) p,
-  .dashboard-card:hover .card-light:not(:hover) p {
-    color: #E0E0E0 !important;
+
+  /* Inner boxes adapt to high-contrast clean surface on card hover */
+  .dashboard-card:hover .card-inner,
+  .dashboard-card:hover .inner-box,
+  .card-dark:hover .card-inner,
+  .card-dark:hover .inner-box,
+  .candidate-card:hover .card-inner,
+  .candidate-card:hover .inner-box {
+    background-color: #F8FAFC !important;
+    border-color: #E2E8F0 !important;
+    color: #111111 !important;
   }
+  .dashboard-card:hover .card-inner strong,
+  .dashboard-card:hover .inner-box strong,
+  .card-dark:hover .card-inner strong,
+  .card-dark:hover .inner-box strong {
+    color: #111111 !important;
+  }
+  .dashboard-card:hover .card-inner p,
+  .dashboard-card:hover .inner-box p,
+  .card-dark:hover .card-inner p,
+  .card-dark:hover .inner-box p {
+    color: #374151 !important;
+  }
+  .dashboard-card:hover .card-inner span:not([class*="text-"]),
+  .dashboard-card:hover .inner-box span:not([class*="text-"]),
+  .card-dark:hover .card-inner span:not([class*="text-"]),
+  .card-dark:hover .inner-box span:not([class*="text-"]) {
+    color: #4B5563 !important;
+  }
+
+  /* Status Badges adapt contrast on hovered white card */
+  .dashboard-card:hover [class*="bg-amber-500/15"],
+  .dashboard-card:hover [class*="bg-amber-500/10"],
+  .dashboard-card:hover [class*="bg-amber-100"],
+  .dashboard-card:hover [class*="bg-orange-100"],
+  .card-dark:hover [class*="bg-amber-500/15"],
+  .card-dark:hover [class*="bg-amber-100"],
+  .candidate-card:hover [class*="bg-amber-500/15"],
+  .candidate-card:hover [class*="bg-amber-100"] {
+    background-color: #FFEDD5 !important;
+    color: #9A3412 !important;
+    border-color: #FDBA74 !important;
+    font-weight: 700 !important;
+  }
+
+  .dashboard-card:hover [class*="bg-emerald-500/15"],
+  .dashboard-card:hover [class*="bg-emerald-100"],
+  .card-dark:hover [class*="bg-emerald-500/15"],
+  .candidate-card:hover [class*="bg-emerald-500/15"] {
+    background-color: #D1FAE5 !important;
+    color: #065F46 !important;
+    border-color: #A7F3D0 !important;
+    font-weight: 700 !important;
+  }
+
+  .dashboard-card:hover [class*="bg-blue-500/15"],
+  .dashboard-card:hover [class*="bg-blue-100"],
+  .card-dark:hover [class*="bg-blue-500/15"],
+  .candidate-card:hover [class*="bg-blue-500/15"] {
+    background-color: #DBEAFE !important;
+    color: #1E40AF !important;
+    border-color: #BFDBFE !important;
+    font-weight: 700 !important;
+  }
+
+  .dashboard-card:hover [class*="bg-purple-500/15"],
+  .dashboard-card:hover [class*="bg-purple-100"],
+  .card-dark:hover [class*="bg-purple-500/15"],
+  .candidate-card:hover [class*="bg-purple-500/15"] {
+    background-color: #F3E8FF !important;
+    color: #6B21A8 !important;
+    border-color: #E9D5FF !important;
+    font-weight: 700 !important;
+  }
+}
+
+/* ========================================================
+   RULE 3: NAVIGATION FILTER TABS & SEARCH BAR
+   - Inactive tabs: black background (#0B0B0D), pure white text (#FFFFFF)
+   - Active tab: orange background (#F36515), high-contrast black text (#000000)
+   - Hovered tab: white background (#FFFFFF), dark black text (#111111)
+   - Search field: dark background, white typed text, clear placeholder, focus ring
+   ======================================================== */
+.wcr-filter-tab,
+.card-pill {
+  background-color: #0B0B0D !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  border-radius: 9999px !important;
+  transition: all 220ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+  cursor: pointer !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+}
+
+.wcr-filter-tab *,
+.card-pill * {
+  color: #FFFFFF !important;
+  transition: color 220ms ease !important;
+}
+
+.wcr-filter-tab:hover,
+.card-pill:hover {
+  background-color: #FFFFFF !important;
+  color: #111111 !important;
+  border-color: rgba(0, 0, 0, 0.25) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  transform: translateY(-1px) !important;
+}
+
+.wcr-filter-tab:hover *,
+.card-pill:hover * {
+  color: #111111 !important;
+}
+
+.wcr-filter-tab.is-active,
+.wcr-filter-tab.active,
+.card-pill.is-active,
+.card-pill.active {
+  background-color: #F36515 !important;
+  color: #000000 !important;
+  border-color: #FB923C !important;
+  box-shadow: 0 0 0 2px rgba(243, 101, 21, 0.4), 0 4px 12px rgba(243, 101, 21, 0.35) !important;
+  font-weight: 800 !important;
+}
+
+.wcr-filter-tab.is-active *,
+.wcr-filter-tab.active *,
+.card-pill.is-active *,
+.card-pill.active * {
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+
+.wcr-filter-tab:focus-visible,
+.card-pill:focus-visible {
+  outline: 2px solid #F36515 !important;
+  outline-offset: 2px !important;
+}
+
+/* Search input styling */
+.wcr-search-input,
+.glass-input {
+  background-color: #111317 !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  color: #FFFFFF !important;
+  border-radius: 0.75rem !important;
+  transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.wcr-search-input::placeholder,
+.glass-input::placeholder {
+  color: #94A3B8 !important;
+  opacity: 1 !important;
+}
+
+.wcr-search-input:focus,
+.glass-input:focus {
+  background-color: #161A22 !important;
+  border-color: #F36515 !important;
+  box-shadow: 0 0 0 2px rgba(243, 101, 21, 0.35) !important;
+  outline: none !important;
+  color: #FFFFFF !important;
 }
 
 /* ========================================================

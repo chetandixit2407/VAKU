@@ -35,6 +35,7 @@ import {
   MessageSquare,
   Coffee,
   Calendar,
+  ChevronDown,
 } from 'lucide-react';
 import type {
   AuditLog,
@@ -102,6 +103,31 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [reqResume, setReqResume] = useState<boolean>(true);
   const [savingSettings, setSavingSettings] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+
+  // More Menu State & Ref
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+  const moreMenuRef = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) {
+        setIsMoreMenuOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsMoreMenuOpen(false);
+      }
+    };
+    if (isMoreMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isMoreMenuOpen]);
 
   // Staff Users State
   const [staffUsers, setStaffUsers] = useState<any[]>([]);
@@ -572,8 +598,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </p>
         </div>
 
-        {/* Tab Switcher */}
-        <div className="flex flex-wrap bg-[#0B0F14] border border-[#252A32] rounded-2xl p-1 gap-1">
+        {/* Tab Switcher with Clean More Menu */}
+        <div className="flex flex-wrap items-center bg-[#0B0F14] border border-[#252A32] rounded-2xl p-1 gap-1 relative z-30">
+          {/* Primary Tab 1: Live Candidates */}
           <button
             onClick={() => setActiveTab('candidates')}
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
@@ -586,6 +613,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <span>Live Candidates ({candidates.length})</span>
           </button>
 
+          {/* Primary Tab 2: Staff Accounts */}
           <button
             onClick={() => setActiveTab('users')}
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
@@ -598,6 +626,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <span>Staff Accounts ({staffUsers.length})</span>
           </button>
 
+          {/* Primary Tab 3: Rooms & Pantry */}
           <button
             onClick={() => setActiveTab('rooms')}
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
@@ -610,6 +639,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <span>Rooms & Pantry Monitor ({rooms.length})</span>
           </button>
 
+          {/* Primary Tab 4: Action Alerts & Tasks */}
           <button
             onClick={() => setActiveTab('tasks')}
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 relative ${
@@ -627,55 +657,142 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             )}
           </button>
 
-          <button
-            onClick={() => setActiveTab('resets')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 relative ${
-              activeTab === 'resets'
-                ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <KeyRound className="w-3.5 h-3.5" />
-            <span>Reset Requests</span>
-            {pendingResetCount > 0 && (
-              <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-rose-500 text-white">
-                {pendingResetCount}
-              </span>
+          {/* More Menu Dropdown Anchor */}
+          <div className="relative" ref={moreMenuRef}>
+            {(() => {
+              const isMoreActive = ['resets', 'visibility', 'audit', 'settings'].includes(activeTab);
+              const activeMoreLabel =
+                activeTab === 'resets'
+                  ? 'Reset Requests'
+                  : activeTab === 'visibility'
+                  ? 'Role Matrix'
+                  : activeTab === 'audit'
+                  ? 'Audit Trail'
+                  : activeTab === 'settings'
+                  ? 'Workflow Rules'
+                  : null;
+
+              return (
+                <button
+                  type="button"
+                  onClick={() => setIsMoreMenuOpen((prev) => !prev)}
+                  aria-expanded={isMoreMenuOpen}
+                  aria-haspopup="true"
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 relative ${
+                    isMoreActive
+                      ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-bold shadow-md'
+                      : isMoreMenuOpen
+                      ? 'bg-white/15 text-white'
+                      : 'text-slate-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <span>{isMoreActive ? `More: ${activeMoreLabel}` : 'More'}</span>
+                  {pendingResetCount > 0 && !isMoreActive && (
+                    <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                  )}
+                  <ChevronDown
+                    className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                      isMoreMenuOpen ? 'rotate-180' : ''
+                    }`}
+                  />
+                </button>
+              );
+            })()}
+
+            {/* Dropdown Panel */}
+            {isMoreMenuOpen && (
+              <div
+                role="menu"
+                className="absolute right-0 top-full mt-2 w-64 bg-[#0B0B0D] border border-white/20 rounded-2xl shadow-2xl p-1.5 z-50 space-y-1 animate-in fade-in zoom-in-95 duration-150"
+              >
+                <div className="text-[10px] font-bold text-white/50 px-2.5 py-1 uppercase tracking-wider">
+                  Additional Administration Tabs
+                </div>
+
+                {/* Secondary Tab: Reset Requests */}
+                <button
+                  role="menuitem"
+                  onClick={() => {
+                    setActiveTab('resets');
+                    setIsMoreMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold transition cursor-pointer text-left ${
+                    activeTab === 'resets'
+                      ? 'bg-amber-500 text-slate-950 font-black'
+                      : 'text-white/80 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <KeyRound className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Reset Requests</span>
+                  </div>
+                  {pendingResetCount > 0 && (
+                    <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-rose-500 text-white">
+                      {pendingResetCount}
+                    </span>
+                  )}
+                </button>
+
+                {/* Secondary Tab: Role Visibility Matrix */}
+                <button
+                  role="menuitem"
+                  onClick={() => {
+                    setActiveTab('visibility');
+                    setIsMoreMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold transition cursor-pointer text-left ${
+                    activeTab === 'visibility'
+                      ? 'bg-amber-500 text-slate-950 font-black'
+                      : 'text-white/80 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Eye className="w-3.5 h-3.5 text-purple-400" />
+                    <span>Role Visibility Matrix</span>
+                  </div>
+                </button>
+
+                {/* Secondary Tab: Audit Trail */}
+                <button
+                  role="menuitem"
+                  onClick={() => {
+                    setActiveTab('audit');
+                    setIsMoreMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold transition cursor-pointer text-left ${
+                    activeTab === 'audit'
+                      ? 'bg-amber-500 text-slate-950 font-black'
+                      : 'text-white/80 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Database className="w-3.5 h-3.5 text-blue-400" />
+                    <span>Audit Trail</span>
+                  </div>
+                  <span className="text-[10px] opacity-75 font-mono">({auditLogs.length})</span>
+                </button>
+
+                {/* Secondary Tab: Workflow Rules */}
+                <button
+                  role="menuitem"
+                  onClick={() => {
+                    setActiveTab('settings');
+                    setIsMoreMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold transition cursor-pointer text-left ${
+                    activeTab === 'settings'
+                      ? 'bg-amber-500 text-slate-950 font-black'
+                      : 'text-white/80 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Sliders className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Workflow Rules</span>
+                  </div>
+                </button>
+              </div>
             )}
-          </button>
-
-          <button
-            onClick={() => setActiveTab('visibility')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
-              activeTab === 'visibility'
-                ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Role Visibility Matrix
-          </button>
-
-          <button
-            onClick={() => setActiveTab('audit')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
-              activeTab === 'audit'
-                ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Audit Trail ({auditLogs.length})
-          </button>
-
-          <button
-            onClick={() => setActiveTab('settings')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
-              activeTab === 'settings'
-                ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Workflow Rules
-          </button>
+          </div>
         </div>
       </div>
 
