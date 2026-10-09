@@ -114,109 +114,111 @@
               0 14px 28px -4px rgba(0, 0, 0, 0.45) !important;
   border-radius: 1rem;
   position: relative;
-  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 180ms cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1) !important;
-  will-change: transform;
+  transition: background-color 220ms cubic-bezier(0.16, 1, 0.3, 1),
+              color 220ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 220ms cubic-bezier(0.16, 1, 0.3, 1),
+              transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+  will-change: transform, background-color;
 }
 
-/* Base text contrast on dark cards (consistent on hover and non-hover) */
-.card-dark h1,
-.card-dark h2,
-.card-dark h3,
-.card-dark h4,
-.card-dark h5,
-.card-dark h6,
-.card-dark strong,
-.card-dark b,
-.card-dark th,
-.card-dark .font-bold,
-.card-dark .candidate-name,
-.dashboard-card h1,
-.dashboard-card h2,
-.dashboard-card h3,
-.dashboard-card h4,
-.dashboard-card h5,
-.dashboard-card h6,
-.dashboard-card strong,
-.dashboard-card b,
-.dashboard-card th,
-.dashboard-card .font-bold,
-.dashboard-card .candidate-name,
-.candidate-card h1,
-.candidate-card h2,
-.candidate-card h3,
-.candidate-card h4,
-.candidate-card h5,
-.candidate-card h6,
-.candidate-card strong,
-.candidate-card b,
-.candidate-card .candidate-name,
-.card-light h1,
-.card-light h2,
-.card-light h3,
-.card-light h4,
-.card-light strong,
-.card-light b,
-.card-light .candidate-name,
-.candidate-card-light h1,
-.candidate-card-light h2,
-.candidate-card-light h3,
-.candidate-card-light strong,
-.candidate-card-light .candidate-name {
+/* Base unhovered text contrast on black cards */
+.card-dark:not(:hover) h1,
+.card-dark:not(:hover) h2,
+.card-dark:not(:hover) h3,
+.card-dark:not(:hover) h4,
+.card-dark:not(:hover) h5,
+.card-dark:not(:hover) h6,
+.card-dark:not(:hover) strong,
+.card-dark:not(:hover) b,
+.card-dark:not(:hover) th,
+.card-dark:not(:hover) .font-bold,
+.card-dark:not(:hover) .candidate-name,
+.dashboard-card:not(:hover) h1,
+.dashboard-card:not(:hover) h2,
+.dashboard-card:not(:hover) h3,
+.dashboard-card:not(:hover) h4,
+.dashboard-card:not(:hover) h5,
+.dashboard-card:not(:hover) h6,
+.dashboard-card:not(:hover) strong,
+.dashboard-card:not(:hover) b,
+.dashboard-card:not(:hover) th,
+.dashboard-card:not(:hover) .font-bold,
+.dashboard-card:not(:hover) .candidate-name,
+.candidate-card:not(:hover) h1,
+.candidate-card:not(:hover) h2,
+.candidate-card:not(:hover) h3,
+.candidate-card:not(:hover) h4,
+.candidate-card:not(:hover) h5,
+.candidate-card:not(:hover) h6,
+.candidate-card:not(:hover) strong,
+.candidate-card:not(:hover) b,
+.candidate-card:not(:hover) .candidate-name,
+.card-light:not(:hover) h1,
+.card-light:not(:hover) h2,
+.card-light:not(:hover) h3,
+.card-light:not(:hover) h4,
+.card-light:not(:hover) strong,
+.card-light:not(:hover) b,
+.card-light:not(:hover) .candidate-name,
+.candidate-card-light:not(:hover) h1,
+.candidate-card-light:not(:hover) h2,
+.candidate-card-light:not(:hover) h3,
+.candidate-card-light:not(:hover) strong,
+.candidate-card-light:not(:hover) .candidate-name {
   color: #FFFFFF !important;
 }
 
-/* Secondary descriptions, labels, and roles on default dark cards */
-.card-dark p,
-.card-dark li,
-.card-dark td,
-.card-dark .candidate-role,
-.dashboard-card p,
-.dashboard-card li,
-.dashboard-card td,
-.dashboard-card .candidate-role,
-.candidate-card p,
-.candidate-card .candidate-role,
-.card-light p,
-.candidate-card-light p {
+/* Secondary descriptions, labels, and roles on default black cards */
+.card-dark:not(:hover) p,
+.card-dark:not(:hover) li,
+.card-dark:not(:hover) td,
+.card-dark:not(:hover) .candidate-role,
+.dashboard-card:not(:hover) p,
+.dashboard-card:not(:hover) li,
+.dashboard-card:not(:hover) td,
+.dashboard-card:not(:hover) .candidate-role,
+.candidate-card:not(:hover) p,
+.candidate-card:not(:hover) .candidate-role,
+.card-light:not(:hover) p,
+.candidate-card-light:not(:hover) p {
   color: #E0E0E0 !important;
 }
 
-/* Muted metadata, location, dates on default dark cards */
-.card-dark small,
-.card-dark label,
-.card-dark .candidate-meta,
-.card-dark .candidate-detail,
-.dashboard-card small,
-.dashboard-card label,
-.dashboard-card .candidate-meta,
-.dashboard-card .candidate-detail,
-.candidate-card small,
-.candidate-card .candidate-meta,
-.candidate-card .candidate-detail,
-.card-light small,
-.candidate-card-light small {
+/* Muted metadata, location, dates on default black cards */
+.card-dark:not(:hover) small,
+.card-dark:not(:hover) label,
+.card-dark:not(:hover) .candidate-meta,
+.card-dark:not(:hover) .candidate-detail,
+.dashboard-card:not(:hover) small,
+.dashboard-card:not(:hover) label,
+.dashboard-card:not(:hover) .candidate-meta,
+.dashboard-card:not(:hover) .candidate-detail,
+.candidate-card:not(:hover) small,
+.candidate-card:not(:hover) .candidate-meta,
+.candidate-card:not(:hover) .candidate-detail,
+.card-light:not(:hover) small,
+.candidate-card-light:not(:hover) small {
   color: #BDBDBD !important;
 }
 
-/* Candidate avatar box on default dark card */
+/* Candidate avatar box on default black card */
 .candidate-avatar,
-.card-dark .candidate-avatar,
-.dashboard-card .candidate-avatar,
-.candidate-card .candidate-avatar,
-.card-light .candidate-avatar,
-.candidate-card-light .candidate-avatar {
+.card-dark:not(:hover) .candidate-avatar,
+.dashboard-card:not(:hover) .candidate-avatar,
+.candidate-card:not(:hover) .candidate-avatar,
+.card-light:not(:hover) .candidate-avatar,
+.candidate-card-light:not(:hover) .candidate-avatar {
   background-color: #25272B !important;
   color: #FFFFFF !important;
   border-color: rgba(255, 255, 255, 0.15) !important;
 }
 
-/* Dossier link on default dark card */
+/* Dossier link on default black card */
 .candidate-dossier-link,
-.card-dark .candidate-dossier-link,
-.dashboard-card .candidate-dossier-link,
-.candidate-card .candidate-dossier-link {
+.card-dark:not(:hover) .candidate-dossier-link,
+.dashboard-card:not(:hover) .candidate-dossier-link,
+.candidate-card:not(:hover) .candidate-dossier-link {
   color: #60A5FA !important;
   text-decoration: underline !important;
 }
@@ -242,10 +244,10 @@ button[class*="bg-[#1F2937]"] {
   border-color: #374151 !important;
 }
 
-/* Neutral icons on default dark cards */
-.card-dark svg:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]):not([class*="text-orange-"]):not([class*="fill-"]),
-.dashboard-card svg:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]):not([class*="text-orange-"]):not([class*="fill-"]),
-.candidate-card svg:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]):not([class*="text-orange-"]):not([class*="fill-"]) {
+/* Neutral icons on default black cards */
+.card-dark:not(:hover) svg:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]):not([class*="text-orange-"]):not([class*="fill-"]),
+.dashboard-card:not(:hover) svg:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]):not([class*="text-orange-"]):not([class*="fill-"]),
+.candidate-card:not(:hover) svg:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]):not([class*="text-orange-"]):not([class*="fill-"]) {
   color: #E0E0E0 !important;
 }
 
@@ -253,17 +255,17 @@ button[class*="bg-[#1F2937]"] {
 .card-inner,
 .inner-box,
 [class*="bg-[#25272B]"]:not(button):not(.btn-route-kimmi),
-.dashboard-card div.bg-black/30,
-.dashboard-card div.bg-black/40,
-.dashboard-card div.bg-black/20,
-.dashboard-card div.bg-white/5,
-.card-dark div.bg-black/30,
-.card-dark div.bg-black/40,
-.card-dark div.bg-white/5 {
+.dashboard-card div.bg-black\/30,
+.dashboard-card div.bg-black\/40,
+.dashboard-card div.bg-black\/20,
+.dashboard-card div.bg-white\/5,
+.card-dark div.bg-black\/30,
+.card-dark div.bg-black\/40,
+.card-dark div.bg-white\/5 {
   background-color: #25272B !important;
   border-color: rgba(255, 255, 255, 0.12) !important;
   color: #FFFFFF !important;
-  transition: border-color 180ms ease;
+  transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease;
 }
 
 .card-inner h1, .card-inner h2, .card-inner h3, .card-inner h4, .card-inner strong, .card-inner b,
@@ -285,20 +287,242 @@ button[class*="bg-[#1F2937]"] {
 }
 
 /* ========================================================
-   RULE 2: SUBTLE CARD HOVER INTERACTION — NO BLACK/WHITE FLIPPING
-   Preserves dark background (#0B0B0D) and crisp white/grey typography.
-   Only provides subtle border highlight and gentle elevation lift.
-   Protected components (KPI cards, intake flow) are unaffected.
+   RULE 2: CARD HOVER EFFECT — BLACK TO WHITE (200-250ms)
+   Smooth transition from black to pure white (#FFFFFF),
+   all text changes to dark black (#111111) and dark grey (#374151).
    ======================================================== */
 @media (hover: hover) and (pointer: fine) {
   .dashboard-card:not(.intake-flow-container):not(.intake-stage-card):hover,
   .card-dark:not(.intake-flow-container):not(.intake-stage-card):hover,
   .candidate-card:not(.intake-flow-container):not(.intake-stage-card):hover,
-  .wcr-card:not(.intake-flow-container):not(.intake-stage-card):hover {
-    border-color: rgba(255, 255, 255, 0.28) !important;
-    transform: translateY(-2px);
-    box-shadow: 0 16px 32px -6px rgba(0, 0, 0, 0.5),
-                0 4px 8px -2px rgba(0, 0, 0, 0.3) !important;
+  .wcr-card:not(.intake-flow-container):not(.intake-stage-card):hover,
+  .card-light:not(.intake-flow-container):not(.intake-stage-card):hover,
+  .candidate-card-light:not(.intake-flow-container):not(.intake-stage-card):hover {
+    background-color: #FFFFFF !important;
+    border-color: rgba(0, 0, 0, 0.16) !important;
+    transform: translateY(-2px) scale(1.005);
+    box-shadow: 0 16px 32px -6px rgba(15, 23, 42, 0.22),
+                0 4px 8px -2px rgba(15, 23, 42, 0.12),
+                0 0 0 1px rgba(0, 0, 0, 0.08) !important;
+    color: #111111 !important;
+  }
+
+  /* Transition elements smoothly */
+  .dashboard-card:not(.intake-flow-container) *:not(.intake-stage-card):not(.intake-stage-card *),
+  .card-dark:not(.intake-flow-container) *:not(.intake-stage-card):not(.intake-stage-card *),
+  .candidate-card:not(.intake-flow-container) *:not(.intake-stage-card):not(.intake-stage-card *),
+  .wcr-card:not(.intake-flow-container) *:not(.intake-stage-card):not(.intake-stage-card *) {
+    transition: color 220ms cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 220ms cubic-bezier(0.16, 1, 0.3, 1),
+                background-color 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Headings, Candidate Name, and Primary Bold Text switch to Dark Black (#111111) on card hover */
+  .dashboard-card:not(.intake-flow-container):hover h1,
+  .dashboard-card:not(.intake-flow-container):hover h2,
+  .dashboard-card:not(.intake-flow-container):hover h3,
+  .dashboard-card:not(.intake-flow-container):hover h4,
+  .dashboard-card:not(.intake-flow-container):hover h5,
+  .dashboard-card:not(.intake-flow-container):hover strong:not(.btn-assign-room *):not(.btn-route-kimmi *),
+  .dashboard-card:not(.intake-flow-container):hover b,
+  .dashboard-card:not(.intake-flow-container):hover .candidate-name,
+  .card-dark:not(.intake-flow-container):hover h1,
+  .card-dark:not(.intake-flow-container):hover h2,
+  .card-dark:not(.intake-flow-container):hover h3,
+  .card-dark:not(.intake-flow-container):hover h4,
+  .card-dark:not(.intake-flow-container):hover strong:not(.btn-assign-room *):not(.btn-route-kimmi *),
+  .card-dark:not(.intake-flow-container):hover b,
+  .card-dark:not(.intake-flow-container):hover .candidate-name,
+  .candidate-card:not(.intake-flow-container):hover h1,
+  .candidate-card:not(.intake-flow-container):hover h2,
+  .candidate-card:not(.intake-flow-container):hover h3,
+  .candidate-card:not(.intake-flow-container):hover h4,
+  .candidate-card:not(.intake-flow-container):hover strong:not(.btn-assign-room *):not(.btn-route-kimmi *),
+  .candidate-card:not(.intake-flow-container):hover b,
+  .candidate-card:not(.intake-flow-container):hover .candidate-name,
+  .card-light:not(.intake-flow-container):hover h1,
+  .card-light:not(.intake-flow-container):hover h2,
+  .card-light:not(.intake-flow-container):hover h3,
+  .card-light:not(.intake-flow-container):hover h4,
+  .card-light:not(.intake-flow-container):hover strong,
+  .card-light:not(.intake-flow-container):hover .candidate-name {
+    color: #111111 !important;
+  }
+
+  /* Text overrides on hover: Tailwind white/slate text flips to dark */
+  .dashboard-card:not(.intake-flow-container):hover .text-white:not(.btn-route-kimmi *):not(.badge):not([class*="bg-amber-"]):not([class*="bg-emerald-"]):not([class*="bg-rose-"]):not([class*="bg-blue-"]):not([class*="bg-purple-"]),
+  .card-dark:not(.intake-flow-container):hover .text-white:not(.btn-route-kimmi *):not(.badge):not([class*="bg-amber-"]):not([class*="bg-emerald-"]):not([class*="bg-rose-"]):not([class*="bg-blue-"]):not([class*="bg-purple-"]),
+  .candidate-card:not(.intake-flow-container):hover .text-white:not(.btn-route-kimmi *):not(.badge):not([class*="bg-amber-"]):not([class*="bg-emerald-"]):not([class*="bg-rose-"]):not([class*="bg-blue-"]):not([class*="bg-purple-"]),
+  .dashboard-card:not(.intake-flow-container):hover .text-slate-100,
+  .card-dark:not(.intake-flow-container):hover .text-slate-100,
+  .candidate-card:not(.intake-flow-container):hover .text-slate-100 {
+    color: #111111 !important;
+  }
+
+  /* Secondary descriptions, roles, paragraphs switch to Dark Grey (#374151) on card hover */
+  .dashboard-card:not(.intake-flow-container):hover p,
+  .dashboard-card:not(.intake-flow-container):hover li,
+  .dashboard-card:not(.intake-flow-container):hover .candidate-role,
+  .dashboard-card:not(.intake-flow-container):hover [class*="text-[#E0E0E0]"],
+  .card-dark:not(.intake-flow-container):hover p,
+  .card-dark:not(.intake-flow-container):hover li,
+  .card-dark:not(.intake-flow-container):hover .candidate-role,
+  .card-dark:not(.intake-flow-container):hover [class*="text-[#E0E0E0]"],
+  .candidate-card:not(.intake-flow-container):hover p,
+  .candidate-card:not(.intake-flow-container):hover li,
+  .candidate-card:not(.intake-flow-container):hover .candidate-role,
+  .candidate-card:not(.intake-flow-container):hover [class*="text-[#E0E0E0]"] {
+    color: #374151 !important;
+  }
+
+  /* Metadata, labels, location, dates, muted text switch to Readable Medium Grey (#4B5563) on card hover */
+  .dashboard-card:not(.intake-flow-container):hover small,
+  .dashboard-card:not(.intake-flow-container):hover label,
+  .dashboard-card:not(.intake-flow-container):hover .candidate-meta,
+  .dashboard-card:not(.intake-flow-container):hover .candidate-detail,
+  .dashboard-card:not(.intake-flow-container):hover [class*="text-[#BDBDBD]"],
+  .dashboard-card:not(.intake-flow-container):hover .text-slate-400,
+  .dashboard-card:not(.intake-flow-container):hover .text-gray-400,
+  .dashboard-card:not(.intake-flow-container):hover .text-slate-500,
+  .card-dark:not(.intake-flow-container):hover small,
+  .card-dark:not(.intake-flow-container):hover label,
+  .card-dark:not(.intake-flow-container):hover .candidate-meta,
+  .card-dark:not(.intake-flow-container):hover .candidate-detail,
+  .card-dark:not(.intake-flow-container):hover [class*="text-[#BDBDBD]"],
+  .card-dark:not(.intake-flow-container):hover .text-slate-400,
+  .card-dark:not(.intake-flow-container):hover .text-gray-400,
+  .candidate-card:not(.intake-flow-container):hover small,
+  .candidate-card:not(.intake-flow-container):hover label,
+  .candidate-card:not(.intake-flow-container):hover .candidate-meta,
+  .candidate-card:not(.intake-flow-container):hover .candidate-detail,
+  .candidate-card:not(.intake-flow-container):hover [class*="text-[#BDBDBD]"],
+  .candidate-card:not(.intake-flow-container):hover .text-slate-400,
+  .candidate-card:not(.intake-flow-container):hover .text-gray-400 {
+    color: #4B5563 !important;
+  }
+
+  /* Internal dividers switch to clean light grey on card hover */
+  .dashboard-card:not(.intake-flow-container):hover div[class*="border-t"],
+  .dashboard-card:not(.intake-flow-container):hover div[class*="border-b"],
+  .dashboard-card:not(.intake-flow-container):hover .card-divider,
+  .card-dark:not(.intake-flow-container):hover div[class*="border-t"],
+  .card-dark:not(.intake-flow-container):hover div[class*="border-b"],
+  .card-dark:not(.intake-flow-container):hover .card-divider,
+  .candidate-card:not(.intake-flow-container):hover div[class*="border-t"],
+  .candidate-card:not(.intake-flow-container):hover div[class*="border-b"],
+  .candidate-card:not(.intake-flow-container):hover .card-divider {
+    border-color: #E5E7EB !important;
+  }
+
+  /* Neutral icons shift to #374151 on card hover */
+  .dashboard-card:not(.intake-flow-container):hover svg:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-orange-"]):not([class*="fill-"]):not(.btn-assign-room *):not(.btn-route-kimmi *),
+  .card-dark:not(.intake-flow-container):hover svg:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-orange-"]):not([class*="fill-"]):not(.btn-assign-room *):not(.btn-route-kimmi *),
+  .candidate-card:not(.intake-flow-container):hover svg:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-orange-"]):not([class*="fill-"]):not(.btn-assign-room *):not(.btn-route-kimmi *) {
+    color: #374151 !important;
+  }
+
+  /* Candidate Avatar Box shifts to clean light gray on card hover */
+  .dashboard-card:hover .candidate-avatar,
+  .card-dark:hover .candidate-avatar,
+  .candidate-card:hover .candidate-avatar,
+  .dashboard-card:hover div[class*="bg-[#25272B]"]:not(button):not(.btn-route-kimmi),
+  .card-dark:hover div[class*="bg-[#25272B]"]:not(button):not(.btn-route-kimmi),
+  .candidate-card:hover div[class*="bg-[#25272B]"]:not(button):not(.btn-route-kimmi) {
+    background-color: #F3F4F6 !important;
+    color: #111827 !important;
+    border-color: #D1D5DB !important;
+  }
+
+  /* View Full Dossier Link shifts to Visible Dark Blue (#1D4ED8) with underline on card hover */
+  .dashboard-card:hover .candidate-dossier-link,
+  .card-dark:hover .candidate-dossier-link,
+  .candidate-card:hover .candidate-dossier-link,
+  .dashboard-card:hover button[class*="underline"],
+  .card-dark:hover button[class*="underline"],
+  .candidate-card:hover button[class*="underline"] {
+    color: #1D4ED8 !important;
+    text-decoration: underline !important;
+    font-weight: 600 !important;
+  }
+  .dashboard-card:hover .candidate-dossier-link:hover,
+  .card-dark:hover .candidate-dossier-link:hover,
+  .candidate-card:hover .candidate-dossier-link:hover {
+    color: #1E40AF !important;
+  }
+
+  /* Inner boxes adapt to high-contrast clean surface on card hover */
+  .dashboard-card:hover .card-inner,
+  .dashboard-card:hover .inner-box,
+  .card-dark:hover .card-inner,
+  .card-dark:hover .inner-box,
+  .candidate-card:hover .card-inner,
+  .candidate-card:hover .inner-box {
+    background-color: #F8FAFC !important;
+    border-color: #E2E8F0 !important;
+    color: #111111 !important;
+  }
+  .dashboard-card:hover .card-inner strong,
+  .dashboard-card:hover .inner-box strong,
+  .card-dark:hover .card-inner strong,
+  .card-dark:hover .inner-box strong {
+    color: #111111 !important;
+  }
+  .dashboard-card:hover .card-inner p,
+  .dashboard-card:hover .inner-box p,
+  .card-dark:hover .card-inner p,
+  .card-dark:hover .inner-box p {
+    color: #374151 !important;
+  }
+  .dashboard-card:hover .card-inner span:not([class*="text-"]),
+  .dashboard-card:hover .inner-box span:not([class*="text-"]),
+  .card-dark:hover .card-inner span:not([class*="text-"]),
+  .card-dark:hover .inner-box span:not([class*="text-"]) {
+    color: #4B5563 !important;
+  }
+
+  /* Status Badges adapt contrast on hovered white card */
+  .dashboard-card:hover [class*="bg-amber-500/15"],
+  .dashboard-card:hover [class*="bg-amber-500/10"],
+  .dashboard-card:hover [class*="bg-amber-100"],
+  .dashboard-card:hover [class*="bg-orange-100"],
+  .card-dark:hover [class*="bg-amber-500/15"],
+  .card-dark:hover [class*="bg-amber-100"],
+  .candidate-card:hover [class*="bg-amber-500/15"],
+  .candidate-card:hover [class*="bg-amber-100"] {
+    background-color: #FFEDD5 !important;
+    color: #9A3412 !important;
+    border-color: #FDBA74 !important;
+    font-weight: 700 !important;
+  }
+
+  .dashboard-card:hover [class*="bg-emerald-500/15"],
+  .dashboard-card:hover [class*="bg-emerald-100"],
+  .card-dark:hover [class*="bg-emerald-500/15"],
+  .candidate-card:hover [class*="bg-emerald-500/15"] {
+    background-color: #D1FAE5 !important;
+    color: #065F46 !important;
+    border-color: #A7F3D0 !important;
+    font-weight: 700 !important;
+  }
+
+  .dashboard-card:hover [class*="bg-blue-500/15"],
+  .dashboard-card:hover [class*="bg-blue-100"],
+  .card-dark:hover [class*="bg-blue-500/15"],
+  .candidate-card:hover [class*="bg-blue-500/15"] {
+    background-color: #DBEAFE !important;
+    color: #1E40AF !important;
+    border-color: #BFDBFE !important;
+    font-weight: 700 !important;
+  }
+
+  .dashboard-card:hover [class*="bg-purple-500/15"],
+  .dashboard-card:hover [class*="bg-purple-100"],
+  .card-dark:hover [class*="bg-purple-500/15"],
+  .candidate-card:hover [class*="bg-purple-500/15"] {
+    background-color: #F3E8FF !important;
+    color: #6B21A8 !important;
+    border-color: #E9D5FF !important;
+    font-weight: 700 !important;
   }
 }
 
@@ -306,7 +530,7 @@ button[class*="bg-[#1F2937]"] {
    RULE 3: NAVIGATION FILTER TABS & SEARCH BAR
    - Inactive tabs: black background (#0B0B0D), pure white text (#FFFFFF)
    - Active tab: orange background (#F36515), high-contrast black text (#000000)
-   - Hovered tab: refined dark background (#181C24), pure white text (#FFFFFF)
+   - Hovered tab: white background (#FFFFFF), dark black text (#111111)
    - Search field: dark background, white typed text, clear placeholder, focus ring
    ======================================================== */
 .wcr-filter-tab,
@@ -315,7 +539,7 @@ button[class*="bg-[#1F2937]"] {
   color: #FFFFFF !important;
   border: 1px solid rgba(255, 255, 255, 0.16) !important;
   border-radius: 9999px !important;
-  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease !important;
+  transition: all 220ms cubic-bezier(0.16, 1, 0.3, 1) !important;
   cursor: pointer !important;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
 }
@@ -323,20 +547,21 @@ button[class*="bg-[#1F2937]"] {
 .wcr-filter-tab *,
 .card-pill * {
   color: #FFFFFF !important;
+  transition: color 220ms ease !important;
 }
 
 .wcr-filter-tab:hover,
 .card-pill:hover {
-  background-color: #181C24 !important;
-  color: #FFFFFF !important;
-  border-color: rgba(255, 255, 255, 0.3) !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35) !important;
+  background-color: #FFFFFF !important;
+  color: #111111 !important;
+  border-color: rgba(0, 0, 0, 0.25) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
   transform: translateY(-1px) !important;
 }
 
 .wcr-filter-tab:hover *,
 .card-pill:hover * {
-  color: #FFFFFF !important;
+  color: #111111 !important;
 }
 
 .wcr-filter-tab.is-active,
