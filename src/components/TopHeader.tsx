@@ -13,6 +13,8 @@ import {
   Smartphone,
   X,
   MoreHorizontal,
+  Coffee,
+  Clock,
 } from 'lucide-react';
 import type { UserRole } from '../types/index.ts';
 import { PWAInstallButton } from './PWAInstallButton.tsx';
@@ -39,6 +41,8 @@ interface TopHeaderProps {
   onToggleMobileMenu?: () => void;
   onOpenMore?: () => void;
   isMoreActive?: boolean;
+  onOpenCreatePantryTask?: () => void;
+  onOpenPantryMonitor?: () => void;
 }
 
 export const TopHeader: React.FC<TopHeaderProps> = ({
@@ -56,6 +60,8 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   onToggleMobileMenu,
   onOpenMore,
   isMoreActive = false,
+  onOpenCreatePantryTask,
+  onOpenPantryMonitor,
 }) => {
   const { t } = useSettings();
 
@@ -127,6 +133,30 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
             <QrCode className="w-3.5 h-3.5 text-amber-400" />
             <span>QR Station</span>
           </button>
+
+          {/* Create Pantry Task for All Authorised Users */}
+          {onOpenCreatePantryTask && currentRole !== 'PANTRY' && (
+            <button
+              onClick={onOpenCreatePantryTask}
+              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 font-semibold text-xs transition cursor-pointer"
+              title="Create Pantry or Hospitality Task"
+            >
+              <Coffee className="w-3.5 h-3.5 text-amber-400" />
+              <span>+ Pantry Task</span>
+            </button>
+          )}
+
+          {/* Pantry Realtime Monitor for Supervisors */}
+          {onOpenPantryMonitor && (currentRole === 'ADMIN' || currentRole === 'CEO' || currentRole === 'HR' || currentRole === 'SENIOR_HR') && (
+            <button
+              onClick={onOpenPantryMonitor}
+              className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#141820] hover:bg-[#1B2028] border border-[#252A32] text-[#AEB7C4] hover:text-[#F5F6F8] font-medium text-xs transition cursor-pointer"
+              title="Pantry Live Progress Monitor"
+            >
+              <Clock className="w-3.5 h-3.5 text-amber-400" />
+              <span>Pantry Monitor</span>
+            </button>
+          )}
 
           {/* More Navigation Button for Laptop, Desktop & Tablet */}
           {onOpenMore && (

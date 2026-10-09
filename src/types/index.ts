@@ -9,6 +9,7 @@ export type DomainEventType =
   | 'ROOM_STATUS_CHANGED'
   | 'ROOM_RESET_TASK_CREATED'
   | 'PANTRY_TASK_CREATED'
+  | 'PANTRY_TASK_UPDATED'
   | 'PANTRY_TASK_COMPLETED'
   | 'CANDIDATE_CHECKED_OUT'
   | 'CANDIDATE_LIVE_PHOTO_CAPTURED'
@@ -406,24 +407,70 @@ export interface Notification {
   payload?: Record<string, any>; // Role-filtered payload
 }
 
+export type PantryTaskCategory = 'PANTRY' | 'HOSPITALITY';
 export type PantryTaskType = 'ROOM_PREP' | 'WATER_BEVERAGE' | 'ROOM_RESET' | 'CLEANING' | 'CUSTOM';
-export type PantryTaskStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
+export type PantryTaskStatus =
+  | 'PENDING'
+  | 'ACCEPTED'
+  | 'IN_PROGRESS'
+  | 'COMPLETED'
+  | 'ISSUE_REPORTED'
+  | 'CANCELLED';
+
+export interface PantryTaskItem {
+  item: string;
+  quantity: number | string;
+}
+
+export interface PantryTaskAuditEntry {
+  timestamp: string;
+  status: PantryTaskStatus;
+  actorName: string;
+  actorRole: string;
+  note?: string;
+}
 
 export interface PantryTask {
   id: string;
+  category?: PantryTaskCategory;
   roomId: string;
   roomName: string;
   candidateId?: string;
   candidateName: string;
+  location?: string;
+  instructions?: string;
   taskType: PantryTaskType;
   description: string;
   requiredItems: string[];
+  itemsWithQuantities?: PantryTaskItem[];
   priority: NotificationPriority;
   status: PantryTaskStatus;
+  dueTime?: string;
+  assignedSteward?: string;
+  assignedStaffId?: string;
+  assignedTeam?: string;
+  createdById?: string;
+  createdByName?: string;
+  createdByRole?: UserRole;
   createdAt: string;
+  assignedAt?: string;
+  acceptedAt?: string;
+  startedAt?: string;
   completedAt?: string;
   completedBy?: string;
-  assignedSteward?: string;
+  completionDurationMinutes?: number;
+  timeTakenFormatted?: string;
+  isStaffReportedCompleted?: boolean;
+  staffReportedCompletedAt?: string;
+  isVerifiedCompleted?: boolean;
+  verifiedBy?: string;
+  verifiedAt?: string;
+  issueReportedAt?: string;
+  issueReason?: string;
+  cancelledAt?: string;
+  cancelledBy?: string;
+  cancellationReason?: string;
+  auditTrail?: PantryTaskAuditEntry[];
   sourceChatMessageId?: string;
 }
 
@@ -543,6 +590,9 @@ export interface Visitor {
   checkInTime: string;
   checkOutTime?: string;
   photo?: string;
+  qrToken?: string;
+  qrVerificationStatus?: 'UNVERIFIED' | 'VERIFIED' | 'ALREADY_USED';
+  qrVerifiedAt?: string;
 }
 
 export interface RoleFieldVisibility {

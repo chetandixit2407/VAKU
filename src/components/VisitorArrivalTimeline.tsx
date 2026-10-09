@@ -34,18 +34,21 @@ export function computeArrivalStage(candidate: Candidate): {
   const status = candidate.status || '';
 
   if (status === 'CHECKED_OUT') {
-    return { currentStage: 'EXITED', stageIndex: 6 };
+    return { currentStage: 'EXITED', stageIndex: 4 };
   }
   if (status === 'IN_INTERVIEW' || status === 'ROOM_ASSIGNED' || status.includes('Kimmi Mam')) {
-    return { currentStage: 'IN_OFFICE', stageIndex: 5 };
+    return { currentStage: 'IN_OFFICE', stageIndex: 3 };
   }
-  if (candidate.assignedInterviewerName || candidate.assignedRoomName) {
-    return { currentStage: 'HOST_NOTIFIED', stageIndex: 4 };
-  }
-  if (candidate.receptionPhotoUrl || candidate.photoUrl || candidate.livePhoto || candidate.arrivalPhoto) {
-    return { currentStage: 'PHOTO_CAPTURED', stageIndex: 3 };
-  }
-  if (candidate.checkedInAt || candidate.qrVerificationStatus === 'VERIFIED') {
+  if (
+    candidate.checkedInAt ||
+    candidate.qrVerificationStatus === 'VERIFIED' ||
+    candidate.receptionPhotoUrl ||
+    candidate.photoUrl ||
+    candidate.livePhoto ||
+    candidate.arrivalPhoto ||
+    candidate.assignedInterviewerName ||
+    candidate.assignedRoomName
+  ) {
     return { currentStage: 'QR_VERIFIED', stageIndex: 2 };
   }
   if (status === 'ARRIVED' || status === 'WAITING') {
@@ -69,10 +72,8 @@ export const VisitorArrivalTimeline: React.FC<VisitorArrivalTimelineProps> = ({
     { id: 'EXPECTED', label: 'Expected', icon: Calendar },
     { id: 'ARRIVED', label: 'Arrived', icon: Clock },
     { id: 'QR_VERIFIED', label: 'QR Verified', icon: QrCode },
-    { id: 'PHOTO_CAPTURED', label: 'Photo Captured', icon: Camera },
-    { id: 'HOST_NOTIFIED', label: 'Host Notified', icon: BellRing },
     { id: 'IN_OFFICE', label: 'In Office', icon: DoorOpen },
-    { id: 'EXITED', label: 'Exited', icon: LogOut },
+    { id: 'EXITED', label: 'Checked Out', icon: LogOut },
   ];
 
   if (compact) {
@@ -194,8 +195,6 @@ export const VisitorJourneyOverview: React.FC<{
     { id: 'EXPECTED', label: 'Expected', icon: Calendar, accent: 'text-slate-300' },
     { id: 'ARRIVED', label: 'Arrived', icon: Clock, accent: 'text-amber-400' },
     { id: 'QR_VERIFIED', label: 'QR Verified', icon: QrCode, accent: 'text-cyan-400' },
-    { id: 'PHOTO_CAPTURED', label: 'Desk Photo', icon: Camera, accent: 'text-blue-400' },
-    { id: 'HOST_NOTIFIED', label: 'Host Alerted', icon: BellRing, accent: 'text-purple-400' },
     { id: 'IN_OFFICE', label: 'In Office', icon: DoorOpen, accent: 'text-emerald-400' },
     { id: 'EXITED', label: 'Checked Out', icon: LogOut, accent: 'text-slate-400' },
   ];
@@ -239,7 +238,7 @@ export const VisitorJourneyOverview: React.FC<{
         )}
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
         {stages.map((stg) => {
           const Icon = stg.icon;
           const count = countsByStage[stg.id] || 0;

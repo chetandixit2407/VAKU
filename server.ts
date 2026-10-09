@@ -368,11 +368,210 @@ async function startServer() {
   });
 
   // ==========================================
-  // QR & CHECK-IN SESSION RESOLVER
+  // QR & CHECK-IN SESSION RESOLVER (WALK-IN & SCHEDULED APPOINTMENTS)
   // ==========================================
+  app.post('/api/qr/scan', (req: Request, res: Response) => {
+    const { code } = req.body;
+    if (!code || typeof code !== 'string') {
+      return res.status(400).json({ success: false, error: 'QR code payload or token is required.' });
+    }
+
+    const raw = code.trim();
+    let token = raw;
+    try {
+      if (raw.includes('/')) {
+        const parts = raw.split('/');
+        token = parts[parts.length - 1].split('?')[0].split('#')[0] || raw;
+      }
+    } catch {
+      token = raw;
+    }
+    token = token.trim();
+
+    const db = dbService.get();
+
+    // 1. Search in Walk-in Visitors
+    const visitor = db.visitors.find(
+      (v) => v.qrToken === token || v.id === token || (token.startsWith('vis-') && v.id === token) || v.phone === token
+    );
+
+    if (visitor) {
+      const isAlreadyVerified = visitor.qrVerificationStatus === 'VERIFIED';
+      const timestamp = new Date().toISOString();
+
+      if (!isAlreadyVerified) {
+        dbService.update((draft) => {
+          const v = draft.visitors.find((item) => item.id === visitor.id);
+          if (v) {
+            v.qrVerificationStatus = 'VERIFIED';
+            v.qrVerifiedAt = timestamp;
+            v.status = 'CHECKED_IN';
+          }
+          draft.auditLogs.unshift({
+            id: `aud-${Date.now()}-qr-vis`,
+            timestamp,
+            actorType: 'SYSTEM',
+            actorName: 'QR Station Scanner',
+            action: 'QR_VISITOR_VERIFIED',
+            details: `Walk-in visitor ${visitor.fullName} verified via QR Station scan.`,
+            entityId: visitor.id,
+            entityType: 'VISITOR',
+          });
+        });
+
+        eventWorkflowEngine.broadcast({
+          type: 'VISITORS_UPDATED',
+          payload: { visitorId: visitor.id, status: 'CHECKED_IN', qrVerified: true },
+        });
+      }
+
+      const freshDb = dbService.get();
+      const updatedVis = freshDb.visitors.find((v) => v.id === visitor.id) || visitor;
+
+      return res.json({
+        success: true,
+        scanType: 'WALK_IN',
+        isWalkIn: true,
+        alreadyVerified: isAlreadyVerified,
+        newlyVerified: !isAlreadyVerified,
+        visitor: {
+          id: updatedVis.id,
+          fullName: updatedVis.fullName,
+          visitorType: 'WALK-IN',
+          company: updatedVis.company || 'Not Provided',
+          hostName: updatedVis.hostName || 'Not Provided',
+          hostDepartment: updatedVis.hostDepartment || 'Not Provided',
+          purpose: updatedVis.purpose || 'Not Provided',
+          roomAssigned: updatedVis.roomAssigned || 'Pending Allocation',
+          checkInTime: updatedVis.checkInTime,
+          qrVerificationStatus: updatedVis.qrVerificationStatus || 'VERIFIED',
+          status: updatedVis.status,
+          phone: updatedVis.phone,
+          email: updatedVis.email || 'Not Provided',
+        },
+        message: isAlreadyVerified
+          ? 'Walk-in visitor already checked in and verified.'
+          : 'Walk-in visitor QR verified. Check-in event recorded successfully.',
+      });
+    }
+
+    // 2. Search in Check-In Sessions (Scheduled Candidates)
+    const session = db.checkInSessions.find((s) => s.token === token);
+    if (session) {
+      if (session.qrType === 'GENERAL_RECEPTION' && !session.candidateId) {
+        return res.json({
+          success: true,
+          scanType: 'GENERAL_REGISTRATION',
+          isGeneral: true,
+          session,
+          message: 'General blank registration QR recognized.',
+        });
+      }
+
+      const candidate = session.candidateId
+        ? db.candidates.find((c) => c.id === session.candidateId)
+        : undefined;
+
+      const interview = candidate?.currentInterviewId
+        ? db.interviews.find((i) => i.id === candidate.currentInterviewId)
+        : undefined;
+
+      return res.json({
+        success: true,
+        scanType: 'SCHEDULED_APPOINTMENT',
+        isScheduled: true,
+        session,
+        candidate: candidate
+          ? {
+              id: candidate.id,
+              fullName: candidate.fullName,
+              position: candidate.position,
+              department: candidate.department,
+              phone: candidate.phone,
+              email: candidate.email,
+              status: candidate.status,
+              checkedInAt: candidate.checkedInAt,
+              appointmentTime: session.appointmentTime || candidate.appointmentTime,
+              assignedInterviewerName: candidate.assignedInterviewerName || session.interviewerName,
+              assignedRoomName: candidate.assignedRoomName,
+            }
+          : null,
+        interview: interview
+          ? {
+              id: interview.id,
+              roundName: interview.roundName,
+              interviewerName: interview.interviewerName,
+              scheduledTime: interview.scheduledTime,
+              status: interview.status,
+            }
+          : null,
+        message: 'Scheduled appointment pass identified.',
+      });
+    }
+
+    // 3. Search in Candidates direct ID or Token
+    const directCandidate = db.candidates.find((c) => c.id === token || c.token === token);
+    if (directCandidate) {
+      return res.json({
+        success: true,
+        scanType: 'SCHEDULED_APPOINTMENT',
+        isScheduled: true,
+        candidate: {
+          id: directCandidate.id,
+          fullName: directCandidate.fullName,
+          position: directCandidate.position,
+          department: directCandidate.department,
+          phone: directCandidate.phone,
+          email: directCandidate.email,
+          status: directCandidate.status,
+          checkedInAt: directCandidate.checkedInAt,
+          appointmentTime: directCandidate.appointmentTime,
+          assignedInterviewerName: directCandidate.assignedInterviewerName,
+          assignedRoomName: directCandidate.assignedRoomName,
+        },
+        message: 'Candidate profile identified via pass code.',
+      });
+    }
+
+    return res.status(404).json({
+      success: false,
+      status: 'NOT_FOUND',
+      error: 'Unrecognised QR code. Please ensure you are scanning a valid White Collar Realty visitor pass or appointment code.',
+    });
+  });
+
   app.get('/api/qr/:token', (req: Request, res: Response) => {
     const { token } = req.params;
     const db = dbService.get();
+
+    // Check Walk-In Visitors
+    const matchedVisitor = db.visitors.find(
+      (v) => v.qrToken === token || v.id === token || (token.startsWith('vis-') && v.id === token)
+    );
+    if (matchedVisitor) {
+      return res.json({
+        success: true,
+        status: 'ACTIVE',
+        scanType: 'WALK_IN',
+        isWalkIn: true,
+        visitor: {
+          id: matchedVisitor.id,
+          fullName: matchedVisitor.fullName,
+          visitorType: 'WALK-IN',
+          company: matchedVisitor.company || 'Not Provided',
+          hostName: matchedVisitor.hostName || 'Not Provided',
+          hostDepartment: matchedVisitor.hostDepartment || 'Not Provided',
+          purpose: matchedVisitor.purpose || 'Not Provided',
+          roomAssigned: matchedVisitor.roomAssigned || 'Pending Allocation',
+          checkInTime: matchedVisitor.checkInTime,
+          qrVerificationStatus: matchedVisitor.qrVerificationStatus || 'VERIFIED',
+          status: matchedVisitor.status,
+          phone: matchedVisitor.phone,
+          email: matchedVisitor.email || 'Not Provided',
+        },
+        message: 'Authoritative Walk-in visitor details retrieved.',
+      });
+    }
 
     const session = db.checkInSessions.find((s) => s.token === token);
     if (!session) {
@@ -2823,41 +3022,78 @@ async function startServer() {
   // ==========================================
   // PANTRY TASK ASSIGNMENT & COMPLETION
   // ==========================================
+  // PANTRY TASK LIFECYCLE (AUTHORISED CREATION & STAFF EXECUTION)
+  // ==========================================
   app.post('/api/pantry/tasks', (req: Request, res: Response) => {
+    const db = dbService.get();
+    const auth = authenticateStaffRequest(req, db.users);
+    const callerRole = (auth.authenticated && auth.user?.role) || (req.body.actorRole as UserRole) || (req.headers['x-user-role'] as UserRole);
+
+    // Pantry staff must NOT have permission to create tasks unless separately authorised
+    if (callerRole === 'PANTRY') {
+      return res.status(403).json({
+        success: false,
+        error: 'Pantry staff do not have permission to create or assign tasks. Only authorized office staff can create hospitality tasks.',
+      });
+    }
+
     const {
+      category = 'HOSPITALITY',
+      taskType = 'WATER_BEVERAGE',
       roomId,
-      taskType,
+      roomName,
+      location,
+      instructions,
       description,
       requiredItems,
+      itemsWithQuantities,
       candidateId,
       candidateName,
-      priority,
+      priority = 'HIGH',
+      assignedSteward,
+      assignedStaffId,
+      assignedTeam,
+      dueTime = 'Immediate',
       actorId,
       actorName,
       actorRole,
     } = req.body;
 
-    if (!roomId) {
-      return res.status(400).json({ success: false, error: 'Room selection (roomId) is required' });
+    const creatorId = auth.user?.id || actorId || 'usr-staff';
+    const creatorName = auth.user?.name || actorName || 'Authorized Staff';
+    const creatorRole = auth.user?.role || (actorRole as UserRole) || 'HR';
+
+    const targetRoom = roomName || location || (roomId ? db.rooms.find((r) => r.id === roomId)?.name : '');
+    if (!targetRoom && !roomId) {
+      return res.status(400).json({ success: false, error: 'Destination room or location is required.' });
     }
 
     try {
-      const task = eventWorkflowEngine.handleCreatePantryTask(
-        actorId || 'usr-pantry-suresh',
-        actorName || 'Pantry Steward',
-        actorRole || 'PANTRY',
-        roomId,
-        taskType || 'ROOM_PREP',
-        description || '',
-        requiredItems || [],
-        candidateName,
-        priority || 'HIGH',
-        candidateId
-      );
+      const task = eventWorkflowEngine.handleCreatePantryTask({
+        category: category === 'PANTRY' ? 'PANTRY' : 'HOSPITALITY',
+        taskType: taskType || 'ROOM_PREP',
+        candidateName: candidateName || 'Guest / Candidate',
+        candidateId,
+        roomId: roomId || 'room-custom',
+        roomName: targetRoom || 'Meeting Cabin',
+        location: location || targetRoom || 'White Collar Realty Office',
+        instructions: instructions || description || 'Prepare hospitality setup',
+        description: description || instructions || 'Hospitality task',
+        requiredItems: Array.isArray(requiredItems) && requiredItems.length > 0 ? requiredItems : ['2x Bottled Mineral Water'],
+        itemsWithQuantities: Array.isArray(itemsWithQuantities) ? itemsWithQuantities : [],
+        priority: priority || 'HIGH',
+        assignedSteward: assignedSteward || 'Suresh Kumar (Floor 2 Pantry)',
+        assignedStaffId: assignedStaffId || '',
+        assignedTeam: assignedTeam || 'Pantry Team Alpha',
+        dueTime: dueTime || 'Immediate',
+        actorId: creatorId,
+        actorName: creatorName,
+        actorRole: creatorRole,
+      });
 
       res.json({
         success: true,
-        message: 'Pantry task created and assigned successfully.',
+        message: 'Pantry/Hospitality task created and assigned successfully.',
         task,
       });
     } catch (err: any) {
@@ -2865,15 +3101,122 @@ async function startServer() {
     }
   });
 
-  app.post('/api/pantry/tasks/:id/complete', (req: Request, res: Response) => {
+  // Accept task
+  app.post('/api/pantry/tasks/:id/accept', (req: Request, res: Response) => {
     const { id } = req.params;
-    const { stewardName } = req.body;
+    const db = dbService.get();
+    const auth = authenticateStaffRequest(req, db.users);
+    const stewardName = req.body.stewardName || auth.user?.name || 'Suresh Kumar (Pantry)';
+    const stewardRole = auth.user?.role || 'PANTRY';
 
     try {
-      eventWorkflowEngine.handlePantryTaskCompleted(id, stewardName || 'Suresh Kumar (Pantry)');
-      res.json({ success: true, message: 'Hospitality task marked as completed.' });
+      const task = eventWorkflowEngine.handleAcceptPantryTask(id, stewardName, stewardRole);
+      res.json({ success: true, message: 'Hospitality task accepted.', task });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message || 'Failed to accept task' });
+    }
+  });
+
+  // Start task
+  app.post('/api/pantry/tasks/:id/start', (req: Request, res: Response) => {
+    const { id } = req.params;
+    const db = dbService.get();
+    const auth = authenticateStaffRequest(req, db.users);
+    const stewardName = req.body.stewardName || auth.user?.name || 'Suresh Kumar (Pantry)';
+    const stewardRole = auth.user?.role || 'PANTRY';
+
+    try {
+      const task = eventWorkflowEngine.handleStartPantryTask(id, stewardName, stewardRole);
+      res.json({ success: true, message: 'Hospitality task started and now in progress.', task });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message || 'Failed to start task' });
+    }
+  });
+
+  // Complete task (Staff-Reported)
+  app.post('/api/pantry/tasks/:id/complete', (req: Request, res: Response) => {
+    const { id } = req.params;
+    const db = dbService.get();
+    const auth = authenticateStaffRequest(req, db.users);
+    const stewardName = req.body.stewardName || auth.user?.name || 'Suresh Kumar (Pantry)';
+
+    try {
+      const task = eventWorkflowEngine.handlePantryTaskCompleted(id, stewardName);
+      res.json({
+        success: true,
+        message: 'Hospitality task marked completed by staff. Pending supervisor verification.',
+        task,
+      });
     } catch (err: any) {
       res.status(500).json({ success: false, error: err.message || 'Failed to complete pantry task' });
+    }
+  });
+
+  // Report issue on task
+  app.post('/api/pantry/tasks/:id/report-issue', (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { reason } = req.body;
+    const db = dbService.get();
+    const auth = authenticateStaffRequest(req, db.users);
+    const stewardName = req.body.stewardName || auth.user?.name || 'Pantry Steward';
+
+    if (!reason || !reason.trim()) {
+      return res.status(400).json({ success: false, error: 'Issue description is required.' });
+    }
+
+    try {
+      const task = eventWorkflowEngine.handleReportIssuePantryTask(id, reason.trim(), stewardName);
+      res.json({ success: true, message: 'Issue reported to management.', task });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message || 'Failed to report issue' });
+    }
+  });
+
+  // Verify task completion (Admin or Task Creator only)
+  app.post('/api/pantry/tasks/:id/verify', (req: Request, res: Response) => {
+    const { id } = req.params;
+    const db = dbService.get();
+    const auth = authenticateStaffRequest(req, db.users);
+    const callerRole = (auth.authenticated && auth.user?.role) || (req.body.verifierRole as UserRole) || (req.headers['x-user-role'] as UserRole);
+
+    if (callerRole === 'PANTRY') {
+      return res.status(403).json({ success: false, error: 'Pantry staff cannot verify tasks.' });
+    }
+
+    const verifierName = auth.user?.name || req.body.verifierName || 'Admin / Task Requester';
+    const verifierRole = callerRole || 'ADMIN';
+
+    try {
+      const task = eventWorkflowEngine.handleVerifyPantryTask(id, verifierName, verifierRole);
+      res.json({ success: true, message: 'Task completion verified successfully.', task });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message || 'Failed to verify task' });
+    }
+  });
+
+  // Cancel task (Admin or Task Creator only - Pantry staff CANNOT cancel)
+  app.post('/api/pantry/tasks/:id/cancel', (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { reason } = req.body;
+    const db = dbService.get();
+    const auth = authenticateStaffRequest(req, db.users);
+    const callerRole = (auth.authenticated && auth.user?.role) || (req.body.actorRole as UserRole) || (req.body.cancellerRole as UserRole) || (req.headers['x-user-role'] as UserRole);
+
+    if (callerRole === 'PANTRY') {
+      return res.status(403).json({
+        success: false,
+        error: 'Pantry staff do not have permission to cancel or reassign tasks.',
+      });
+    }
+
+    const cancellerName = auth.user?.name || req.body.cancelledByName || 'Admin';
+    const cancellerRole = callerRole || 'ADMIN';
+
+    try {
+      const task = eventWorkflowEngine.handleCancelPantryTask(id, cancellerName, cancellerRole, reason);
+      res.json({ success: true, message: 'Task cancelled.', task });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message || 'Failed to cancel task' });
     }
   });
 
@@ -2975,20 +3318,44 @@ async function startServer() {
 
     const timestamp = new Date().toISOString();
     const visitorId = `vis-${Date.now()}`;
+    const qrToken = `WCR-WALK-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+
+    let createdVisitor: any = null;
 
     dbService.update((draft) => {
-      draft.visitors.unshift({
+      const visitorRecord = {
         id: visitorId,
-        fullName,
-        phone,
-        email: email || '',
-        company: company || '',
+        fullName: fullName.trim(),
+        phone: phone.trim(),
+        email: email ? email.trim() : '',
+        company: company ? company.trim() : '',
         visitorType: visitorType || 'WALK_IN',
-        hostName,
+        hostName: hostName.trim(),
         hostDepartment: hostDepartment || 'General Management',
-        purpose: purpose || 'Official Business Meeting',
-        status: 'CHECKED_IN',
+        purpose: purpose ? purpose.trim() : 'Official Business Meeting',
+        status: 'CHECKED_IN' as const,
         checkInTime: timestamp,
+        qrToken,
+        qrVerificationStatus: 'VERIFIED' as const,
+        qrVerifiedAt: timestamp,
+      };
+
+      draft.visitors.unshift(visitorRecord);
+      createdVisitor = visitorRecord;
+
+      // Link to checkInSessions so any QR station scan instantly resolves this token
+      draft.checkInSessions.unshift({
+        id: `sess-${Date.now()}`,
+        token: qrToken,
+        qrType: 'GENERAL_RECEPTION',
+        source: 'GENERAL_WCR_QR',
+        candidateName: fullName.trim(),
+        position: purpose || 'Walk-in Visitor',
+        department: hostDepartment || 'General Management',
+        status: 'COMPLETED',
+        completedAt: timestamp,
+        expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
+        createdAt: timestamp,
       });
 
       // Notify Reception and Admin
@@ -2996,7 +3363,7 @@ async function startServer() {
         id: `notif-${Date.now()}-vis`,
         recipientRole: 'RECEPTION',
         title: `Walk-in ${visitorType || 'Visitor'} Checked In`,
-        message: `${fullName} (${company || 'Individual'}) arrived to meet ${hostName}.`,
+        message: `${fullName} (${company || 'Individual'}) arrived to meet ${hostName}. QR pass ${qrToken} verified.`,
         priority: 'NORMAL',
         eventType: 'VISITOR_CHECKED_IN',
         entityId: visitorId,
@@ -3011,7 +3378,7 @@ async function startServer() {
         actorType: 'USER',
         actorName: 'Self Check-in / Front Desk',
         action: 'WALKIN_REGISTERED',
-        details: `Walk-in visitor ${fullName} checked in to meet ${hostName}.`,
+        details: `Walk-in visitor ${fullName} checked in with QR Pass ${qrToken} to meet ${hostName}.`,
         entityId: visitorId,
         entityType: 'VISITOR',
       });
@@ -3019,10 +3386,20 @@ async function startServer() {
 
     eventWorkflowEngine.broadcast({
       type: 'WALKIN_REGISTERED',
-      payload: { visitorId, fullName, hostName },
+      payload: { visitorId, fullName, hostName, qrToken },
+    });
+    eventWorkflowEngine.broadcast({
+      type: 'VISITORS_UPDATED',
+      payload: { visitorId, status: 'CHECKED_IN' },
     });
 
-    res.json({ success: true, visitorId, message: 'Visitor registered successfully.' });
+    res.json({
+      success: true,
+      visitorId,
+      qrToken,
+      visitor: createdVisitor,
+      message: 'Visitor registered and QR pass issued successfully.',
+    });
   });
 
   // GET ALL VISITORS (FOR RECEPTION & FRONT DESK)
@@ -5349,24 +5726,70 @@ async function startServer() {
     }
   });
 
-  // PANTRY TASK LIST (MINIMUM TASK DATA ONLY)
+  // PANTRY TASK LIST (ROLE-FILTERED & MONITORING DATA)
   app.get('/api/pantry/tasks', (req: Request, res: Response) => {
     const db = dbService.get();
-    const sanitizedTasks = db.pantryTasks.map((t) => ({
-      id: t.id,
-      roomId: t.roomId,
-      roomName: t.roomName,
-      candidateName: t.candidateName,
-      taskType: t.taskType,
-      description: t.description,
-      requiredItems: t.requiredItems,
-      priority: t.priority,
-      status: t.status,
-      assignedSteward: t.assignedSteward,
-      completedAt: t.completedAt,
-      createdAt: t.createdAt,
-    }));
-    res.json({ success: true, tasks: sanitizedTasks });
+    const auth = authenticateStaffRequest(req, db.users);
+    const userRole = (req.query.role as UserRole) || auth.user?.role || 'HR';
+    const userId = (req.query.userId as string) || auth.user?.id || '';
+
+    // Pantry role permissions:
+    // Pantry staff must have a dedicated task-only view.
+    // They can see only the tasks assigned to them or their authorised team.
+    if (userRole === 'PANTRY') {
+      const userName = auth.user?.name || '';
+      const userDept = auth.user?.department || 'Pantry';
+
+      const pantryTasks = db.pantryTasks.filter((t) => {
+        if (!t.assignedSteward && !t.assignedTeam && !t.assignedStaffId) return true;
+        if (t.assignedStaffId && userId && t.assignedStaffId === userId) return true;
+        if (userName && t.assignedSteward && t.assignedSteward.toLowerCase().includes(userName.toLowerCase())) return true;
+        if (t.assignedTeam && (t.assignedTeam === userDept || t.assignedTeam.includes('Pantry') || t.assignedTeam.includes('Alpha') || t.assignedTeam === 'All Pantry Staff')) return true;
+        if (t.assignedSteward && (t.assignedSteward === 'All Pantry Staff' || t.assignedSteward.includes('Pantry') || t.assignedSteward.includes('Suresh'))) return true;
+        return false;
+      });
+
+      // Dedicated task-only view:
+      // Show Candidate/visitor name, Room/cabin name, What task must be performed,
+      // Where to go, Required items & quantities, Priority and due time, Who assigned the task,
+      // Current task status. No private candidate documents, salaries, or HR profiles.
+      const sanitized = pantryTasks.map((t) => ({
+        id: t.id,
+        category: t.category || 'HOSPITALITY',
+        candidateName: t.candidateName || 'Guest / Candidate',
+        roomName: t.roomName,
+        roomId: t.roomId,
+        instructions: t.instructions || t.description,
+        description: t.description || t.instructions,
+        location: t.location || t.roomName,
+        requiredItems: t.requiredItems || [],
+        itemsWithQuantities: t.itemsWithQuantities || [],
+        priority: t.priority,
+        dueTime: t.dueTime || 'Immediate',
+        createdByName: t.createdByName || 'Staff',
+        createdByRole: t.createdByRole || 'STAFF',
+        createdAt: t.createdAt,
+        status: t.status,
+        assignedSteward: t.assignedSteward || 'Pantry Staff',
+        assignedTeam: t.assignedTeam || 'Pantry Team',
+        assignedAt: t.assignedAt,
+        acceptedAt: t.acceptedAt,
+        startedAt: t.startedAt,
+        completedAt: t.completedAt,
+        completedBy: t.completedBy,
+        timeTakenFormatted: t.timeTakenFormatted,
+        completionDurationMinutes: t.completionDurationMinutes,
+        isStaffReportedCompleted: t.isStaffReportedCompleted,
+        staffReportedCompletedAt: t.staffReportedCompletedAt,
+        issueReportedAt: t.issueReportedAt,
+        issueReason: t.issueReason,
+      }));
+
+      return res.json({ success: true, tasks: sanitized });
+    }
+
+    // For Admin, HR, creators, etc.: return full tasks with timestamps and monitoring metadata
+    res.json({ success: true, tasks: db.pantryTasks });
   });
 
   app.get('/api/notifications', (req: Request, res: Response) => {

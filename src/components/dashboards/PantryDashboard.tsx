@@ -11,20 +11,21 @@ import {
   ShieldCheck,
   Users,
   MapPin,
-  Plus,
-  X,
   AlertCircle,
+  AlertTriangle,
   CupSoda,
   CheckSquare,
   MessageSquare,
   Check,
+  Play,
+  CheckCircle,
+  X,
 } from 'lucide-react';
 import type {
   PantryTask,
   Room,
   Candidate,
-  PantryTaskType,
-  NotificationPriority,
+  PantryTaskStatus,
   ActionTask,
 } from '../../types/index.ts';
 
@@ -33,6 +34,7 @@ interface PantryDashboardProps {
   rooms: Room[];
   candidates?: Candidate[];
   actionTasks?: ActionTask[];
+  currentStewardName?: string;
   onAcknowledgeTask?: (taskId: string) => void;
   onCompleteTask: (taskId: string) => void;
   onCompleteActionTask?: (taskId: string) => void;
@@ -46,6 +48,7 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
   rooms,
   candidates = [],
   actionTasks = [],
+  currentStewardName = 'Suresh Kumar (Floor 2 Pantry)',
   onAcknowledgeTask,
   onCompleteTask,
   onCompleteActionTask,
@@ -53,9 +56,15 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
   onOpenChat,
   onRefresh,
 }) => {
-  const pendingTasks = tasks.filter((t) => t.status === 'PENDING' || t.status === 'IN_PROGRESS');
-  const completedTasks = tasks.filter((t) => t.status === 'COMPLETED');
+  const [activeTab, setActiveTab] = useState<'PENDING' | 'COMPLETED' | 'ALL'>('PENDING');
   const [markingRoomId, setMarkingRoomId] = useState<string | null>(null);
+  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
+
+  // Issue reporting modal state
+  const [issueModalTaskId, setIssueModalTaskId] = useState<string | null>(null);
+  const [issueReason, setIssueReason] = useState<string>('');
+  const [submittingIssue, setSubmittingIssue] = useState<boolean>(false);
+  const [issueError, setIssueError] = useState<string | null>(null);
 
   // Filter real-time operational action alerts for Pantry
   const pantryActionTasks = actionTasks.filter(
@@ -64,23 +73,18 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
       t.status !== 'DISMISSED'
   );
 
-  // Assign Task Modal State
-  const [showAssignModal, setShowAssignModal] = useState(false);
-  const [selectedRoomId, setSelectedRoomId] = useState('');
-  const [selectedTaskType, setSelectedTaskType] = useState<PantryTaskType>('WATER_BEVERAGE');
-  const [taskDescription, setTaskDescription] = useState('');
-  const [taskCandidateName, setTaskCandidateName] = useState('');
-  const [taskPriority, setTaskPriority] = useState<NotificationPriority>('HIGH');
-  const [selectedItems, setSelectedItems] = useState<string[]>([
-    '2x Bottled Mineral Water',
-    'Sanitized Glassware & Coasters',
-  ]);
-  const [customItemInput, setCustomItemInput] = useState('');
-  const [submittingTask, setSubmittingTask] = useState(false);
-  const [assignError, setAssignError] = useState<string | null>(null);
+  const pendingTasks = tasks.filter(
+    (t) => t.status === 'PENDING' || t.status === 'ACCEPTED' || t.status === 'IN_PROGRESS' || t.status === 'ISSUE_REPORTED'
+  );
+  const completedTasks = tasks.filter((t) => t.status === 'COMPLETED');
+
+  const visibleTasks = activeTab === 'PENDING'
+    ? pendingTasks
+    : activeTab === 'COMPLETED'
+    ? completedTasks
+    : tasks;
 
   const activeRooms = rooms.filter((r) => r.isActive !== false);
-
   const operationalRooms = activeRooms.filter(
     (r) =>
       r.id !== 'room-lalit-cabin' &&
@@ -90,129 +94,78 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
       !r.isReservedNextRound
   );
 
-  const resolveRoomName = (roomId?: string, fallbackName?: string, candidateId?: string): string => {
+  const resolveRoomName = (roomId?: string, fallbackName?: string): string => {
     if (roomId) {
       const matched = rooms.find((r) => r.id === roomId || r.roomId === roomId);
       if (matched) return matched.name;
     }
-
-    if (candidateId) {
-      const cand = candidates.find((c) => c.id === candidateId);
-      if (cand?.assignedRoomId) {
-        const matched = rooms.find((r) => r.id === cand.assignedRoomId || r.roomId === cand.assignedRoomId);
-        if (matched) return matched.name;
-      }
-    }
-
-    if (fallbackName && fallbackName.trim()) {
-      const matchedByName = rooms.find((r) => r.name.toLowerCase() === fallbackName.trim().toLowerCase());
-      if (matchedByName) return matchedByName.name;
-
-      if (
-        fallbackName.toLowerCase().includes('waiting') ||
-        fallbackName.toLowerCase().includes('lobby') ||
-        fallbackName.toLowerCase().includes('reception') ||
-        fallbackName.toLowerCase().includes('lounge')
-      ) {
-        return 'Waiting Lounge';
-      }
-    }
-
-    return 'Room Not Assigned';
+    if (fallbackName && fallbackName.trim()) return fallbackName;
+    return 'Assigned Cabin';
   };
 
-  const getTaskDescription = (task: PantryTask, resolvedRoomName: string): string => {
-    let desc = task.description || '';
-    const legacyDemoNames = ['Boardroom Alpha', 'Executive Pod 1', 'Conference Room B', 'Interview Room A'];
-    legacyDemoNames.forEach((demo) => {
-      if (desc.includes(demo)) {
-        desc = desc.split(demo).join(resolvedRoomName);
-      }
-    });
-    return desc;
-  };
-
-  const handleRoomSelectChange = (roomId: string) => {
-    setSelectedRoomId(roomId);
-    const room = rooms.find((r) => r.id === roomId || r.roomId === roomId);
-    if (room && room.currentCandidateName) {
-      setTaskCandidateName(room.currentCandidateName);
-    } else if (room && room.currentCandidateId) {
-      const cand = candidates.find((c) => c.id === room.currentCandidateId);
-      if (cand) {
-        setTaskCandidateName(cand.fullName);
-      }
-    }
-  };
-
-  const handleToggleItem = (item: string) => {
-    if (selectedItems.includes(item)) {
-      setSelectedItems(selectedItems.filter((i) => i !== item));
-    } else {
-      setSelectedItems([...selectedItems, item]);
-    }
-  };
-
-  const handleAddCustomItem = () => {
-    if (!customItemInput.trim()) return;
-    if (!selectedItems.includes(customItemInput.trim())) {
-      setSelectedItems([...selectedItems, customItemInput.trim()]);
-    }
-    setCustomItemInput('');
-  };
-
-  const handleCreateTask = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedRoomId) {
-      setAssignError('Please select a room from Room Management');
-      return;
-    }
-
-    setSubmittingTask(true);
-    setAssignError(null);
-
-    const room = rooms.find((r) => r.id === selectedRoomId || r.roomId === selectedRoomId);
-    const generatedDesc =
-      taskDescription.trim() ||
-      (selectedTaskType === 'WATER_BEVERAGE'
-        ? `Serve beverages and mineral water in ${room?.name || 'room'}`
-        : selectedTaskType === 'ROOM_RESET'
-        ? `Sanitize and reset ${room?.name || 'room'} for next session`
-        : `Prepare hospitality setup in ${room?.name || 'room'}`);
-
+  const handleAcceptTask = async (taskId: string) => {
+    setActionLoadingId(taskId);
     try {
-      const res = await fetch('/api/pantry/tasks', {
+      const res = await fetch(`/api/pantry/tasks/${encodeURIComponent(taskId)}/accept`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({
-          roomId: selectedRoomId,
-          taskType: selectedTaskType,
-          description: generatedDesc,
-          requiredItems: selectedItems,
-          candidateName: taskCandidateName.trim() || undefined,
-          priority: taskPriority,
-          actorName: 'Suresh Kumar (Pantry)',
-          actorRole: 'PANTRY',
-        }),
+        body: JSON.stringify({ stewardName: currentStewardName }),
       });
+      if (res.ok) {
+        onRefresh();
+      }
+    } catch (err) {
+      console.error('Failed to accept task', err);
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
 
+  const handleStartTask = async (taskId: string) => {
+    setActionLoadingId(taskId);
+    try {
+      const res = await fetch(`/api/pantry/tasks/${encodeURIComponent(taskId)}/start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ stewardName: currentStewardName }),
+      });
+      if (res.ok) {
+        onRefresh();
+      }
+    } catch (err) {
+      console.error('Failed to start task', err);
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  const handleReportIssueSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!issueModalTaskId || !issueReason.trim()) return;
+
+    setSubmittingIssue(true);
+    setIssueError(null);
+    try {
+      const res = await fetch(`/api/pantry/tasks/${encodeURIComponent(issueModalTaskId)}/report-issue`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ reason: issueReason.trim() }),
+      });
       const data = await res.json();
       if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Failed to create pantry task');
+        throw new Error(data.error || 'Failed to report issue');
       }
 
-      setShowAssignModal(false);
-      setSelectedRoomId('');
-      setTaskDescription('');
-      setTaskCandidateName('');
-      setTaskPriority('HIGH');
-      setSelectedItems(['2x Bottled Mineral Water', 'Sanitized Glassware & Coasters']);
+      setIssueModalTaskId(null);
+      setIssueReason('');
       onRefresh();
     } catch (err: any) {
-      setAssignError(err.message || 'Failed to create pantry task');
+      setIssueError(err.message || 'Failed to report issue');
     } finally {
-      setSubmittingTask(false);
+      setSubmittingIssue(false);
     }
   };
 
@@ -225,7 +178,7 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
         await fetch(`/api/pantry/rooms/${roomId}/cleaned`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ stewardName: 'Suresh Kumar (Pantry)' }),
+          body: JSON.stringify({ stewardName: currentStewardName }),
         });
         onRefresh();
       }
@@ -236,59 +189,45 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
     }
   };
 
-  const roomAssignedCandidates = candidates.filter(
-    (c) =>
-      !c.isDeleted &&
-      c.status !== 'CHECKED_OUT' &&
-      c.status !== 'REJECTED' &&
-      (c.status === 'ROOM_ASSIGNED' || c.status === 'IN_INTERVIEW' || c.assignedRoomId)
-  );
-
   return (
     <div className="space-y-6">
-      {/* Hospitality Header */}
+      {/* Hospitality Header (Task-Only View, No Create/Edit/Delete buttons) */}
       <div className="p-6 card-dark bg-[#0B0B0D] text-white rounded-3xl border border-white/10 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center justify-center shadow-md">
               <Coffee className="w-4 h-4" />
             </div>
             <h1 className="text-xl font-bold text-white tracking-tight">
-              Hospitality & Pantry Operations Desk
+              Hospitality & Pantry Task Execution Desk
             </h1>
           </div>
           <p className="text-xs text-[#E0E0E0] mt-1">
-            Dynamic room preparation, mineral water & beverage service, sanitization reset queue.
+            Dedicated task-only view for Pantry stewards &bull; Accept, start, complete, and report issues.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => {
-              setAssignError(null);
-              if (activeRooms.length > 0 && !selectedRoomId) {
-                setSelectedRoomId(activeRooms[0].id);
-              }
-              setShowAssignModal(true);
-            }}
-            className="px-3.5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs rounded-xl shadow-lg transition cursor-pointer flex items-center gap-1.5"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Create Hospitality Task</span>
-          </button>
           {onOpenChat && (
             <button
               onClick={onOpenChat}
-              className="px-3 py-2 bg-white/6 hover:bg-white/10 text-slate-200 text-xs font-semibold rounded-xl border border-white/8 transition flex items-center gap-1.5 cursor-pointer"
+              className="px-3.5 py-2 bg-white/6 hover:bg-white/10 text-slate-200 text-xs font-semibold rounded-xl border border-white/8 transition flex items-center gap-1.5 cursor-pointer"
             >
               <MessageSquare className="w-3.5 h-3.5 text-amber-400" />
               <span>Office Chat</span>
             </button>
           )}
+          <button
+            onClick={onRefresh}
+            className="p-2 bg-white/6 hover:bg-white/10 text-slate-300 rounded-xl transition cursor-pointer"
+            title="Sync Tasks"
+          >
+            <RefreshCw className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
-      {/* Realtime Action Tasks Queue */}
+      {/* Realtime Urgent Action Tasks Alerts */}
       {pantryActionTasks.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -300,7 +239,7 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
               <Sparkles className="w-4 h-4 text-amber-400" />
               <span>Urgent Service Requests ({pantryActionTasks.length})</span>
             </h2>
-            <span className="text-[10px] text-[#BDBDBD]">Live request channel</span>
+            <span className="text-[10px] text-[#BDBDBD]">Real-time request channel</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
@@ -309,11 +248,9 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
               const resolvedRoom = resolveRoomName(task.destinationRoomId || task.roomId, task.destinationRoomName);
 
               return (
-                <motion.div
+                <div
                   key={task.id}
-                  whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
-                  whileTap={{ scale: 0.99 }}
-                  className="p-4 dashboard-card card-dark bg-[#0B0B0D] rounded-2xl border border-amber-400/60 flex flex-col justify-between space-y-3 shadow-xl hover:shadow-2xl hover:shadow-amber-500/15"
+                  className="p-4 dashboard-card card-dark bg-[#0B0B0D] rounded-2xl border border-amber-400/60 flex flex-col justify-between space-y-3 shadow-xl"
                 >
                   <div className="flex items-center justify-between text-xs pb-2 border-b border-white/10">
                     <span className="font-bold text-white truncate">{task.title}</span>
@@ -348,119 +285,267 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
                       <span>Mark Completed</span>
                     </button>
                   </div>
-                </motion.div>
+                </div>
               );
             })}
           </div>
         </motion.div>
       )}
 
-      {/* Main Hospitality Task Grid */}
+      {/* Main Task List & Room Status View */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left 2 Cols: Task Queue */}
+        {/* Left 2 Cols: Dedicated Pantry Tasks View */}
         <div className="lg:col-span-2 space-y-4">
+          {/* Tabs Filter */}
           <div className="flex items-center justify-between pb-1 border-b border-black/10">
-            <h2 className="text-base font-bold text-[#111318] flex items-center gap-2">
+            <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-              <span>Hospitality Task Queue ({pendingTasks.length})</span>
-            </h2>
+              <div className="flex gap-1.5">
+                <button
+                  onClick={() => setActiveTab('PENDING')}
+                  className={`px-3 py-1 rounded-xl text-xs font-bold transition cursor-pointer ${
+                    activeTab === 'PENDING'
+                      ? 'bg-amber-500 text-slate-950 shadow'
+                      : 'text-slate-700 hover:text-black'
+                  }`}
+                >
+                  Assigned / Active ({pendingTasks.length})
+                </button>
+                <button
+                  onClick={() => setActiveTab('COMPLETED')}
+                  className={`px-3 py-1 rounded-xl text-xs font-bold transition cursor-pointer ${
+                    activeTab === 'COMPLETED'
+                      ? 'bg-amber-500 text-slate-950 shadow'
+                      : 'text-slate-700 hover:text-black'
+                  }`}
+                >
+                  Completed ({completedTasks.length})
+                </button>
+                <button
+                  onClick={() => setActiveTab('ALL')}
+                  className={`px-3 py-1 rounded-xl text-xs font-bold transition cursor-pointer ${
+                    activeTab === 'ALL'
+                      ? 'bg-amber-500 text-slate-950 shadow'
+                      : 'text-slate-700 hover:text-black'
+                  }`}
+                >
+                  All Tasks ({tasks.length})
+                </button>
+              </div>
+            </div>
+
             <button
               onClick={onRefresh}
               className="text-xs text-[#252A32] hover:text-[#111318] flex items-center gap-1 cursor-pointer font-medium"
             >
               <RefreshCw className="w-3.5 h-3.5" />
-              <span>Sync</span>
+              <span>Refresh</span>
             </button>
           </div>
 
-          {pendingTasks.length === 0 ? (
-            <div className="p-12 text-center card-dark bg-[#0B0B0D] rounded-3xl space-y-2 border border-white/10">
+          {visibleTasks.length === 0 ? (
+            <div className="p-12 text-center card-dark bg-[#0B0B0D] rounded-3xl space-y-2 border border-white/10 shadow-xl">
               <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" />
-              <h3 className="text-sm font-bold text-white">All meeting cabins prepped & sanitized</h3>
+              <h3 className="text-sm font-bold text-white">No tasks in this queue</h3>
               <p className="text-xs text-[#E0E0E0] max-w-sm mx-auto leading-relaxed">
-                Hospitality tasks generate automatically when HR assigns candidates to cabins.
+                Hospitality and room preparation requests assigned to your team will appear here immediately.
               </p>
             </div>
           ) : (
-            <div className="space-y-3.5">
-              {pendingTasks.map((task) => {
-                const resolvedName = resolveRoomName(task.roomId, task.roomName, task.candidateId);
-                const displayDesc = getTaskDescription(task, resolvedName);
+            <div className="space-y-4">
+              {visibleTasks.map((task) => {
+                const isPending = task.status === 'PENDING';
+                const isAccepted = task.status === 'ACCEPTED';
+                const isInProgress = task.status === 'IN_PROGRESS';
+                const isCompleted = task.status === 'COMPLETED';
+                const isIssueReported = task.status === 'ISSUE_REPORTED';
 
                 return (
                   <motion.div
                     key={task.id}
-                    whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
-                    whileTap={{ scale: 0.99 }}
-                    className="p-5 rounded-2xl space-y-3.5 transition shadow-xl card-dark bg-[#0B0B0D] text-white border border-white/10"
+                    whileHover={{ scale: 1.01, y: -2, transition: { duration: 0.2, ease: 'easeOut' } }}
+                    className="p-5 rounded-2xl space-y-3.5 shadow-xl card-dark bg-[#0B0B0D] text-white border border-white/10"
                   >
+                    {/* Top Row: Room, Candidate, and Status Badge */}
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
                         <div className="w-11 h-11 rounded-2xl flex items-center justify-center bg-amber-500/10 border border-amber-500/30 text-amber-400">
                           {task.taskType === 'ROOM_RESET' ? (
-                            <RefreshCw className="w-5 h-5" />
-                          ) : task.taskType === 'WATER_BEVERAGE' ? (
-                            <CupSoda className="w-5 h-5" />
+                            <Droplet className="w-5 h-5 text-cyan-400" />
                           ) : (
                             <Coffee className="w-5 h-5" />
                           )}
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="text-[10px] uppercase font-bold tracking-wider font-mono text-amber-400">
-                              {task.taskType === 'ROOM_RESET'
-                                ? 'Sanitization Reset'
-                                : task.taskType === 'WATER_BEVERAGE'
-                                ? 'Beverage Delivery'
-                                : 'Hospitality Setup'}
-                            </span>
-                            <span className="text-[#BDBDBD]">&bull;</span>
-                            <span className="text-[11px] font-mono text-[#E0E0E0]">
-                              {new Date(task.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            <h3 className="text-base font-bold text-white tracking-tight">
+                              {task.roomName}
+                            </h3>
+                            <span className="text-[11px] font-mono text-amber-400">
+                              ({task.category || 'Hospitality'})
                             </span>
                           </div>
-                          <h3 className="text-lg font-bold tracking-tight text-white">{resolvedName}</h3>
-                          {task.candidateName && (
-                            <p className="text-xs font-medium text-[#E0E0E0]">
-                              For: <strong className="text-amber-400">{task.candidateName}</strong>
-                            </p>
-                          )}
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#E0E0E0] mt-0.5">
+                            <span>
+                              Candidate / Visitor: <strong className="text-white">{task.candidateName || 'Guest'}</strong>
+                            </span>
+                            <span>&bull;</span>
+                            <span className="flex items-center gap-1 text-slate-300">
+                              <MapPin className="w-3 h-3 text-amber-400" />
+                              <span>{task.location || task.roomName}</span>
+                            </span>
+                          </div>
                         </div>
                       </div>
 
-                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold font-mono animate-pulse bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                        Pending Action
-                      </span>
-                    </div>
-
-                    <p className="text-xs text-[#E0E0E0]">{displayDesc}</p>
-
-                    {/* Checklist of required items */}
-                    <div className="p-3 card-inner inner-box bg-[#25272B] border border-white/10 text-[#E0E0E0] rounded-xl space-y-1.5 text-xs">
-                      <span className="text-[10px] font-bold uppercase tracking-wider block font-mono text-[#BDBDBD]">
-                        Hospitality Checklist:
-                      </span>
-                      <ul className="space-y-1 pl-4 list-disc text-[11px]">
-                        {task.requiredItems?.map((item, i) => (
-                          <li key={i}>{item}</li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    {/* Complete Action Button */}
-                    <div className="pt-2 flex justify-end">
-                      <button
-                        onClick={() => onCompleteTask(task.id)}
-                        className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-black text-xs rounded-xl shadow-lg transition cursor-pointer flex items-center justify-center gap-2"
-                      >
-                        <CheckCircle2 className="w-4 h-4" />
-                        <span>
-                          {task.taskType === 'ROOM_RESET'
-                            ? 'Mark Cleaned & Available'
-                            : 'Confirm Ready & Mark Completed'}
+                      {/* Status and Priority Badges */}
+                      <div className="flex flex-col items-end gap-1.5">
+                        <div className="flex items-center gap-1.5">
+                          {isPending && (
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold font-mono animate-pulse bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                              Pending Acceptance
+                            </span>
+                          )}
+                          {isAccepted && (
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold font-mono bg-blue-500/15 text-blue-300 border border-blue-500/30">
+                              Accepted
+                            </span>
+                          )}
+                          {isInProgress && (
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold font-mono animate-pulse bg-purple-500/15 text-purple-300 border border-purple-500/30">
+                              In Progress
+                            </span>
+                          )}
+                          {isCompleted && (
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold font-mono bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                              <CheckCircle className="w-3 h-3 text-emerald-400" />
+                              Completed
+                            </span>
+                          )}
+                          {isIssueReported && (
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold font-mono bg-rose-500/15 text-rose-300 border border-rose-500/30 flex items-center gap-1">
+                              <AlertTriangle className="w-3 h-3 text-rose-400" />
+                              Issue Reported
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[10px] font-mono text-[#AEB7C4]">
+                          Due: <strong className="text-amber-300">{task.dueTime || 'Immediate'}</strong>
                         </span>
-                      </button>
+                      </div>
                     </div>
+
+                    {/* What task must be performed */}
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#BDBDBD] font-mono block">
+                        Task Instructions:
+                      </span>
+                      <p className="text-xs text-white leading-relaxed bg-[#141820] p-3 rounded-xl border border-white/8">
+                        {task.instructions || task.description}
+                      </p>
+                    </div>
+
+                    {/* Where to go & Required Items & Quantities */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                      {/* Destination */}
+                      <div className="p-3 card-inner bg-[#25272B] border border-white/10 text-[#E0E0E0] rounded-xl space-y-1">
+                        <span className="text-[10px] font-bold uppercase tracking-wider block font-mono text-[#BDBDBD]">
+                          Where To Go:
+                        </span>
+                        <p className="font-semibold text-white flex items-center gap-1.5">
+                          <MapPin className="w-3.5 h-3.5 text-amber-400" />
+                          <span>{task.location || task.roomName}</span>
+                        </p>
+                      </div>
+
+                      {/* Required Items & Quantities */}
+                      <div className="p-3 card-inner bg-[#25272B] border border-white/10 text-[#E0E0E0] rounded-xl space-y-1">
+                        <span className="text-[10px] font-bold uppercase tracking-wider block font-mono text-[#BDBDBD]">
+                          Required Items & Quantities:
+                        </span>
+                        <ul className="space-y-0.5 list-disc pl-4 text-[11px] text-slate-200">
+                          {task.requiredItems && task.requiredItems.length > 0 ? (
+                            task.requiredItems.map((item, i) => <li key={i}>{item}</li>)
+                          ) : (
+                            <li>Mineral water setup</li>
+                          )}
+                        </ul>
+                      </div>
+                    </div>
+
+                    {/* Assignment & Creator Details */}
+                    <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-white/10 text-[11px] text-[#AEB7C4]">
+                      <span>
+                        Assigned by: <strong className="text-white">{task.createdByName}</strong> ({task.createdByRole}) &bull;{' '}
+                        {new Date(task.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                      {task.completedAt && (
+                        <span className="text-emerald-400 font-mono">
+                          Completed: {new Date(task.completedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}{' '}
+                          ({task.timeTakenFormatted || 'Done'})
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Issue Banner if reported */}
+                    {isIssueReported && task.issueReason && (
+                      <div className="p-2.5 rounded-xl bg-rose-950/40 border border-rose-500/40 text-xs text-rose-300 flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+                        <span><strong>Reported Issue:</strong> {task.issueReason}</span>
+                      </div>
+                    )}
+
+                    {/* Action Buttons for Pantry Staff */}
+                    {!isCompleted && (
+                      <div className="pt-2 flex flex-wrap items-center justify-end gap-2 border-t border-white/10">
+                        {/* Report Issue Button */}
+                        <button
+                          onClick={() => {
+                            setIssueModalTaskId(task.id);
+                            setIssueReason('');
+                            setIssueError(null);
+                          }}
+                          className="px-3 py-1.5 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl transition flex items-center gap-1 cursor-pointer"
+                        >
+                          <AlertTriangle className="w-3.5 h-3.5" />
+                          <span>Report Issue</span>
+                        </button>
+
+                        {/* Accept Task Button (if PENDING) */}
+                        {isPending && (
+                          <button
+                            onClick={() => handleAcceptTask(task.id)}
+                            disabled={actionLoadingId === task.id}
+                            className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow transition cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                          >
+                            <Check className="w-3.5 h-3.5 stroke-[3]" />
+                            <span>Accept Task</span>
+                          </button>
+                        )}
+
+                        {/* Start Task Button (if ACCEPTED) */}
+                        {isAccepted && (
+                          <button
+                            onClick={() => handleStartTask(task.id)}
+                            disabled={actionLoadingId === task.id}
+                            className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-xl shadow transition cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                          >
+                            <Play className="w-3.5 h-3.5" />
+                            <span>Start Service</span>
+                          </button>
+                        )}
+
+                        {/* Mark Completed Button */}
+                        <button
+                          onClick={() => onCompleteTask(task.id)}
+                          disabled={actionLoadingId === task.id}
+                          className="px-5 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-black text-xs rounded-xl shadow-lg transition cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                        >
+                          <CheckCircle2 className="w-4 h-4" />
+                          <span>Mark Completed</span>
+                        </button>
+                      </div>
+                    )}
                   </motion.div>
                 );
               })}
@@ -475,7 +560,7 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
               <DoorOpen className="w-4 h-4 text-amber-500" />
               Office Cabins & Pods
             </h2>
-            <p className="text-xs text-[#252A32] mt-0.5">Real-time room occupancy and cleanliness.</p>
+            <p className="text-xs text-[#252A32] mt-0.5">Real-time room occupancy and cleanliness status.</p>
           </div>
 
           <div className="space-y-2.5">
@@ -534,164 +619,83 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
             })}
           </div>
 
-          {/* Completed History Today */}
+          {/* Serviced Logs */}
           {completedTasks.length > 0 && (
             <div className="space-y-2 pt-4 border-t border-white/8">
               <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono">
                 Completed Serviced Logs ({completedTasks.length})
               </h3>
               <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
-                {completedTasks.map((t) => {
-                  const resolvedName = resolveRoomName(t.roomId, t.roomName, t.candidateId);
-                  return (
-                    <div
-                      key={t.id}
-                      className="p-2.5 glass-panel-subtle rounded-xl flex items-center justify-between text-[11px] text-slate-400 border border-white/6"
-                    >
-                      <span className="font-medium text-slate-300">{resolvedName}</span>
-                      <span className="text-emerald-400 font-semibold flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3" /> Done
-                      </span>
+                {completedTasks.map((t) => (
+                  <div
+                    key={t.id}
+                    className="p-2.5 glass-panel-subtle rounded-xl flex items-center justify-between text-[11px] text-slate-400 border border-white/6"
+                  >
+                    <div>
+                      <span className="font-medium text-slate-300 block">{t.roomName}</span>
+                      <span className="text-[10px] text-slate-500">{t.timeTakenFormatted || 'Done'}</span>
                     </div>
-                  );
-                })}
+                    <span className="text-emerald-400 font-semibold flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3" /> Done
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* ASSIGN TASK MODAL */}
-      {showAssignModal && (
+      {/* REPORT ISSUE MODAL */}
+      {issueModalTaskId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
-          <div className="glass-panel-elevated rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-5 border border-white/12 max-h-[90vh] overflow-y-auto text-slate-100">
-            <div className="flex items-center justify-between pb-4 border-b border-white/8">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                  <Coffee className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-white">Create Hospitality Task</h3>
-                  <p className="text-xs text-slate-400">
-                    Assign beverage or sanitization prep for meetings
-                  </p>
-                </div>
-              </div>
+          <div className="bg-slate-900 border border-slate-700 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4 text-slate-100">
+            <div className="flex items-center justify-between pb-2 border-b border-white/10">
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-rose-400" />
+                <span>Report Task Issue</span>
+              </h3>
               <button
-                onClick={() => setShowAssignModal(false)}
-                className="w-8 h-8 rounded-full bg-white/6 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center transition cursor-pointer"
+                onClick={() => setIssueModalTaskId(null)}
+                className="w-7 h-7 rounded-full bg-white/6 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center transition cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            {assignError && (
-              <div className="p-3 bg-rose-950/40 border border-rose-500/40 rounded-xl text-xs text-rose-300">
-                {assignError}
+            {issueError && (
+              <div className="p-3 bg-rose-500/15 border border-rose-500/30 rounded-xl text-xs text-rose-300">
+                {issueError}
               </div>
             )}
 
-            <form onSubmit={handleCreateTask} className="space-y-4 text-xs">
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">Select Cabin / Room</label>
-                <select
-                  value={selectedRoomId}
-                  onChange={(e) => handleRoomSelectChange(e.target.value)}
-                  className="w-full p-2.5 glass-input rounded-xl text-white text-xs"
-                  required
-                >
-                  <option value="" disabled className="bg-slate-900">Choose meeting room...</option>
-                  {operationalRooms.map((r) => (
-                    <option key={r.id} value={r.id} className="bg-slate-900 text-white">
-                      {r.name} ({r.status})
-                    </option>
-                  ))}
-                </select>
-              </div>
+            <form onSubmit={handleReportIssueSubmit} className="space-y-3.5 text-xs">
+              <p className="text-slate-300">
+                Please specify why this task cannot be fulfilled immediately so the supervisor can intervene:
+              </p>
+              <textarea
+                rows={3}
+                value={issueReason}
+                onChange={(e) => setIssueReason(e.target.value)}
+                placeholder="e.g. Mineral water bottles out of stock in Pantry, Cabin currently locked, Occupant requested delay..."
+                className="w-full p-2.5 glass-input rounded-xl text-white text-xs resize-none"
+                required
+              />
 
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">Service Type</label>
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedTaskType('WATER_BEVERAGE')}
-                    className={`p-2.5 rounded-xl border text-center transition cursor-pointer ${
-                      selectedTaskType === 'WATER_BEVERAGE'
-                        ? 'bg-amber-500 text-slate-950 font-bold border-amber-400'
-                        : 'glass-input hover:bg-white/5'
-                    }`}
-                  >
-                    Water & Beverage
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedTaskType('ROOM_RESET')}
-                    className={`p-2.5 rounded-xl border text-center transition cursor-pointer ${
-                      selectedTaskType === 'ROOM_RESET'
-                        ? 'bg-amber-500 text-slate-950 font-bold border-amber-400'
-                        : 'glass-input hover:bg-white/5'
-                    }`}
-                  >
-                    Sanitization
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedTaskType('CLEANING')}
-                    className={`p-2.5 rounded-xl border text-center transition cursor-pointer ${
-                      selectedTaskType === 'CLEANING'
-                        ? 'bg-amber-500 text-slate-950 font-bold border-amber-400'
-                        : 'glass-input hover:bg-white/5'
-                    }`}
-                  >
-                    Cabin Prep
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">Candidate / Guest Name</label>
-                <input
-                  type="text"
-                  value={taskCandidateName}
-                  onChange={(e) => setTaskCandidateName(e.target.value)}
-                  placeholder="e.g. Amit Trivedi (Optional)"
-                  className="w-full p-2.5 glass-input rounded-xl text-white text-xs"
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">Items Checklist</label>
-                <div className="space-y-1.5 p-3 glass-panel-subtle rounded-xl border border-white/6">
-                  {['2x Bottled Mineral Water', 'Sanitized Glassware & Coasters', 'Premium Green Tea / Coffee', 'Notebook & Executive Pen'].map(
-                    (item) => (
-                      <label key={item} className="flex items-center gap-2 cursor-pointer text-slate-300 text-xs">
-                        <input
-                          type="checkbox"
-                          checked={selectedItems.includes(item)}
-                          onChange={() => handleToggleItem(item)}
-                          className="rounded border-slate-700 text-amber-500 focus:ring-amber-400"
-                        />
-                        <span>{item}</span>
-                      </label>
-                    )
-                  )}
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2 border-t border-white/8">
+              <div className="flex justify-end gap-2 pt-2 border-t border-white/10">
                 <button
                   type="button"
-                  onClick={() => setShowAssignModal(false)}
-                  className="px-4 py-2 bg-white/6 hover:bg-white/10 text-slate-300 text-xs rounded-xl"
+                  onClick={() => setIssueModalTaskId(null)}
+                  className="px-4 py-2 bg-white/6 hover:bg-white/10 text-slate-300 rounded-xl text-xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  disabled={submittingTask}
-                  className="px-5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl shadow"
+                  disabled={submittingIssue}
+                  className="px-5 py-2 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl text-xs shadow disabled:opacity-50"
                 >
-                  {submittingTask ? 'Creating...' : 'Dispatch Task'}
+                  {submittingIssue ? 'Reporting...' : 'Submit Report'}
                 </button>
               </div>
             </form>

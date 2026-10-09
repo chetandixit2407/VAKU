@@ -32,6 +32,8 @@ import { AssignRoomModal } from './components/AssignRoomModal.tsx';
 import { EndInterviewModal } from './components/EndInterviewModal.tsx';
 import { QRPassModal } from './components/QRPassModal.tsx';
 import { WalkInModal } from './components/WalkInModal.tsx';
+import { CreatePantryTaskModal } from './components/CreatePantryTaskModal.tsx';
+import { PantryRealtimeMonitorModal } from './components/PantryRealtimeMonitorModal.tsx';
 import { SecureDocumentViewerModal } from './components/SecureDocumentViewerModal.tsx';
 import { ForgotPasswordModal } from './components/ForgotPasswordModal.tsx';
 import { ResetPasswordView } from './components/ResetPasswordView.tsx';
@@ -113,6 +115,8 @@ export default function App() {
     | 'END_INTERVIEW'
     | 'STAFF_LOGIN'
     | 'FORGOT_PASSWORD'
+    | 'CREATE_PANTRY_TASK'
+    | 'PANTRY_MONITOR'
     | null
   >(null);
   const [selectedCandidateId, setSelectedCandidateId] = useState<string>('');
@@ -1087,6 +1091,10 @@ export default function App() {
                         ? 'Interview Decision'
                         : activeModal === 'GENERAL_REGISTER'
                         ? 'Self-Registration'
+                        : activeModal === 'CREATE_PANTRY_TASK'
+                        ? 'Hospitality Dispatch'
+                        : activeModal === 'PANTRY_MONITOR'
+                        ? 'Pantry Live Monitor'
                         : 'Active Panel',
                     onClose: () => {
                       setActiveModal(null);
@@ -1108,6 +1116,8 @@ export default function App() {
             setActiveModal('CHECK_IN');
           }}
           onOpenWalkIn={() => setActiveModal('WALK_IN')}
+          onOpenCreatePantryTask={() => setActiveModal('CREATE_PANTRY_TASK')}
+          onOpenPantryMonitor={() => setActiveModal('PANTRY_MONITOR')}
           onToggleMobileMenu={() => setIsMobileNavOpen(true)}
           onOpenMore={() => {
             if (activeSection === 'more') {
@@ -1838,6 +1848,35 @@ export default function App() {
             window.history.pushState({}, '', `/reset-password?token=${encodeURIComponent(token)}`);
             setRoutePath('/reset-password');
           }}
+        />
+      )}
+
+      {/* 10. CREATE PANTRY & HOSPITALITY TASK MODAL */}
+      {activeModal === 'CREATE_PANTRY_TASK' && (
+        <CreatePantryTaskModal
+          rooms={rooms}
+          candidates={candidates}
+          currentUserName={currentUser?.name || (currentRole === 'ADMIN' ? 'Sameer Sir' : currentRole === 'CEO' ? 'Lalit Sir' : 'Nisha')}
+          currentUserRole={currentRole}
+          currentUserId={currentUserId}
+          onClose={() => setActiveModal(null)}
+          onSuccess={() => {
+            setActiveModal(null);
+            fetchAllData();
+          }}
+        />
+      )}
+
+      {/* 11. PANTRY REALTIME PROGRESS MONITOR MODAL */}
+      {activeModal === 'PANTRY_MONITOR' && (
+        <PantryRealtimeMonitorModal
+          tasks={pantryTasks}
+          currentUserId={currentUserId}
+          currentUserRole={currentRole}
+          currentUserName={currentUser?.name || (currentRole === 'ADMIN' ? 'Sameer Sir' : currentRole === 'CEO' ? 'Lalit Sir' : 'Nisha')}
+          onClose={() => setActiveModal(null)}
+          onOpenCreateTask={() => setActiveModal('CREATE_PANTRY_TASK')}
+          onRefresh={fetchAllData}
         />
       )}
 

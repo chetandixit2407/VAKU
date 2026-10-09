@@ -4,7 +4,9 @@ import type {
   Interview,
   Notification,
   PantryTask,
+  PantryTaskCategory,
   PantryTaskType,
+  PantryTaskItem,
   NotificationPriority,
   TimelineEvent,
   AuditLog,
@@ -917,50 +919,157 @@ class EventWorkflowEngine {
 
   // 2.5 CREATE / ASSIGN PANTRY TASK
   public handleCreatePantryTask(
-    actorId: string,
-    actorName: string,
-    actorRole: string,
-    roomId: string,
-    taskType: PantryTaskType,
-    description: string,
-    requiredItems: string[],
-    candidateName?: string,
-    priority: NotificationPriority = 'HIGH',
-    candidateId?: string
+    actorIdOrOptions:
+      | string
+      | {
+          category?: PantryTaskCategory;
+          taskType?: PantryTaskType;
+          candidateName?: string;
+          candidateId?: string;
+          roomId?: string;
+          roomName?: string;
+          location?: string;
+          instructions?: string;
+          description?: string;
+          requiredItems?: string[];
+          itemsWithQuantities?: PantryTaskItem[];
+          priority?: NotificationPriority;
+          assignedSteward?: string;
+          assignedStaffId?: string;
+          assignedTeam?: string;
+          dueTime?: string;
+          actorId?: string;
+          actorName?: string;
+          actorRole?: string;
+        },
+    legacyActorName?: string,
+    legacyActorRole?: string,
+    legacyRoomId?: string,
+    legacyTaskType?: PantryTaskType,
+    legacyDescription?: string,
+    legacyRequiredItems?: string[],
+    legacyCandidateName?: string,
+    legacyPriority: NotificationPriority = 'HIGH',
+    legacyCandidateId?: string
   ) {
     const timestamp = new Date().toISOString();
     let createdTask: PantryTask | null = null;
 
+    let category: PantryTaskCategory = 'HOSPITALITY';
+    let actorId = 'usr-pantry-suresh';
+    let actorName = 'Pantry Steward';
+    let actorRole = 'PANTRY';
+    let targetRoomId = '';
+    let targetRoomName = '';
+    let targetLocation = '';
+    let targetInstructions = '';
+    let taskType: PantryTaskType = 'ROOM_PREP';
+    let description = '';
+    let requiredItems: string[] = [];
+    let itemsWithQuantities: PantryTaskItem[] = [];
+    let candidateName = '';
+    let candidateId = '';
+    let priority: NotificationPriority = 'HIGH';
+    let assignedSteward = 'Suresh Kumar (Floor 2 Pantry)';
+    let assignedStaffId = '';
+    let assignedTeam = 'Pantry Team Alpha';
+    let dueTime = 'Immediate';
+
+    if (typeof actorIdOrOptions === 'object') {
+      const opts = actorIdOrOptions;
+      category = opts.category || 'HOSPITALITY';
+      actorId = opts.actorId || 'usr-staff';
+      actorName = opts.actorName || 'Authorized Staff';
+      actorRole = opts.actorRole || 'STAFF';
+      targetRoomId = opts.roomId || '';
+      targetRoomName = opts.roomName || '';
+      targetLocation = opts.location || opts.roomName || '';
+      targetInstructions = opts.instructions || opts.description || '';
+      taskType = opts.taskType || 'ROOM_PREP';
+      description = opts.description || opts.instructions || 'Hospitality task';
+      requiredItems = opts.requiredItems || [];
+      itemsWithQuantities = opts.itemsWithQuantities || [];
+      candidateName = opts.candidateName || '';
+      candidateId = opts.candidateId || '';
+      priority = opts.priority || 'HIGH';
+      assignedSteward = opts.assignedSteward || 'Suresh Kumar (Floor 2 Pantry)';
+      assignedStaffId = opts.assignedStaffId || '';
+      assignedTeam = opts.assignedTeam || 'Pantry Team Alpha';
+      dueTime = opts.dueTime || 'Within 15 mins';
+    } else {
+      actorId = actorIdOrOptions || 'usr-pantry-suresh';
+      actorName = legacyActorName || 'Pantry Steward';
+      actorRole = legacyActorRole || 'PANTRY';
+      targetRoomId = legacyRoomId || '';
+      taskType = legacyTaskType || 'ROOM_PREP';
+      description = legacyDescription || '';
+      requiredItems = legacyRequiredItems || [];
+      candidateName = legacyCandidateName || '';
+      priority = legacyPriority || 'HIGH';
+      candidateId = legacyCandidateId || '';
+      targetLocation = description;
+      targetInstructions = description;
+    }
+
     dbService.update((draft) => {
-      const room = draft.rooms.find((r) => r.id === roomId || r.roomId === roomId);
-      if (!room) {
-        throw new Error('Selected room not found in Room Management');
+      let matchedRoom = draft.rooms.find((r) => r.id === targetRoomId || r.roomId === targetRoomId);
+      if (!matchedRoom && targetRoomName) {
+        matchedRoom = draft.rooms.find((r) => r.name.toLowerCase() === targetRoomName.toLowerCase());
       }
 
+      const finalRoomId = matchedRoom ? matchedRoom.id : (targetRoomId || 'room-custom');
+      const finalRoomName = matchedRoom ? matchedRoom.name : (targetRoomName || targetLocation || 'Office Suite');
+
       const taskId = `pantry-task-${Date.now()}`;
+      const defaultItems =
+        requiredItems && requiredItems.length > 0
+          ? requiredItems
+          : ['2x Mineral Water Bottles', 'Sanitized Glassware & Coasters'];
+
       const pantryTask: PantryTask = {
         id: taskId,
-        roomId: room.id,
-        roomName: room.name,
-        candidateId: candidateId || room.currentCandidateId || '',
-        candidateName: candidateName || room.currentCandidateName || '',
-        taskType: taskType || 'ROOM_PREP',
-        description: description || `Hospitality task for ${room.name}`,
-        requiredItems: requiredItems && requiredItems.length > 0 ? requiredItems : ['2x Mineral Water Bottles', 'Room Sanitation'],
+        category,
+        roomId: finalRoomId,
+        roomName: finalRoomName,
+        location: targetLocation || finalRoomName,
+        instructions: targetInstructions || description || `Hospitality task for ${finalRoomName}`,
+        candidateId: candidateId || (matchedRoom ? matchedRoom.currentCandidateId : '') || '',
+        candidateName: candidateName || (matchedRoom ? matchedRoom.currentCandidateName : '') || 'Guest / Candidate',
+        taskType,
+        description: description || targetInstructions || `Hospitality preparation for ${finalRoomName}`,
+        requiredItems: defaultItems,
+        itemsWithQuantities: itemsWithQuantities.length > 0 ? itemsWithQuantities : defaultItems.map((it) => ({ item: it, quantity: 1 })),
         priority: priority || 'HIGH',
         status: 'PENDING',
+        dueTime: dueTime || 'Immediate',
+        assignedSteward: assignedSteward || 'Suresh Kumar (Floor 2 Pantry)',
+        assignedStaffId: assignedStaffId || '',
+        assignedTeam: assignedTeam || 'Pantry Team Alpha',
+        createdById: actorId,
+        createdByName: actorName,
+        createdByRole: (actorRole as UserRole) || 'HR',
         createdAt: timestamp,
+        assignedAt: timestamp,
+        auditTrail: [
+          {
+            timestamp,
+            status: 'PENDING',
+            actorName,
+            actorRole,
+            note: `Task created and assigned to ${assignedSteward || 'Pantry Staff'}.`,
+          },
+        ],
       };
 
       draft.pantryTasks.unshift(pantryTask);
       createdTask = pantryTask;
 
-      // Broadcast notification
+      // Broadcast notification to PANTRY role
       draft.notifications.unshift({
         id: `notif-${Date.now()}-pan-assigned`,
         recipientRole: 'PANTRY',
-        title: `Task Assigned: ${room.name}`,
-        message: `${actorName} assigned: ${pantryTask.description}`,
+        title: `Task Assigned: ${finalRoomName}`,
+        message: `${actorName} assigned: ${pantryTask.instructions || pantryTask.description}`,
         priority: pantryTask.priority === 'CRITICAL' ? 'CRITICAL' : 'HIGH',
         eventType: 'ROOM_PREPARATION_REQUIRED',
         entityId: pantryTask.id,
@@ -968,12 +1077,14 @@ class EventWorkflowEngine {
         read: false,
         createdAt: timestamp,
         actionButtons: [
+          { label: 'Accept Task', actionKey: 'ACCEPT_PANTRY_TASK', payload: { taskId: pantryTask.id } },
           { label: 'Mark Complete', actionKey: 'COMPLETE_PANTRY_TASK', payload: { taskId: pantryTask.id } },
         ],
         payload: {
           task: pantryTask.description,
-          room: room.name,
+          room: finalRoomName,
           candidate: pantryTask.candidateName,
+          dueTime: pantryTask.dueTime,
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         },
       });
@@ -985,7 +1096,7 @@ class EventWorkflowEngine {
         actorName,
         actorRole: (actorRole as any) || 'STAFF',
         action: 'ASSIGN_PANTRY_TASK',
-        details: `Assigned hospitality task (${taskType}) for ${room.name} (${room.id}).`,
+        details: `Assigned ${category} task (${taskType}) for ${finalRoomName} (Due: ${pantryTask.dueTime}).`,
         entityId: taskId,
         entityType: 'PANTRY_TASK',
       });
@@ -996,6 +1107,7 @@ class EventWorkflowEngine {
       actorType: 'STAFF',
       source: 'STAFF_ACTION',
       metadata: {
+        task: createdTask,
         taskId: createdTask ? (createdTask as PantryTask).id : '',
         roomId: createdTask ? (createdTask as PantryTask).roomId : '',
         roomName: createdTask ? (createdTask as PantryTask).roomName : '',
@@ -1003,15 +1115,124 @@ class EventWorkflowEngine {
       },
     });
 
+    this.broadcast({
+      type: 'PANTRY_TASKS_UPDATED',
+      payload: { taskId: createdTask ? (createdTask as PantryTask).id : '' },
+    });
+
     return createdTask;
   }
 
-  // 3. PANTRY COMPLETES PREPARATION
+  // 2.6 ACCEPT PANTRY TASK
+  public handleAcceptPantryTask(taskId: string, stewardName: string, stewardRole: string = 'PANTRY') {
+    const timestamp = new Date().toISOString();
+    let updatedTask: PantryTask | null = null;
+
+    dbService.update((draft) => {
+      const task = draft.pantryTasks.find((t) => t.id === taskId);
+      if (!task) throw new Error('Pantry task not found');
+
+      task.status = 'ACCEPTED';
+      task.acceptedAt = timestamp;
+      task.assignedSteward = stewardName || task.assignedSteward;
+
+      task.auditTrail = task.auditTrail || [];
+      task.auditTrail.unshift({
+        timestamp,
+        status: 'ACCEPTED',
+        actorName: stewardName,
+        actorRole: stewardRole,
+        note: 'Task accepted and acknowledged by pantry steward.',
+      });
+
+      draft.auditLogs.unshift({
+        id: `aud-${Date.now()}-pan-accept`,
+        timestamp,
+        actorType: 'USER',
+        actorName: stewardName,
+        actorRole: 'PANTRY',
+        action: 'ACCEPT_PANTRY_TASK',
+        details: `Accepted task for ${task.roomName}.`,
+        entityId: taskId,
+        entityType: 'PANTRY_TASK',
+      });
+
+      updatedTask = task;
+    });
+
+    this.publishDomainEvent({
+      eventType: 'PANTRY_TASK_UPDATED',
+      actorType: 'STAFF',
+      source: 'STAFF_ACTION',
+      metadata: { task: updatedTask, taskId, status: 'ACCEPTED', stewardName },
+    });
+
+    this.broadcast({
+      type: 'PANTRY_TASKS_UPDATED',
+      payload: { taskId, status: 'ACCEPTED' },
+    });
+
+    return updatedTask;
+  }
+
+  // 2.7 START PANTRY TASK
+  public handleStartPantryTask(taskId: string, stewardName: string, stewardRole: string = 'PANTRY') {
+    const timestamp = new Date().toISOString();
+    let updatedTask: PantryTask | null = null;
+
+    dbService.update((draft) => {
+      const task = draft.pantryTasks.find((t) => t.id === taskId);
+      if (!task) throw new Error('Pantry task not found');
+
+      task.status = 'IN_PROGRESS';
+      task.startedAt = timestamp;
+
+      task.auditTrail = task.auditTrail || [];
+      task.auditTrail.unshift({
+        timestamp,
+        status: 'IN_PROGRESS',
+        actorName: stewardName,
+        actorRole: stewardRole,
+        note: 'Task started and service currently in progress.',
+      });
+
+      draft.auditLogs.unshift({
+        id: `aud-${Date.now()}-pan-start`,
+        timestamp,
+        actorType: 'USER',
+        actorName: stewardName,
+        actorRole: 'PANTRY',
+        action: 'START_PANTRY_TASK',
+        details: `Started work on task in ${task.roomName}.`,
+        entityId: taskId,
+        entityType: 'PANTRY_TASK',
+      });
+
+      updatedTask = task;
+    });
+
+    this.publishDomainEvent({
+      eventType: 'PANTRY_TASK_UPDATED',
+      actorType: 'STAFF',
+      source: 'STAFF_ACTION',
+      metadata: { task: updatedTask, taskId, status: 'IN_PROGRESS', stewardName },
+    });
+
+    this.broadcast({
+      type: 'PANTRY_TASKS_UPDATED',
+      payload: { taskId, status: 'IN_PROGRESS' },
+    });
+
+    return updatedTask;
+  }
+
+  // 3. PANTRY COMPLETES PREPARATION (STAFF-REPORTED COMPLETION)
   public handlePantryTaskCompleted(taskId: string, stewardName: string) {
     const timestamp = new Date().toISOString();
     let roomName = '';
     let roomId = '';
     let candidateName = '';
+    let completedTask: PantryTask | null = null;
 
     dbService.update((draft) => {
       const task = draft.pantryTasks.find((t) => t.id === taskId);
@@ -1020,9 +1241,27 @@ class EventWorkflowEngine {
       task.status = 'COMPLETED';
       task.completedAt = timestamp;
       task.completedBy = stewardName;
+      task.isStaffReportedCompleted = true;
+      task.staffReportedCompletedAt = timestamp;
       roomName = task.roomName;
       roomId = task.roomId;
       candidateName = task.candidateName;
+
+      // Calculate task duration in minutes
+      const startRef = task.startedAt || task.acceptedAt || task.createdAt;
+      const diffMs = Math.max(0, new Date(timestamp).getTime() - new Date(startRef).getTime());
+      const mins = Math.max(1, Math.round(diffMs / 60000));
+      task.completionDurationMinutes = mins;
+      task.timeTakenFormatted = diffMs < 60000 ? `${Math.max(1, Math.round(diffMs / 1000))}s` : `${mins} min${mins > 1 ? 's' : ''}`;
+
+      task.auditTrail = task.auditTrail || [];
+      task.auditTrail.unshift({
+        timestamp,
+        status: 'COMPLETED',
+        actorName: stewardName,
+        actorRole: 'PANTRY',
+        note: `Staff reported task completion in ${task.timeTakenFormatted}.`,
+      });
 
       // Update timeline
       const room = draft.rooms.find((r) => r.id === roomId);
@@ -1041,7 +1280,30 @@ class EventWorkflowEngine {
           actorType: 'USER',
           actorName: stewardName,
           eventType: 'PANTRY_PREPARATION_COMPLETED',
-          description: `${roomName} hospitality & water setup marked complete by Pantry.`,
+          description: `${roomName} hospitality & water setup marked complete by Pantry (${task.timeTakenFormatted}).`,
+        });
+      }
+
+      // Notify task creator and Admin of staff-reported completion
+      if (task.createdByRole) {
+        draft.notifications.unshift({
+          id: `notif-${Date.now()}-pan-done`,
+          recipientRole: task.createdByRole,
+          recipientUserId: task.createdById,
+          title: `Task Completed: ${roomName}`,
+          message: `${stewardName} marked task completed in ${task.timeTakenFormatted}. Ready for verification.`,
+          priority: 'NORMAL',
+          eventType: 'PANTRY_TASK_COMPLETED',
+          entityId: taskId,
+          entityType: 'PANTRY_TASK',
+          read: false,
+          createdAt: timestamp,
+          payload: {
+            taskId,
+            room: roomName,
+            timeTaken: task.timeTakenFormatted,
+            steward: stewardName,
+          },
         });
       }
 
@@ -1052,10 +1314,12 @@ class EventWorkflowEngine {
         actorName: stewardName,
         actorRole: 'PANTRY',
         action: 'COMPLETE_PANTRY_TASK',
-        details: `Completed hospitality preparation for ${roomName}.`,
+        details: `Completed hospitality preparation for ${roomName} in ${task.timeTakenFormatted} (Staff-Reported).`,
         entityId: taskId,
         entityType: 'PANTRY_TASK',
       });
+
+      completedTask = task;
     });
 
     this.publishDomainEvent({
@@ -1064,12 +1328,205 @@ class EventWorkflowEngine {
       roomId,
       actorType: 'STAFF',
       source: 'STAFF_ACTION',
-      metadata: { taskId, roomId, roomName, candidateName, stewardName },
+      metadata: { task: completedTask, taskId, roomId, roomName, candidateName, stewardName },
     });
     this.broadcast({
       type: 'ROOMS_UPDATED',
       payload: { roomId },
     });
+    this.broadcast({
+      type: 'PANTRY_TASKS_UPDATED',
+      payload: { taskId, status: 'COMPLETED' },
+    });
+
+    return completedTask;
+  }
+
+  // 3.1 REPORT ISSUE ON PANTRY TASK
+  public handleReportIssuePantryTask(taskId: string, reason: string, stewardName: string) {
+    const timestamp = new Date().toISOString();
+    let updatedTask: PantryTask | null = null;
+
+    dbService.update((draft) => {
+      const task = draft.pantryTasks.find((t) => t.id === taskId);
+      if (!task) throw new Error('Pantry task not found');
+
+      task.status = 'ISSUE_REPORTED';
+      task.issueReportedAt = timestamp;
+      task.issueReason = reason;
+
+      task.auditTrail = task.auditTrail || [];
+      task.auditTrail.unshift({
+        timestamp,
+        status: 'ISSUE_REPORTED',
+        actorName: stewardName,
+        actorRole: 'PANTRY',
+        note: `Issue reported: ${reason}`,
+      });
+
+      // Send High Priority Notification to Creator and Admin
+      draft.notifications.unshift({
+        id: `notif-${Date.now()}-pan-issue`,
+        recipientRole: 'ADMIN',
+        title: `Pantry Issue Reported: ${task.roomName}`,
+        message: `${stewardName} reported: "${reason}" on task for ${task.candidateName}.`,
+        priority: 'HIGH',
+        eventType: 'PANTRY_TASK_ISSUE',
+        entityId: taskId,
+        entityType: 'PANTRY_TASK',
+        read: false,
+        createdAt: timestamp,
+      });
+
+      if (task.createdByRole && task.createdByRole !== 'ADMIN') {
+        draft.notifications.unshift({
+          id: `notif-${Date.now()}-pan-issue-creator`,
+          recipientRole: task.createdByRole,
+          recipientUserId: task.createdById,
+          title: `Pantry Issue Reported: ${task.roomName}`,
+          message: `${stewardName} reported: "${reason}".`,
+          priority: 'HIGH',
+          eventType: 'PANTRY_TASK_ISSUE',
+          entityId: taskId,
+          entityType: 'PANTRY_TASK',
+          read: false,
+          createdAt: timestamp,
+        });
+      }
+
+      draft.auditLogs.unshift({
+        id: `aud-${Date.now()}-pan-issue`,
+        timestamp,
+        actorType: 'USER',
+        actorName: stewardName,
+        actorRole: 'PANTRY',
+        action: 'REPORT_PANTRY_ISSUE',
+        details: `Reported issue on ${task.roomName}: ${reason}`,
+        entityId: taskId,
+        entityType: 'PANTRY_TASK',
+      });
+
+      updatedTask = task;
+    });
+
+    this.publishDomainEvent({
+      eventType: 'PANTRY_TASK_UPDATED',
+      actorType: 'STAFF',
+      source: 'STAFF_ACTION',
+      metadata: { task: updatedTask, taskId, status: 'ISSUE_REPORTED', reason, stewardName },
+    });
+
+    this.broadcast({
+      type: 'PANTRY_TASKS_UPDATED',
+      payload: { taskId, status: 'ISSUE_REPORTED' },
+    });
+
+    return updatedTask;
+  }
+
+  // 3.2 VERIFY PANTRY TASK COMPLETION (ADMIN / CREATOR ONLY)
+  public handleVerifyPantryTask(taskId: string, verifierName: string, verifierRole: string) {
+    const timestamp = new Date().toISOString();
+    let updatedTask: PantryTask | null = null;
+
+    dbService.update((draft) => {
+      const task = draft.pantryTasks.find((t) => t.id === taskId);
+      if (!task) throw new Error('Pantry task not found');
+
+      task.isVerifiedCompleted = true;
+      task.verifiedAt = timestamp;
+      task.verifiedBy = verifierName;
+
+      task.auditTrail = task.auditTrail || [];
+      task.auditTrail.unshift({
+        timestamp,
+        status: task.status,
+        actorName: verifierName,
+        actorRole: verifierRole,
+        note: 'Task completion verified and approved by supervisor.',
+      });
+
+      draft.auditLogs.unshift({
+        id: `aud-${Date.now()}-pan-verify`,
+        timestamp,
+        actorType: 'USER',
+        actorName: verifierName,
+        actorRole: verifierRole,
+        action: 'VERIFY_PANTRY_TASK',
+        details: `Verified completion of ${task.category || 'Hospitality'} task for ${task.roomName}.`,
+        entityId: taskId,
+        entityType: 'PANTRY_TASK',
+      });
+
+      updatedTask = task;
+    });
+
+    this.publishDomainEvent({
+      eventType: 'PANTRY_TASK_UPDATED',
+      actorType: 'STAFF',
+      source: 'STAFF_ACTION',
+      metadata: { task: updatedTask, taskId, isVerifiedCompleted: true, verifierName },
+    });
+
+    this.broadcast({
+      type: 'PANTRY_TASKS_UPDATED',
+      payload: { taskId, isVerifiedCompleted: true },
+    });
+
+    return updatedTask;
+  }
+
+  // 3.3 CANCEL PANTRY TASK (ADMIN / CREATOR ONLY)
+  public handleCancelPantryTask(taskId: string, cancellerName: string, cancellerRole: string, reason?: string) {
+    const timestamp = new Date().toISOString();
+    let updatedTask: PantryTask | null = null;
+
+    dbService.update((draft) => {
+      const task = draft.pantryTasks.find((t) => t.id === taskId);
+      if (!task) throw new Error('Pantry task not found');
+
+      task.status = 'CANCELLED';
+      task.cancelledAt = timestamp;
+      task.cancelledBy = cancellerName;
+      task.cancellationReason = reason || 'Cancelled by authorized requester';
+
+      task.auditTrail = task.auditTrail || [];
+      task.auditTrail.unshift({
+        timestamp,
+        status: 'CANCELLED',
+        actorName: cancellerName,
+        actorRole: cancellerRole,
+        note: `Task cancelled: ${task.cancellationReason}`,
+      });
+
+      draft.auditLogs.unshift({
+        id: `aud-${Date.now()}-pan-cancel`,
+        timestamp,
+        actorType: 'USER',
+        actorName: cancellerName,
+        actorRole: cancellerRole,
+        action: 'CANCEL_PANTRY_TASK',
+        details: `Cancelled task for ${task.roomName}: ${task.cancellationReason}.`,
+        entityId: taskId,
+        entityType: 'PANTRY_TASK',
+      });
+
+      updatedTask = task;
+    });
+
+    this.publishDomainEvent({
+      eventType: 'PANTRY_TASK_UPDATED',
+      actorType: 'STAFF',
+      source: 'STAFF_ACTION',
+      metadata: { task: updatedTask, taskId, status: 'CANCELLED', cancellerName },
+    });
+
+    this.broadcast({
+      type: 'PANTRY_TASKS_UPDATED',
+      payload: { taskId, status: 'CANCELLED' },
+    });
+
+    return updatedTask;
   }
 
   // 3B. PANTRY MARKS ROOM CLEANING -> CLEANED / READY DIRECTLY
