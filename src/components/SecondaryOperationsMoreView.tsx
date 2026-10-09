@@ -102,7 +102,7 @@ export const SecondaryOperationsMoreView: React.FC<SecondaryOperationsMoreViewPr
           className={`wcr-filter-tab px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer shrink-0 border flex items-center gap-2 ${
             activeTab === 'all'
               ? 'is-active bg-amber-500 text-slate-950 border-amber-400 font-black shadow-md ring-2 ring-amber-400/40'
-              : 'bg-[#0B0B0D] text-white border-white/15 hover:bg-white hover:text-black'
+              : 'bg-[#0B0B0D] text-white border-white/15 hover:bg-[#181C24] hover:text-white hover:border-white/30'
           }`}
         >
           <Layers className="w-3.5 h-3.5" />
@@ -118,7 +118,7 @@ export const SecondaryOperationsMoreView: React.FC<SecondaryOperationsMoreViewPr
           className={`wcr-filter-tab px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer shrink-0 border flex items-center gap-2 ${
             activeTab === 'lounge'
               ? 'is-active bg-amber-500 text-slate-950 border-amber-400 font-black shadow-md ring-2 ring-amber-400/40'
-              : 'bg-[#0B0B0D] text-white border-white/15 hover:bg-white hover:text-black'
+              : 'bg-[#0B0B0D] text-white border-white/15 hover:bg-[#181C24] hover:text-white hover:border-white/30'
           }`}
         >
           <Coffee className="w-3.5 h-3.5 text-amber-400" />
@@ -134,7 +134,7 @@ export const SecondaryOperationsMoreView: React.FC<SecondaryOperationsMoreViewPr
           className={`wcr-filter-tab px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer shrink-0 border flex items-center gap-2 ${
             activeTab === 'meetings'
               ? 'is-active bg-amber-500 text-slate-950 border-amber-400 font-black shadow-md ring-2 ring-amber-400/40'
-              : 'bg-[#0B0B0D] text-white border-white/15 hover:bg-white hover:text-black'
+              : 'bg-[#0B0B0D] text-white border-white/15 hover:bg-[#181C24] hover:text-white hover:border-white/30'
           }`}
         >
           <CalendarClock className="w-3.5 h-3.5 text-blue-400" />
@@ -150,7 +150,7 @@ export const SecondaryOperationsMoreView: React.FC<SecondaryOperationsMoreViewPr
           className={`wcr-filter-tab px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer shrink-0 border flex items-center gap-2 ${
             activeTab === 'checkout'
               ? 'is-active bg-amber-500 text-slate-950 border-amber-400 font-black shadow-md ring-2 ring-amber-400/40'
-              : 'bg-[#0B0B0D] text-white border-white/15 hover:bg-white hover:text-black'
+              : 'bg-[#0B0B0D] text-white border-white/15 hover:bg-[#181C24] hover:text-white hover:border-white/30'
           }`}
         >
           <LogOut className="w-3.5 h-3.5 text-emerald-400" />
