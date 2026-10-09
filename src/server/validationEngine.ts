@@ -15,15 +15,10 @@ import {
 export class ValidationEngine {
   public runAutomatedValidation(
     candidate: Partial<Candidate>,
-    governmentIdNumber?: string,
-    governmentIdType?: GovernmentIdType,
-    governmentIdFileName?: string,
-    governmentIdFileUrl?: string,
     resumeFileName?: string,
     resumeUrl?: string
   ): {
     validationResult: CandidateValidationResult;
-    governmentIdDoc?: GovernmentIdDocument;
   } {
     const checks: ValidationCheckItem[] = [];
     const validationTimestamp = new Date().toISOString();
@@ -142,46 +137,6 @@ export class ValidationEngine {
       });
     }
 
-    // 6. Government ID Verification Check
-    let governmentIdDoc: GovernmentIdDocument | undefined;
-    if (governmentIdNumber || governmentIdFileName || governmentIdFileUrl) {
-      const type = governmentIdType || 'AADHAAR';
-      const typeName =
-        type === 'AADHAAR'
-          ? 'Aadhaar Card'
-          : type === 'PAN'
-          ? 'PAN Card'
-          : type === 'DRIVING_LICENSE'
-          ? 'Driving Licence'
-          : type === 'PASSPORT'
-          ? 'Passport'
-          : 'Voter ID';
-      const cleanNum = (governmentIdNumber || '').replace(/\s+/g, '');
-      const masked = cleanNum.length > 4 ? `XXXX-XXXX-${cleanNum.slice(-4)}` : 'VERIFIED-GOV-ID';
-      governmentIdDoc = {
-        id: `govid-${Date.now()}`,
-        candidateId,
-        idType: type,
-        idTypeName: typeName,
-        idNumberMasked: masked,
-        rawIdNumber: cleanNum,
-        verified: true,
-        uploadedAt: validationTimestamp,
-        originalFileName: governmentIdFileName,
-        documentDataUrl: governmentIdFileUrl,
-        fileDataUrl: governmentIdFileUrl,
-      };
-      checks.push({
-        id: 'chk-gov-id',
-        name: 'Government ID Document Status',
-        category: 'GOV_ID',
-        status: 'PASSED',
-        details: `${typeName} verified (${masked}). Document attached.`,
-        expected: 'Valid Government Photo ID',
-        actual: typeName,
-      });
-    }
-
     const hasInvalid = checks.some((c) => c.status === 'INVALID');
     const hasNeedsReview = checks.some((c) => c.status === 'NEEDS_REVIEW');
 
@@ -225,7 +180,6 @@ export class ValidationEngine {
 
     return {
       validationResult,
-      governmentIdDoc,
     };
   }
 }

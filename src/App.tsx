@@ -288,12 +288,10 @@ export default function App() {
   }, [routePath]);
 
   // Dedicated in-app document viewer route
-  // e.g. /app/candidates/:candidateId/resume/view OR /app/candidates/:candidateId/government-id/view
-  const docViewerMatch = routePath.match(/\/(?:app\/)?candidates\/([^/?#]+)\/(resume|government-id|govid)\/view/);
+  // e.g. /app/candidates/:candidateId/resume/view
+  const docViewerMatch = routePath.match(/\/(?:app\/)?candidates\/([^/?#]+)\/resume\/view/);
   const docCandidateId = docViewerMatch ? docViewerMatch[1] : null;
-  const docViewerType: 'RESUME' | 'GOVERNMENT_ID' | null = docViewerMatch
-    ? (docViewerMatch[2] === 'resume' ? 'RESUME' : 'GOVERNMENT_ID')
-    : null;
+  const docViewerType: 'RESUME' | null = docViewerMatch ? 'RESUME' : null;
 
   const [routeCandidate, setRouteCandidate] = useState<Candidate | null>(null);
   const [routeCandidateLoading, setRouteCandidateLoading] = useState<boolean>(false);
@@ -859,7 +857,6 @@ export default function App() {
   // ==========================================
   // DEDICATED IN-APP DOCUMENT VIEWER ROUTE
   // /app/candidates/:candidateId/resume/view
-  // /app/candidates/:candidateId/government-id/view
   // ==========================================
   if (docViewerMatch && docCandidateId && docViewerType) {
     if (routeCandidateLoading) {

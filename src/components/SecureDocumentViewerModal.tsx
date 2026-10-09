@@ -24,31 +24,29 @@ import {
   Copy,
   Check,
 } from 'lucide-react';
-import type { Candidate, UserRole, GovernmentIdType } from '../types/index.ts';
+import type { Candidate, UserRole } from '../types/index.ts';
 import { formatDateTime } from '../utils/dateFormatter.ts';
 import { authenticatedFetch } from '../utils/apiClient.ts';
 import { PdfCanvasViewer } from './PdfCanvasViewer.tsx';
 
-export type DocumentType = 'RESUME' | 'GOVERNMENT_ID';
+export type DocumentType = 'RESUME';
 
 interface SecureDocumentViewerModalProps {
   candidate: Candidate;
   currentRole: UserRole;
-  documentType: DocumentType;
+  documentType?: DocumentType | string;
   onClose: () => void;
 }
 
 export const SecureDocumentViewerModal: React.FC<SecureDocumentViewerModalProps> = ({
   candidate,
   currentRole,
-  documentType,
   onClose,
 }) => {
   const [zoomLevel, setZoomLevel] = useState<number>(100);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
-  const [showFullId, setShowFullId] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const [documentBlob, setDocumentBlob] = useState<Blob | null>(null);
@@ -58,16 +56,11 @@ export const SecureDocumentViewerModal: React.FC<SecureDocumentViewerModalProps>
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const isResume = documentType === 'RESUME';
-  const govId = candidate.governmentId;
+  const fileName =
+    candidate.resumeFileName || `${candidate.fullName.replace(/\s+/g, '_')}_Resume.pdf`;
 
-  const fileName = isResume
-    ? candidate.resumeFileName || `${candidate.fullName.replace(/\s+/g, '_')}_Resume.pdf`
-    : govId?.originalFileName || `${candidate.fullName.replace(/\s+/g, '_')}_${govId?.idType || 'GovID'}.pdf`;
-
-  const initialMimeType = isResume
-    ? candidate.resumeMimeType || (fileName.endsWith('.pdf') ? 'application/pdf' : 'application/octet-stream')
-    : govId?.mimeType || (fileName.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
+  const initialMimeType =
+    candidate.resumeMimeType || (fileName.endsWith('.pdf') ? 'application/pdf' : 'application/octet-stream');
 
   const [detectedMime, setDetectedMime] = useState<string>(initialMimeType);
 
@@ -128,21 +121,15 @@ export const SecureDocumentViewerModal: React.FC<SecureDocumentViewerModalProps>
     ? 'Image Asset'
     : 'Business Document';
 
-  const fileSize = isResume ? candidate.resumeFileSize || '1.4 MB' : govId?.fileSize || '1.2 MB';
-  const uploadedAt = isResume
-    ? candidate.resumeUploadedAt || candidate.createdAt
-    : govId?.uploadedAt || candidate.createdAt;
+  const fileSize = candidate.resumeFileSize || '1.4 MB';
+  const uploadedAt = candidate.resumeUploadedAt || candidate.createdAt;
 
   const formattedUpload = formatDateTime(uploadedAt);
 
   // Authenticated endpoints on the same origin (no Chrome blocking)
-  const apiDocEndpoint = isResume
-    ? `/api/candidates/${candidate.id}/resume?role=${encodeURIComponent(currentRole)}`
-    : `/api/candidates/${candidate.id}/government-id?role=${encodeURIComponent(currentRole)}`;
+  const apiDocEndpoint = `/api/candidates/${candidate.id}/resume?role=${encodeURIComponent(currentRole)}`;
 
-  const downloadEndpoint = isResume
-    ? `/api/candidates/${candidate.id}/resume/download?role=${encodeURIComponent(currentRole)}`
-    : `/api/candidates/${candidate.id}/govid/download?role=${encodeURIComponent(currentRole)}`;
+  const downloadEndpoint = `/api/candidates/${candidate.id}/resume/download?role=${encodeURIComponent(currentRole)}`;
 
   // Fetch document safely as Blob to avoid any cross-origin or top-frame Chrome blocking
   useEffect(() => {
@@ -166,10 +153,10 @@ export const SecureDocumentViewerModal: React.FC<SecureDocumentViewerModalProps>
             throw new Error(customError || 'You do not have permission to view this document.');
           }
           if (res.status === 404) {
-            throw new Error(customError || (isResume ? 'Resume document not found for this candidate.' : 'Government ID document not found for this candidate.'));
+            throw new Error(customError || 'Resume document not found for this candidate.');
           }
           if (res.status === 422) {
-            throw new Error(customError || (isResume ? 'Resume preview unavailable. The uploaded resume file is missing or corrupted.' : 'Government ID preview unavailable. The uploaded file is missing or corrupted.'));
+            throw new Error(customError || 'Resume preview unavailable. The uploaded resume file is missing or corrupted.');
           }
           if (res.status >= 500) {
             throw new Error(customError || 'Unable to load document. Please try again.');
@@ -297,7 +284,7 @@ export const SecureDocumentViewerModal: React.FC<SecureDocumentViewerModalProps>
             </button>
 
             <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
-              {isResume ? <FileText className="w-5 h-5" /> : <ShieldCheck className="w-5 h-5 text-cyan-400" />}
+              <FileText className="w-5 h-5" />
             </div>
 
             <div className="min-w-0">
@@ -423,23 +410,6 @@ export const SecureDocumentViewerModal: React.FC<SecureDocumentViewerModalProps>
           </div>
 
           <div className="flex items-center gap-3 text-[11px]">
-            {!isResume && govId && (
-              <div className="flex items-center gap-2">
-                <span className="text-slate-400">ID Number:</span>
-                <span className="font-mono text-cyan-300 font-bold">
-                  {showFullId && govId.rawIdNumber ? govId.rawIdNumber : govId.maskedIdNumber || 'XXXX-XXXX-XXXX'}
-                </span>
-                {(currentRole === 'HR' || currentRole === 'ADMIN') && govId.rawIdNumber && (
-                  <button
-                    onClick={() => setShowFullId(!showFullId)}
-                    className="p-1 hover:text-amber-400 transition cursor-pointer"
-                    title={showFullId ? 'Mask ID number' : 'Reveal full ID number'}
-                  >
-                    {showFullId ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                  </button>
-                )}
-              </div>
-            )}
             <span className="flex items-center gap-1 text-emerald-400">
               <ShieldCheck className="w-3.5 h-3.5" />
               <span>Role: <strong className="text-amber-300">{currentRole}</strong></span>
@@ -452,7 +422,7 @@ export const SecureDocumentViewerModal: React.FC<SecureDocumentViewerModalProps>
           {loading ? (
             <div className="flex-1 flex flex-col items-center justify-center space-y-3 py-16">
               <div className="w-10 h-10 border-3 border-amber-400 border-t-transparent rounded-full animate-spin" />
-              <p className="text-xs text-slate-300 font-medium">Opening {isResume ? 'Resume' : 'Government ID'}...</p>
+              <p className="text-xs text-slate-300 font-medium">Opening Resume...</p>
               <p className="text-[11px] text-slate-500">Decrypting & rendering in-app document pages</p>
             </div>
           ) : loadError ? (
@@ -461,7 +431,7 @@ export const SecureDocumentViewerModal: React.FC<SecureDocumentViewerModalProps>
                 <FileText className="w-6 h-6" />
               </div>
               <h3 className="text-base font-bold text-white mb-1">
-                {isResume ? 'Resume Document Unavailable' : 'Government ID Unavailable'}
+                Resume Document Unavailable
               </h3>
               <p className="text-xs text-slate-400 mb-5 leading-relaxed">{loadError}</p>
               <div className="flex items-center gap-3">

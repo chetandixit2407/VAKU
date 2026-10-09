@@ -183,51 +183,7 @@ function persistResumeBuffer(candidateId: string, originalFileName?: string, res
   return { diskPath, mimeType, fileSize, fileName };
 }
 
-function persistGovernmentIdBuffer(
-  candidateId: string,
-  idType: GovernmentIdType,
-  originalFileName?: string,
-  documentDataUrl?: string,
-  candidateName = 'Candidate'
-): { diskPath: string; mimeType: string; fileSize: string; fileName: string } {
-  const ext = originalFileName?.split('.').pop() || 'pdf';
-  const fileName = originalFileName || `${(candidateName || 'Candidate').replace(/\s+/g, '_')}_${idType}.${ext}`;
-  const lower = fileName.toLowerCase();
-  let mimeType = 'application/octet-stream';
-  if (lower.endsWith('.pdf')) mimeType = 'application/pdf';
-  else if (lower.endsWith('.png')) mimeType = 'image/png';
-  else if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) mimeType = 'image/jpeg';
-  else if (lower.endsWith('.webp')) mimeType = 'image/webp';
-  else if (lower.endsWith('.gif')) mimeType = 'image/gif';
-  else if (lower.endsWith('.doc')) mimeType = 'application/msword';
-  else if (lower.endsWith('.docx')) mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-  else if (lower.endsWith('.csv')) mimeType = 'text/csv';
-  else if (lower.endsWith('.txt')) mimeType = 'text/plain';
 
-  const diskPath = path.resolve(GOV_IDS_DIR, `${candidateId}-govid.bin`);
-  let buffer: Buffer | null = null;
-
-  if (documentDataUrl && documentDataUrl.startsWith('data:')) {
-    const match = documentDataUrl.match(/^data:([^;]+);base64,(.+)$/);
-    if (match) {
-      mimeType = match[1] || mimeType;
-      try {
-        buffer = Buffer.from(match[2], 'base64');
-      } catch (e) {
-        console.warn('Base64 decode error', e);
-      }
-    }
-  }
-
-  if (buffer && buffer.length > 0) {
-    fs.writeFileSync(diskPath, buffer);
-  }
-  const bufLen = buffer ? buffer.length : 0;
-  const sizeMB = (bufLen / (1024 * 1024)).toFixed(1);
-  const fileSize = bufLen > 1024 * 1024 ? `${sizeMB} MB` : `${Math.round(bufLen / 1024)} KB`;
-
-  return { diskPath, mimeType, fileSize, fileName };
-}
 
 async function startServer() {
   const app = express();
@@ -712,7 +668,7 @@ async function startServer() {
     let relatedInterview: Interview | undefined;
 
     // Run Automated Validation Engine
-    const { validationResult, governmentIdDoc } = validationEngine.runAutomatedValidation(
+    const { validationResult } = validationEngine.runAutomatedValidation(
       {
         fullName,
         phone,
@@ -726,10 +682,6 @@ async function startServer() {
         noticePeriod,
         expectedSalary,
       },
-      governmentIdNumber,
-      idTypeToValidate,
-      governmentIdFileName,
-      governmentIdFileUrl,
       resumeFileName,
       resumeUrl
     );
@@ -777,30 +729,6 @@ async function startServer() {
           existingCand.departmentToMeet = departmentToMeet || existingCand.departmentToMeet;
           existingCand.personToMeet = personToMeet || existingCand.personToMeet;
 
-          // Attach persistently stored Gov ID if provided
-          if (hasGovId) {
-            const persistedGovId = persistGovernmentIdBuffer(
-              existingCand.id,
-              idTypeToValidate,
-              governmentIdFileName,
-              governmentIdFileUrl,
-              fullName
-            );
-            existingCand.governmentId = {
-              ...governmentIdDoc,
-              candidateId: existingCand.id,
-              storageKey: persistedGovId.diskPath,
-              originalFileName: persistedGovId.fileName,
-              mimeType: persistedGovId.mimeType,
-              fileSize: persistedGovId.fileSize,
-              documentDataUrl: governmentIdFileUrl,
-            };
-            existingCand.hasGovernmentId = true;
-            existingCand.governmentIdFileName = persistedGovId.fileName;
-            existingCand.governmentIdFileUrl = governmentIdFileUrl;
-          } else {
-            existingCand.hasGovernmentId = false;
-          }
           existingCand.validationResult = {
             ...validationResult,
             candidateId: existingCand.id,
@@ -833,15 +761,6 @@ async function startServer() {
           // Create new candidate
           const newCandId = `cand-${Date.now()}`;
           const persistedResume = persistResumeBuffer(newCandId, resumeFileName, resumeUrl, fullName, position);
-          const persistedGovId = hasGovId
-            ? persistGovernmentIdBuffer(
-                newCandId,
-                idTypeToValidate,
-                governmentIdFileName,
-                governmentIdFileUrl,
-                fullName
-              )
-            : undefined;
 
           const newCand: Candidate = {
             id: newCandId,
@@ -865,20 +784,6 @@ async function startServer() {
             purpose: purpose || 'Scheduled In-Person Interview',
             departmentToMeet: departmentToMeet || 'HR & Recruitment',
             personToMeet: personToMeet || '',
-            governmentId: hasGovId && persistedGovId
-              ? {
-                  ...governmentIdDoc,
-                  candidateId: newCandId,
-                  storageKey: persistedGovId.diskPath,
-                  originalFileName: persistedGovId.fileName,
-                  mimeType: persistedGovId.mimeType,
-                  fileSize: persistedGovId.fileSize,
-                  documentDataUrl: governmentIdFileUrl,
-                }
-              : undefined,
-            hasGovernmentId: hasGovId,
-            governmentIdFileName: persistedGovId?.fileName,
-            governmentIdFileUrl: governmentIdFileUrl,
             validationResult: {
               ...validationResult,
               candidateId: newCandId,
@@ -1420,8 +1325,6 @@ async function startServer() {
         }
 
         // Run automated validation engine on the candidate submission
-        const idTypeToValidate = (governmentIdType as GovernmentIdType) || 'AADHAAR';
-        const idNumToValidate = governmentIdNumber || '123456789012';
         const validation = validationEngine.runAutomatedValidation(
           {
             fullName,
@@ -1431,10 +1334,6 @@ async function startServer() {
             totalExperience,
             currentCompany,
           },
-          idNumToValidate,
-          idTypeToValidate,
-          governmentIdFileName,
-          governmentIdDocumentUrl,
           resumeFileName,
           resumeUrl
         );
@@ -1475,26 +1374,6 @@ async function startServer() {
           existingCand.personToMeet = personToMeet || existingCand.personToMeet;
           existingCand.purpose = purpose || existingCand.purpose;
 
-          // Attach Government ID
-          const govIdPersisted = persistGovernmentIdBuffer(
-            existingCand.id,
-            idTypeToValidate,
-            governmentIdFileName,
-            governmentIdDocumentUrl,
-            fullName
-          );
-          existingCand.governmentId = {
-            ...validation.governmentIdDoc,
-            candidateId: existingCand.id,
-            originalFileName: govIdPersisted.fileName,
-            mimeType: govIdPersisted.mimeType,
-            fileSize: govIdPersisted.fileSize,
-            storageKey: govIdPersisted.diskPath,
-            uploadedAt: timestamp,
-          };
-          existingCand.hasGovernmentId = true;
-          existingCand.governmentIdFileName = govIdPersisted.fileName;
-          existingCand.governmentIdFileUrl = governmentIdDocumentUrl;
           existingCand.validationResult = {
             ...validation.validationResult,
             candidateId: existingCand.id,
@@ -1539,13 +1418,6 @@ async function startServer() {
           // Create completely new candidate
           const newCandId = `cand-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
           const persisted = persistResumeBuffer(newCandId, resumeFileName, resumeUrl, fullName, position);
-          const govIdPersisted = persistGovernmentIdBuffer(
-            newCandId,
-            idTypeToValidate,
-            governmentIdFileName,
-            governmentIdDocumentUrl,
-            fullName
-          );
 
           const newCand: Candidate = {
             id: newCandId,
@@ -1598,18 +1470,6 @@ async function startServer() {
                   uploadedBy: fullName,
                 }
               : undefined,
-            governmentId: {
-              ...validation.governmentIdDoc,
-              candidateId: newCandId,
-              originalFileName: govIdPersisted.fileName,
-              mimeType: govIdPersisted.mimeType,
-              fileSize: govIdPersisted.fileSize,
-              storageKey: govIdPersisted.diskPath,
-              uploadedAt: timestamp,
-            },
-            hasGovernmentId: true,
-            governmentIdFileName: govIdPersisted.fileName,
-            governmentIdFileUrl: governmentIdDocumentUrl,
             validationResult: {
               ...validation.validationResult,
               candidateId: newCandId,
@@ -1688,7 +1548,7 @@ async function startServer() {
             actorType: 'USER',
             actorName: savedCandidate.fullName,
             action: 'FORM_SUBMITTED',
-            details: `Candidate self-registration form submitted for ${savedCandidate.fullName} (${savedCandidate.position}) with Government ID (${idTypeToValidate}).`,
+            details: `Candidate self-registration form submitted for ${savedCandidate.fullName} (${savedCandidate.position}).`,
             entityId: savedCandidate.id,
             entityType: 'CANDIDATE',
           },

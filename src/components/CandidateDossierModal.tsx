@@ -30,13 +30,11 @@ import {
   DoorOpen,
   GraduationCap,
   DollarSign,
-  IdCard,
   FileCheck,
 } from 'lucide-react';
 import type { Candidate, Interview, TimelineEvent, UserRole } from '../types/index.ts';
 import { formatDateTime, formatPhotoTimestamp } from '../utils/dateFormatter.ts';
 import { ResumeDocumentModal } from './ResumeDocumentModal.tsx';
-import { GovernmentIdModal } from './GovernmentIdModal.tsx';
 import { ReceptionPhotoModal } from './ReceptionPhotoModal.tsx';
 import { VisitorArrivalTimeline } from './VisitorArrivalTimeline.tsx';
 import { authenticatedFetch } from '../utils/apiClient.ts';
@@ -80,7 +78,6 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
 
   // Sub-Modals
   const [showResumeModal, setShowResumeModal] = useState<boolean>(false);
-  const [showGovIdModal, setShowGovIdModal] = useState<boolean>(false);
   const [showPhotoModal, setShowPhotoModal] = useState<boolean>(false);
 
   // Edit & Delete state
@@ -836,7 +833,7 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
           {/* SECTION 5: DOCUMENTS */}
           {activeSection === 'Documents' && (
             <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Resume Card */}
                 <div className="p-5 glass-panel rounded-2xl border border-white/8 space-y-3 flex flex-col justify-between">
                   <div className="space-y-1.5">
@@ -857,29 +854,6 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
                   >
                     <Eye className="w-3.5 h-3.5 text-blue-400" />
                     <span>View Resume in Secure Viewer</span>
-                  </button>
-                </div>
-
-                {/* Government ID Card */}
-                <div className="p-5 glass-panel rounded-2xl border border-white/8 space-y-3 flex flex-col justify-between">
-                  <div className="space-y-1.5">
-                    <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center">
-                      <IdCard className="w-5 h-5" />
-                    </div>
-                    <h4 className="text-sm font-bold text-white">Government ID Document</h4>
-                    <p className="text-[11px] text-slate-400">
-                      {candidate?.governmentIdDocument
-                        ? `Type: ${candidate.governmentIdDocument.type || 'ID Card'}`
-                        : 'No government ID uploaded yet'}
-                    </p>
-                  </div>
-
-                  <button
-                    onClick={() => setShowGovIdModal(true)}
-                    className="w-full py-2.5 px-3 bg-white/6 hover:bg-white/10 text-white font-semibold text-xs rounded-xl border border-white/10 transition cursor-pointer flex items-center justify-center gap-1.5"
-                  >
-                    <Eye className="w-3.5 h-3.5 text-amber-400" />
-                    <span>View Government ID Document</span>
                   </button>
                 </div>
               </div>
@@ -1008,14 +982,6 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
           candidate={candidate}
           currentRole={currentRole}
           onClose={() => setShowResumeModal(false)}
-        />
-      )}
-
-      {showGovIdModal && candidate && (
-        <GovernmentIdModal
-          candidate={candidate}
-          currentRole={currentRole}
-          onClose={() => setShowGovIdModal(false)}
         />
       )}
 
