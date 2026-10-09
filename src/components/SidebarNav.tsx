@@ -33,7 +33,9 @@ export type NavSection =
   | 'hospitality'
   | 'notifications'
   | 'settings'
-  | 'more';
+  | 'more'
+  | 'hr-nisha'
+  | 'hr-shriyanshi';
 
 interface SidebarNavProps {
   currentRole: UserRole;
@@ -352,6 +354,78 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
                 </motion.div>
               )}
             </AnimatePresence>
+          </div>
+
+          {/* HR Sub-Profiles Section */}
+          <div className="pt-2 border-t border-[#252A32]/60 my-1 space-y-1">
+            <div className="px-3 py-1 flex items-center justify-between text-[10px] font-bold text-amber-400 font-mono tracking-wider uppercase">
+              <span>HR Profiles</span>
+              <span className="text-[9px] text-[#AEB7C4] font-normal">Dedicated</span>
+            </div>
+
+            {/* Profile 1: Nisha */}
+            <button
+              onClick={() => onSelectSection('hr-nisha')}
+              className={`relative w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all group cursor-pointer ${
+                activeSection === 'hr-nisha'
+                  ? 'bg-[#1B2028] text-amber-300 font-bold'
+                  : 'text-[#AEB7C4] hover:text-[#F5F6F8] hover:bg-[#1B2028]/60'
+              }`}
+            >
+              {activeSection === 'hr-nisha' && (
+                <motion.div
+                  layoutId="sidebar-active-indicator"
+                  className="absolute inset-0 border-l-2 border-amber-400 rounded-xl pointer-events-none"
+                  transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                />
+              )}
+              <div className="flex items-center gap-2.5 relative z-10">
+                <div className={`w-5 h-5 rounded-lg flex items-center justify-center text-[10px] font-black ${
+                  activeSection === 'hr-nisha' ? 'bg-amber-400 text-slate-950' : 'bg-white/10 text-slate-300'
+                }`}>
+                  N
+                </div>
+                <div className="text-left">
+                  <div className="tracking-tight leading-tight">Nisha</div>
+                  <div className="text-[10px] text-amber-400/80">Sr. HR Manager</div>
+                </div>
+              </div>
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-mono">
+                Active
+              </span>
+            </button>
+
+            {/* Profile 2: Shriyanshi */}
+            <button
+              onClick={() => onSelectSection('hr-shriyanshi')}
+              className={`relative w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all group cursor-pointer ${
+                activeSection === 'hr-shriyanshi'
+                  ? 'bg-[#1B2028] text-amber-300 font-bold'
+                  : 'text-[#AEB7C4] hover:text-[#F5F6F8] hover:bg-[#1B2028]/60'
+              }`}
+            >
+              {activeSection === 'hr-shriyanshi' && (
+                <motion.div
+                  layoutId="sidebar-active-indicator"
+                  className="absolute inset-0 border-l-2 border-amber-400 rounded-xl pointer-events-none"
+                  transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                />
+              )}
+              <div className="flex items-center gap-2.5 relative z-10">
+                <div className={`w-5 h-5 rounded-lg flex items-center justify-center text-[10px] font-black ${
+                  activeSection === 'hr-shriyanshi' ? 'bg-amber-400 text-slate-950' : 'bg-white/10 text-slate-300'
+                }`}>
+                  S
+                </div>
+                <div className="text-left">
+                  <div className="tracking-tight leading-tight">Shriyanshi</div>
+                  <div className="text-[10px] text-sky-400/80">HR Executive</div>
+                </div>
+              </div>
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20 font-mono">
+                Active
+              </span>
+            </button>
           </div>
 
           {/* Settings Section (Functional Application Settings) */}

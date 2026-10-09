@@ -59,6 +59,7 @@ import { PantryDashboard } from './components/dashboards/PantryDashboard.tsx';
 import { useSettings } from './context/SettingsContext.tsx';
 import { ApplicationSettingsView } from './components/ApplicationSettingsView.tsx';
 import { SecondaryOperationsMoreView } from './components/SecondaryOperationsMoreView.tsx';
+import { HRSubProfileView } from './components/HRSubProfileView.tsx';
 
 import {
   Sparkles,
@@ -578,6 +579,9 @@ export default function App() {
       setActiveSection('settings');
     } else if (section === 'more') {
       setMoreInitialTab('all');
+    } else if (section === 'hr-nisha' || section === 'hr-shriyanshi') {
+      handleSelectRole('HR');
+      setActiveSection(section);
     }
   };
 
@@ -1130,6 +1134,23 @@ export default function App() {
               onBackToDashboard={() => setActiveSection('dashboard')}
               onRefresh={fetchAllData}
               initialTab={moreInitialTab}
+            />
+          ) : activeSection === 'hr-nisha' || activeSection === 'hr-shriyanshi' ? (
+            <HRSubProfileView
+              activeProfileKey={activeSection === 'hr-nisha' ? 'nisha' : 'shriyanshi'}
+              onSelectProfile={(p) => setActiveSection(p === 'nisha' ? 'hr-nisha' : 'hr-shriyanshi')}
+              onBackToHRDashboard={() => setActiveSection('candidates')}
+              onOpenDossier={(candId) => {
+                setSelectedCandidateId(candId);
+                setActiveModal('DOSSIER');
+              }}
+              onAssignRoom={(candId, intvId) => {
+                setSelectedCandidateId(candId);
+                setSelectedInterview(intvId ? interviews.find((i) => i.id === intvId) || null : null);
+                setActiveModal('ASSIGN_ROOM');
+              }}
+              currentUserRole={currentRole}
+              currentUserId={currentUserId}
             />
           ) : (
             <>

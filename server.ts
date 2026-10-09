@@ -3174,6 +3174,117 @@ async function startServer() {
     });
   });
 
+  // UPDATE / EDIT VISITOR
+  app.put('/api/visitors/:id', (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { fullName, phone, email, company, visitorType, hostName, hostDepartment, purpose, status, roomAssigned } = req.body;
+    const actorRole = (req.headers['x-user-role'] || req.query.role || 'RECEPTION') as UserRole;
+    const actorName = (req.headers['x-user-name'] || req.query.userName || 'Front Desk Staff') as string;
+    const actorUserId = (req.headers['x-user-id'] || req.query.userId || 'usr-rec-ananya') as string;
+
+    if (!fullName || typeof fullName !== 'string' || !fullName.trim()) {
+      return res.status(400).json({ success: false, error: 'Visitor full name is required.' });
+    }
+
+    const timestamp = new Date().toISOString();
+    let updatedVisitor: any = null;
+
+    try {
+      dbService.update((draft) => {
+        draft.visitors = draft.visitors || [];
+        const visitor = draft.visitors.find((v) => v.id === id);
+        if (!visitor) {
+          throw new Error('Visitor record not found.');
+        }
+
+        if (fullName !== undefined) visitor.fullName = fullName.trim();
+        if (phone !== undefined) visitor.phone = phone.trim();
+        if (email !== undefined) visitor.email = email.trim();
+        if (company !== undefined) visitor.company = company.trim();
+        if (visitorType !== undefined) visitor.visitorType = visitorType;
+        if (hostName !== undefined) visitor.hostName = hostName.trim();
+        if (hostDepartment !== undefined) visitor.hostDepartment = hostDepartment.trim();
+        if (purpose !== undefined) visitor.purpose = purpose.trim();
+        if (status !== undefined) visitor.status = status;
+        if (roomAssigned !== undefined) visitor.roomAssigned = roomAssigned;
+
+        updatedVisitor = { ...visitor };
+
+        draft.auditLogs.unshift({
+          id: `aud-${Date.now()}-vis-edit`,
+          timestamp,
+          actorUserId,
+          actorName,
+          actorRole,
+          action: 'VISITOR_UPDATED',
+          details: `Updated visitor record for ${visitor.fullName} (Host: ${visitor.hostName || 'N/A'}).`,
+          entityId: id,
+          entityType: 'VISITOR',
+        });
+      });
+
+      if (!updatedVisitor) {
+        return res.status(404).json({ success: false, error: 'Visitor not found.' });
+      }
+
+      eventWorkflowEngine.broadcast({
+        type: 'VISITOR_UPDATED',
+        payload: { visitor: updatedVisitor },
+        targetRoles: ['RECEPTION', 'ADMIN', 'HR'],
+      });
+
+      res.json({ success: true, visitor: updatedVisitor, message: 'Visitor record updated successfully.' });
+    } catch (err: any) {
+      res.status(400).json({ success: false, error: err.message || 'Failed to update visitor record.' });
+    }
+  });
+
+  // DELETE / ARCHIVE VISITOR
+  app.delete('/api/visitors/:id', (req: Request, res: Response) => {
+    const { id } = req.params;
+    const actorRole = (req.headers['x-user-role'] || req.query.role || 'RECEPTION') as UserRole;
+    const actorName = (req.headers['x-user-name'] || req.query.userName || 'Front Desk Staff') as string;
+    const actorUserId = (req.headers['x-user-id'] || req.query.userId || 'usr-rec-ananya') as string;
+
+    const timestamp = new Date().toISOString();
+    let deletedVisitorName = '';
+
+    try {
+      dbService.update((draft) => {
+        draft.visitors = draft.visitors || [];
+        const idx = draft.visitors.findIndex((v) => v.id === id);
+        if (idx === -1) {
+          throw new Error('Visitor record not found.');
+        }
+
+        deletedVisitorName = draft.visitors[idx].fullName;
+        draft.visitors.splice(idx, 1);
+
+        draft.auditLogs.unshift({
+          id: `aud-${Date.now()}-vis-del`,
+          timestamp,
+          actorUserId,
+          actorName,
+          actorRole,
+          action: 'VISITOR_DELETED',
+          details: `Deleted visitor record for ${deletedVisitorName} (ID: ${id}).`,
+          entityId: id,
+          entityType: 'VISITOR',
+        });
+      });
+
+      eventWorkflowEngine.broadcast({
+        type: 'VISITOR_DELETED',
+        payload: { visitorId: id, timestamp },
+        targetRoles: ['RECEPTION', 'ADMIN', 'HR'],
+      });
+
+      res.json({ success: true, message: `Visitor ${deletedVisitorName} deleted successfully.` });
+    } catch (err: any) {
+      res.status(400).json({ success: false, error: err.message || 'Failed to delete visitor record.' });
+    }
+  });
+
   // ==========================================
   // REAL-TIME INTERNAL OFFICE CHAT SYSTEM
   // ==========================================
@@ -3916,6 +4027,110 @@ async function startServer() {
     });
 
     res.json({ success: true, task: updatedTask });
+  });
+
+  // 5. EDIT ACTION TASK
+  app.put('/api/action-tasks/:id', (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { title, instruction, priority, targetRole, status, candidateName, roomName } = req.body;
+    const actorRole = (req.headers['x-user-role'] || req.query.role || 'ADMIN') as UserRole;
+    const actorName = (req.headers['x-user-name'] || req.query.userName || 'Operations Staff') as string;
+    const actorUserId = (req.headers['x-user-id'] || req.query.userId || 'usr-admin-sameer') as string;
+
+    const timestamp = new Date().toISOString();
+    let updatedTask: any = null;
+
+    try {
+      dbService.update((draft) => {
+        draft.actionTasks = draft.actionTasks || [];
+        const task = draft.actionTasks.find((t) => t.id === id);
+        if (!task) {
+          throw new Error('Action task not found.');
+        }
+
+        if (title !== undefined) task.title = title.trim();
+        if (instruction !== undefined) task.instruction = instruction.trim();
+        if (priority !== undefined) task.priority = priority;
+        if (targetRole !== undefined) task.targetRole = targetRole;
+        if (status !== undefined) task.status = status;
+        if (candidateName !== undefined) task.candidateName = candidateName;
+        if (roomName !== undefined) task.roomName = roomName;
+
+        updatedTask = { ...task };
+
+        draft.auditLogs.unshift({
+          id: `aud-${Date.now()}-task-edit`,
+          timestamp,
+          actorUserId,
+          actorName,
+          actorRole,
+          action: 'ACTION_TASK_UPDATED',
+          details: `Updated action task "${task.title}".`,
+          entityId: id,
+          entityType: 'ACTION_TASK',
+        });
+      });
+
+      if (!updatedTask) {
+        return res.status(404).json({ success: false, error: 'Task not found.' });
+      }
+
+      eventWorkflowEngine.broadcast({
+        type: 'ACTION_TASK_UPDATED',
+        payload: { task: updatedTask },
+        targetRoles: ['RECEPTION', 'ADMIN', 'HR', 'SENIOR_HR'],
+      });
+
+      res.json({ success: true, task: updatedTask, message: 'Action task updated successfully.' });
+    } catch (err: any) {
+      res.status(400).json({ success: false, error: err.message || 'Failed to update action task.' });
+    }
+  });
+
+  // 6. DELETE ACTION TASK
+  app.delete('/api/action-tasks/:id', (req: Request, res: Response) => {
+    const { id } = req.params;
+    const actorRole = (req.headers['x-user-role'] || req.query.role || 'ADMIN') as UserRole;
+    const actorName = (req.headers['x-user-name'] || req.query.userName || 'Operations Staff') as string;
+    const actorUserId = (req.headers['x-user-id'] || req.query.userId || 'usr-admin-sameer') as string;
+
+    const timestamp = new Date().toISOString();
+    let deletedTitle = '';
+
+    try {
+      dbService.update((draft) => {
+        draft.actionTasks = draft.actionTasks || [];
+        const idx = draft.actionTasks.findIndex((t) => t.id === id);
+        if (idx === -1) {
+          throw new Error('Action task not found.');
+        }
+
+        deletedTitle = draft.actionTasks[idx].title;
+        draft.actionTasks.splice(idx, 1);
+
+        draft.auditLogs.unshift({
+          id: `aud-${Date.now()}-task-del`,
+          timestamp,
+          actorUserId,
+          actorName,
+          actorRole,
+          action: 'ACTION_TASK_DELETED',
+          details: `Deleted action task "${deletedTitle}" (ID: ${id}).`,
+          entityId: id,
+          entityType: 'ACTION_TASK',
+        });
+      });
+
+      eventWorkflowEngine.broadcast({
+        type: 'ACTION_TASK_DELETED',
+        payload: { taskId: id, timestamp },
+        targetRoles: ['RECEPTION', 'ADMIN', 'HR', 'SENIOR_HR'],
+      });
+
+      res.json({ success: true, message: `Task "${deletedTitle}" deleted successfully.` });
+    } catch (err: any) {
+      res.status(400).json({ success: false, error: err.message || 'Failed to delete action task.' });
+    }
   });
 
   // ==========================================
@@ -4908,6 +5123,59 @@ async function startServer() {
     res.json({ success: true, message: 'Password has been securely reset.' });
   });
 
+  // DELETE USER / STAFF PROFILE
+  app.delete('/api/users/:id', (req: Request, res: Response) => {
+    const { id } = req.params;
+    const actorRole = (req.headers['x-user-role'] || req.query.role || 'ADMIN') as UserRole;
+    const actorName = (req.headers['x-user-name'] || req.query.userName || 'Sameer Sir (Admin)') as string;
+    const actorUserId = (req.headers['x-user-id'] || req.query.userId || 'usr-admin-sameer') as string;
+
+    if (actorRole !== 'ADMIN' && actorRole !== 'CEO') {
+      return res.status(403).json({ success: false, error: 'Unauthorized: Admin or CEO credentials required.' });
+    }
+
+    const timestamp = new Date().toISOString();
+    let deletedUserName = '';
+
+    try {
+      dbService.update((draft) => {
+        draft.users = draft.users || [];
+        const idx = draft.users.findIndex((u) => u.id === id);
+        if (idx === -1) {
+          throw new Error('User record not found.');
+        }
+
+        const targetUser = draft.users[idx];
+        if (targetUser.role === 'CEO' || targetUser.id === 'usr-ceo-lalit') {
+          throw new Error('Cannot delete Executive Leadership / CEO profile.');
+        }
+
+        if (targetUser.id === actorUserId) {
+          throw new Error('Cannot delete your own active staff session.');
+        }
+
+        deletedUserName = targetUser.name;
+        draft.users.splice(idx, 1);
+
+        draft.auditLogs.unshift({
+          id: `aud-${Date.now()}-user-del`,
+          timestamp,
+          actorUserId,
+          actorName,
+          actorRole,
+          action: 'USER_DELETED',
+          details: `Deleted user profile for ${deletedUserName} (${targetUser.role}).`,
+          entityId: id,
+          entityType: 'USER',
+        });
+      });
+
+      res.json({ success: true, message: `Staff user "${deletedUserName}" deleted successfully.` });
+    } catch (err: any) {
+      res.status(400).json({ success: false, error: err.message || 'Failed to delete user record.' });
+    }
+  });
+
   // ==========================================
   // RECEPTION CANDIDATE CHANGE REQUESTS
   // ==========================================
@@ -5069,6 +5337,158 @@ async function startServer() {
     res.json({ success: true, interviews: db.interviews });
   });
 
+  // UPDATE / EDIT INTERVIEW
+  app.put('/api/interviews/:id', (req: Request, res: Response) => {
+    const { id } = req.params;
+    const {
+      interviewerName,
+      interviewerId,
+      roundName,
+      scheduledTime,
+      roomId,
+      roomName,
+      status,
+      outcome,
+      interviewerFeedback,
+      position,
+    } = req.body;
+    const actorRole = (req.headers['x-user-role'] || req.query.role || 'HR') as UserRole;
+    const actorName = (req.headers['x-user-name'] || req.query.userName || 'HR Lead') as string;
+    const actorUserId = (req.headers['x-user-id'] || req.query.userId || 'usr-hr-nisha') as string;
+
+    const timestamp = new Date().toISOString();
+    let updatedInterview: any = null;
+
+    try {
+      dbService.update((draft) => {
+        draft.interviews = draft.interviews || [];
+        const interview = draft.interviews.find((i) => i.id === id);
+        if (!interview) {
+          throw new Error('Interview record not found.');
+        }
+
+        if (interviewerName !== undefined) interview.interviewerName = interviewerName.trim();
+        if (interviewerId !== undefined) interview.interviewerId = interviewerId.trim();
+        if (roundName !== undefined) interview.roundName = roundName;
+        if (scheduledTime !== undefined) interview.scheduledTime = scheduledTime;
+        if (roomId !== undefined) interview.roomId = roomId;
+        if (roomName !== undefined) interview.roomName = roomName;
+        if (position !== undefined) interview.position = position;
+        if (outcome !== undefined) interview.outcome = outcome;
+        if (interviewerFeedback !== undefined) interview.interviewerFeedback = interviewerFeedback;
+
+        if (status !== undefined && status !== interview.status) {
+          interview.status = status;
+          if (status === 'IN_PROGRESS' && !interview.startedAt) {
+            interview.startedAt = timestamp;
+          } else if (status === 'COMPLETED' && !interview.completedAt) {
+            interview.completedAt = timestamp;
+          }
+        }
+
+        updatedInterview = { ...interview };
+
+        // Sync candidate status if appropriate
+        if (interview.candidateId) {
+          const cand = draft.candidates.find((c) => c.id === interview.candidateId);
+          if (cand) {
+            if (interview.status === 'INTERVIEW_STARTED') {
+              cand.status = 'IN_INTERVIEW';
+            } else if (
+              interview.status === 'INTERVIEW_COMPLETED' &&
+              (interview.outcome === 'SELECTED' || (interview.outcome as any) === 'OFFER')
+            ) {
+              cand.status = 'OFFERED';
+            } else if (
+              interview.status === 'INTERVIEW_COMPLETED' &&
+              (interview.outcome === 'REJECTED' || (interview.outcome as any) === 'REJECT')
+            ) {
+              cand.status = 'REJECTED';
+            }
+            cand.updatedAt = timestamp;
+          }
+        }
+
+        draft.auditLogs.unshift({
+          id: `aud-${Date.now()}-intv-edit`,
+          timestamp,
+          actorUserId,
+          actorName,
+          actorRole,
+          action: 'INTERVIEW_UPDATED',
+          details: `Updated interview for ${interview.candidateName} with ${interview.interviewerName} (${interview.roundName}).`,
+          entityId: id,
+          entityType: 'INTERVIEW',
+        });
+      });
+
+      if (!updatedInterview) {
+        return res.status(404).json({ success: false, error: 'Interview not found.' });
+      }
+
+      eventWorkflowEngine.broadcast({
+        type: 'INTERVIEW_UPDATED',
+        payload: { interview: updatedInterview },
+        targetRoles: ['HR', 'SENIOR_HR', 'INTERVIEWER', 'ADMIN', 'CEO'],
+      });
+
+      res.json({ success: true, interview: updatedInterview, message: 'Interview schedule updated successfully.' });
+    } catch (err: any) {
+      res.status(400).json({ success: false, error: err.message || 'Failed to update interview schedule.' });
+    }
+  });
+
+  // DELETE INTERVIEW
+  app.delete('/api/interviews/:id', (req: Request, res: Response) => {
+    const { id } = req.params;
+    const actorRole = (req.headers['x-user-role'] || req.query.role || 'HR') as UserRole;
+    const actorName = (req.headers['x-user-name'] || req.query.userName || 'HR Lead') as string;
+    const actorUserId = (req.headers['x-user-id'] || req.query.userId || 'usr-hr-nisha') as string;
+
+    const timestamp = new Date().toISOString();
+    let deletedCandidateName = '';
+
+    try {
+      dbService.update((draft) => {
+        draft.interviews = draft.interviews || [];
+        const idx = draft.interviews.findIndex((i) => i.id === id);
+        if (idx === -1) {
+          throw new Error('Interview record not found.');
+        }
+
+        const intv = draft.interviews[idx];
+        if (intv.status === 'INTERVIEW_STARTED') {
+          throw new Error('Cannot delete interview currently in progress. Complete or end the session first.');
+        }
+
+        deletedCandidateName = intv.candidateName;
+        draft.interviews.splice(idx, 1);
+
+        draft.auditLogs.unshift({
+          id: `aud-${Date.now()}-intv-del`,
+          timestamp,
+          actorUserId,
+          actorName,
+          actorRole,
+          action: 'INTERVIEW_DELETED',
+          details: `Deleted interview schedule for ${deletedCandidateName} (${intv.roundName}).`,
+          entityId: id,
+          entityType: 'INTERVIEW',
+        });
+      });
+
+      eventWorkflowEngine.broadcast({
+        type: 'INTERVIEW_DELETED',
+        payload: { interviewId: id, timestamp },
+        targetRoles: ['HR', 'SENIOR_HR', 'INTERVIEWER', 'ADMIN', 'CEO'],
+      });
+
+      res.json({ success: true, message: `Interview schedule for ${deletedCandidateName} deleted successfully.` });
+    } catch (err: any) {
+      res.status(400).json({ success: false, error: err.message || 'Failed to delete interview.' });
+    }
+  });
+
   // PANTRY TASK LIST (MINIMUM TASK DATA ONLY)
   app.get('/api/pantry/tasks', (req: Request, res: Response) => {
     const db = dbService.get();
@@ -5108,6 +5528,190 @@ async function startServer() {
       if (notif) notif.read = true;
     });
     res.json({ success: true });
+  });
+
+  // EDIT NOTIFICATION
+  app.put('/api/notifications/:id', (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { title, message, priority, recipientRole } = req.body;
+    let updatedNotif: any = null;
+
+    dbService.update((draft) => {
+      draft.notifications = draft.notifications || [];
+      const notif = draft.notifications.find((n) => n.id === id);
+      if (notif) {
+        if (title !== undefined) notif.title = title.trim();
+        if (message !== undefined) notif.message = message.trim();
+        if (priority !== undefined) notif.priority = priority;
+        if (recipientRole !== undefined) notif.recipientRole = recipientRole;
+        updatedNotif = { ...notif };
+      }
+    });
+
+    if (!updatedNotif) {
+      return res.status(404).json({ success: false, error: 'Notification not found' });
+    }
+
+    res.json({ success: true, notification: updatedNotif, message: 'Notification updated.' });
+  });
+
+  // DELETE NOTIFICATION
+  app.delete('/api/notifications/:id', (req: Request, res: Response) => {
+    const { id } = req.params;
+    let found = false;
+
+    dbService.update((draft) => {
+      draft.notifications = draft.notifications || [];
+      const idx = draft.notifications.findIndex((n) => n.id === id);
+      if (idx !== -1) {
+        draft.notifications.splice(idx, 1);
+        found = true;
+      }
+    });
+
+    if (!found) {
+      return res.status(404).json({ success: false, error: 'Notification not found' });
+    }
+
+    res.json({ success: true, message: 'Notification deleted.' });
+  });
+
+  // ==========================================
+  // HR SUB-PROFILES ENDPOINT: NISHA & SHRIYANSHI
+  // ==========================================
+  app.get('/api/hr/subprofiles', (req: Request, res: Response) => {
+    const db = dbService.get();
+
+    // 1. Nisha's authorized workspace data
+    const nishaUser = db.users.find((u) => u.id === 'usr-hr-nisha') || {
+      id: 'usr-hr-nisha',
+      name: 'Nisha',
+      role: 'HR',
+      designation: 'Senior HR Manager',
+      department: 'HR & Talent Operations',
+      email: 'nisha@whitecollarrealty.com',
+      phone: '+91 98100 00003',
+      isActive: true,
+      lastLoginAt: '2026-10-09T05:26:00.063Z',
+    };
+
+    const nishaCandidates = db.candidates.filter((c) => {
+      const matchInterviewer =
+        c.assignedInterviewerId === 'usr-hr-nisha' ||
+        (c.assignedInterviewerName && c.assignedInterviewerName.toLowerCase().includes('nisha'));
+      const isSeniorRound =
+        c.status === 'With Kimmi Mam – Senior HR Interview' ||
+        c.position?.toLowerCase().includes('manager') ||
+        c.position?.toLowerCase().includes('director') ||
+        c.position?.toLowerCase().includes('lead');
+      return matchInterviewer || isSeniorRound;
+    });
+
+    const nishaInterviews = db.interviews.filter(
+      (i) =>
+        i.interviewerId === 'usr-hr-nisha' ||
+        (i.interviewerName && i.interviewerName.toLowerCase().includes('nisha'))
+    );
+
+    const nishaTasks = (db.actionTasks || []).filter(
+      (t) =>
+        t.targetUserId === 'usr-hr-nisha' ||
+        t.senderId === 'usr-hr-nisha' ||
+        (t.instruction && t.instruction.toLowerCase().includes('nisha')) ||
+        (t.title && t.title.toLowerCase().includes('nisha'))
+    );
+
+    const nishaActivity = db.auditLogs
+      .filter(
+        (a) =>
+          a.actorUserId === 'usr-hr-nisha' ||
+          (a.actorName && a.actorName.toLowerCase().includes('nisha')) ||
+          (a.details && a.details.toLowerCase().includes('nisha'))
+      )
+      .slice(0, 30);
+
+    // 2. Shriyanshi's authorized workspace data
+    const shriyanshiUser = db.users.find((u) => u.id === 'usr-hr-shriyanshi') || {
+      id: 'usr-hr-shriyanshi',
+      name: 'Shriyanshi',
+      role: 'HR',
+      designation: 'HR Executive',
+      department: 'HR & Campus / Intake',
+      email: 'shriyanshi@whitecollarrealty.com',
+      phone: '+91 98100 00004',
+      isActive: true,
+    };
+
+    const shriyanshiCandidates = db.candidates.filter((c) => {
+      const matchInterviewer =
+        c.assignedInterviewerId === 'usr-hr-shriyanshi' ||
+        (c.assignedInterviewerName && c.assignedInterviewerName.toLowerCase().includes('shriyanshi'));
+      const isTechnicalOrScreening =
+        c.status === 'WAITING' ||
+        c.status === 'ARRIVED' ||
+        c.status === 'IN_INTERVIEW' ||
+        c.position?.toLowerCase().includes('associate') ||
+        c.position?.toLowerCase().includes('executive') ||
+        c.position?.toLowerCase().includes('intern');
+      return matchInterviewer || isTechnicalOrScreening;
+    });
+
+    const shriyanshiInterviews = db.interviews.filter(
+      (i) =>
+        i.interviewerId === 'usr-hr-shriyanshi' ||
+        (i.interviewerName && i.interviewerName.toLowerCase().includes('shriyanshi'))
+    );
+
+    const shriyanshiTasks = (db.actionTasks || []).filter(
+      (t) =>
+        t.targetUserId === 'usr-hr-shriyanshi' ||
+        t.senderId === 'usr-hr-shriyanshi' ||
+        (t.instruction && t.instruction.toLowerCase().includes('shriyanshi')) ||
+        (t.title && t.title.toLowerCase().includes('shriyanshi'))
+    );
+
+    const shriyanshiActivity = db.auditLogs
+      .filter(
+        (a) =>
+          a.actorUserId === 'usr-hr-shriyanshi' ||
+          (a.actorName && a.actorName.toLowerCase().includes('shriyanshi')) ||
+          (a.details && a.details.toLowerCase().includes('shriyanshi'))
+      )
+      .slice(0, 30);
+
+    res.json({
+      success: true,
+      profiles: {
+        nisha: {
+          profile: nishaUser,
+          workspaceTitle: 'Nisha — Senior HR Management Workspace',
+          responsibilities: 'Executive Candidate Assessments, Round 1 Leadership Screenings & Kimmi Mam Handoffs',
+          candidates: nishaCandidates,
+          interviews: nishaInterviews,
+          tasks: nishaTasks,
+          activity: nishaActivity,
+          stats: {
+            assignedCandidates: nishaCandidates.length,
+            activeInterviews: nishaInterviews.length,
+            openTasks: nishaTasks.filter((t) => t.status !== 'COMPLETED').length,
+          },
+        },
+        shriyanshi: {
+          profile: shriyanshiUser,
+          workspaceTitle: 'Shriyanshi — Talent Acquisition & Intake Workspace',
+          responsibilities: 'Frontline Candidate Intake, Technical Rounds & Daily Interview Logistics',
+          candidates: shriyanshiCandidates,
+          interviews: shriyanshiInterviews,
+          tasks: shriyanshiTasks,
+          activity: shriyanshiActivity,
+          stats: {
+            assignedCandidates: shriyanshiCandidates.length,
+            activeInterviews: shriyanshiInterviews.length,
+            openTasks: shriyanshiTasks.filter((t) => t.status !== 'COMPLETED').length,
+          },
+        },
+      },
+    });
   });
 
   app.get('/api/audit-logs', (req: Request, res: Response) => {

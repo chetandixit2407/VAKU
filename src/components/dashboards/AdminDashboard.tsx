@@ -51,6 +51,8 @@ import type {
   ActionTask,
 } from '../../types/index.ts';
 import { AdminChangeCredentialsModal } from '../AdminChangeCredentialsModal.tsx';
+import { EditRecordModal } from '../modals/EditRecordModal.tsx';
+import { DeleteConfirmModal, DeleteRecordType } from '../modals/DeleteConfirmModal.tsx';
 
 interface AdminDashboardProps {
   candidates?: Candidate[];
@@ -133,6 +135,30 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [staffUsers, setStaffUsers] = useState<any[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [selectedUserForCredentials, setSelectedUserForCredentials] = useState<any | null>(null);
+
+  // Generic Edit & Delete modal states
+  const [genericEditModal, setGenericEditModal] = useState<{
+    isOpen: boolean;
+    recordType: DeleteRecordType;
+    record: any;
+  }>({
+    isOpen: false,
+    recordType: 'USER',
+    record: null,
+  });
+
+  const [genericDeleteModal, setGenericDeleteModal] = useState<{
+    isOpen: boolean;
+    recordType: DeleteRecordType;
+    recordId: string;
+    recordName: string;
+    metadata?: Record<string, any>;
+  }>({
+    isOpen: false,
+    recordType: 'USER',
+    recordId: '',
+    recordName: '',
+  });
 
   // Rooms State (Single source of truth)
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -1192,13 +1218,45 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     </td>
 
                     <td className="p-4 text-right">
-                      <button
-                        onClick={() => setSelectedUserForCredentials(u)}
-                        className="px-3 py-1.5 bg-gradient-to-r from-purple-500/20 to-purple-600/20 hover:from-purple-500/40 hover:to-purple-600/40 text-purple-200 border border-purple-500/40 hover:border-purple-400 font-bold text-xs rounded-xl transition cursor-pointer flex items-center gap-1.5 ml-auto shadow-xs"
-                      >
-                        <KeyRound className="w-3.5 h-3.5 text-amber-400" />
-                        <span>Change ID / Password</span>
-                      </button>
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setGenericEditModal({
+                              isOpen: true,
+                              recordType: 'USER',
+                              record: u,
+                            })
+                          }
+                          className="p-1.5 rounded-xl border font-bold text-xs flex items-center transition cursor-pointer bg-white/5 hover:bg-amber-500/20 text-slate-300 hover:text-amber-300 border-white/10"
+                          title="Edit Staff Member"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setGenericDeleteModal({
+                              isOpen: true,
+                              recordType: 'USER',
+                              recordId: u.id,
+                              recordName: u.name,
+                              metadata: { role: u.role },
+                            })
+                          }
+                          className="p-1.5 rounded-xl border font-bold text-xs flex items-center transition cursor-pointer bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 border-rose-500/25"
+                          title="Delete Staff Member"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => setSelectedUserForCredentials(u)}
+                          className="px-3 py-1.5 bg-gradient-to-r from-purple-500/20 to-purple-600/20 hover:from-purple-500/40 hover:to-purple-600/40 text-purple-200 border border-purple-500/40 hover:border-purple-400 font-bold text-xs rounded-xl transition cursor-pointer flex items-center gap-1.5 shadow-xs"
+                        >
+                          <KeyRound className="w-3.5 h-3.5 text-amber-400" />
+                          <span>Credentials</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -1845,6 +1903,37 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         </div>
 
                         <div className="flex items-center gap-1.5">
+                          {/* Clearly visible Edit and Delete Task buttons */}
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setGenericEditModal({
+                                isOpen: true,
+                                recordType: 'ACTION_TASK',
+                                record: task,
+                              })
+                            }
+                            className="p-1.5 rounded-lg bg-slate-800 hover:bg-amber-500/20 text-slate-300 hover:text-amber-300 border border-slate-700 text-xs transition cursor-pointer"
+                            title="Edit Task"
+                          >
+                            <Edit3 className="w-3.5 h-3.5 text-amber-400" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setGenericDeleteModal({
+                                isOpen: true,
+                                recordType: 'ACTION_TASK',
+                                recordId: task.id,
+                                recordName: task.title,
+                              })
+                            }
+                            className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 border border-rose-500/25 text-xs transition cursor-pointer"
+                            title="Delete Task"
+                          >
+                            <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+                          </button>
+
                           {isPending && onAcknowledgeActionTask && (
                             <button
                               onClick={() => onAcknowledgeActionTask(task.id)}
@@ -2390,6 +2479,34 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
         </div>
       )}
+
+      {/* Generic Edit Record Modal */}
+      <EditRecordModal
+        isOpen={genericEditModal.isOpen}
+        recordType={genericEditModal.recordType}
+        record={genericEditModal.record}
+        onClose={() => setGenericEditModal((prev) => ({ ...prev, isOpen: false }))}
+        onSuccess={() => {
+          fetchUsers();
+          fetchRooms();
+          if (onRefresh) onRefresh();
+        }}
+      />
+
+      {/* Generic Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={genericDeleteModal.isOpen}
+        recordType={genericDeleteModal.recordType}
+        recordId={genericDeleteModal.recordId}
+        recordName={genericDeleteModal.recordName}
+        metadata={genericDeleteModal.metadata}
+        onClose={() => setGenericDeleteModal((prev) => ({ ...prev, isOpen: false }))}
+        onSuccess={() => {
+          fetchUsers();
+          fetchRooms();
+          if (onRefresh) onRefresh();
+        }}
+      />
     </div>
   );
 };

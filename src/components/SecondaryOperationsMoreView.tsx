@@ -14,6 +14,8 @@ import {
   Layers,
   Sparkles,
   ChevronRight,
+  Edit3,
+  Trash2,
 } from 'lucide-react';
 import type { Candidate, Visitor } from '../types/index.ts';
 import { VisitorArrivalTimeline } from './VisitorArrivalTimeline.tsx';
@@ -21,6 +23,8 @@ import { CandidateDossierModal } from './CandidateDossierModal.tsx';
 import { ReceptionPhotoModal } from './ReceptionPhotoModal.tsx';
 import { useSettings } from '../context/SettingsContext.tsx';
 import { formatPhotoTimestamp } from '../utils/dateFormatter.ts';
+import { EditRecordModal } from './modals/EditRecordModal.tsx';
+import { DeleteConfirmModal, DeleteRecordType } from './modals/DeleteConfirmModal.tsx';
 
 interface SecondaryOperationsMoreViewProps {
   candidates: Candidate[];
@@ -43,6 +47,30 @@ export const SecondaryOperationsMoreView: React.FC<SecondaryOperationsMoreViewPr
   const [activeTab, setActiveTab] = useState<'all' | 'lounge' | 'meetings' | 'checkout'>(initialTab);
   const [selectedProfileCandidateId, setSelectedProfileCandidateId] = useState<string | null>(null);
   const [selectedPhotoCandidate, setSelectedPhotoCandidate] = useState<Candidate | null>(null);
+
+  // Edit / Delete Modal State
+  const [editModal, setEditModal] = useState<{
+    isOpen: boolean;
+    recordType: DeleteRecordType;
+    record: any;
+  }>({
+    isOpen: false,
+    recordType: 'VISITOR',
+    record: null,
+  });
+
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    recordType: DeleteRecordType;
+    recordId: string;
+    recordName: string;
+    metadata?: Record<string, any>;
+  }>({
+    isOpen: false,
+    recordType: 'VISITOR',
+    recordId: '',
+    recordName: '',
+  });
 
   // Filter lists
   const waitingCandidates = candidates.filter(
@@ -344,7 +372,7 @@ export const SecondaryOperationsMoreView: React.FC<SecondaryOperationsMoreViewPr
                   {visitors.map((vis) => (
                     <div
                       key={vis.id}
-                      className="p-3.5 rounded-2xl space-y-1 text-xs dashboard-card card-dark bg-[#0B0B0D] text-white border border-white/10 shadow-lg"
+                      className="p-3.5 rounded-2xl space-y-2 text-xs dashboard-card card-dark bg-[#0B0B0D] text-white border border-white/10 shadow-lg"
                     >
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-white">{vis.fullName}</span>
@@ -355,6 +383,42 @@ export const SecondaryOperationsMoreView: React.FC<SecondaryOperationsMoreViewPr
                       <div className="flex items-center justify-between text-[11px] text-[#E0E0E0]">
                         <span>Host: <strong className="text-white">{vis.hostName}</strong></span>
                         <span className="text-[#BDBDBD]">{vis.company || 'Official Visit'}</span>
+                      </div>
+
+                      {/* Clearly visible Edit and Delete buttons for Visitors in Secondary View */}
+                      <div className="pt-2 border-t border-white/10 flex items-center justify-between text-[11px]">
+                        <span className="text-slate-400 font-mono text-[10px]">{vis.phone || 'Phone: N/A'}</span>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setEditModal({
+                                isOpen: true,
+                                recordType: 'VISITOR',
+                                record: vis,
+                              })
+                            }
+                            className="p-1 rounded-lg bg-white/5 hover:bg-amber-500/20 text-slate-300 hover:text-amber-300 border border-white/10 text-xs transition cursor-pointer"
+                            title="Edit Visitor Information"
+                          >
+                            <Edit3 className="w-3.5 h-3.5 text-amber-400" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setDeleteModal({
+                                isOpen: true,
+                                recordType: 'VISITOR',
+                                recordId: vis.id,
+                                recordName: vis.fullName,
+                              })
+                            }
+                            className="p-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 border border-rose-500/25 text-xs transition cursor-pointer"
+                            title="Delete Visitor"
+                          >
+                            <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -457,6 +521,30 @@ export const SecondaryOperationsMoreView: React.FC<SecondaryOperationsMoreViewPr
           }}
         />
       )}
+
+      {/* Edit Record Modal */}
+      <EditRecordModal
+        isOpen={editModal.isOpen}
+        recordType={editModal.recordType}
+        record={editModal.record}
+        onClose={() => setEditModal((prev) => ({ ...prev, isOpen: false }))}
+        onSuccess={() => {
+          if (onRefresh) onRefresh();
+        }}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={deleteModal.isOpen}
+        recordType={deleteModal.recordType}
+        recordId={deleteModal.recordId}
+        recordName={deleteModal.recordName}
+        metadata={deleteModal.metadata}
+        onClose={() => setDeleteModal((prev) => ({ ...prev, isOpen: false }))}
+        onSuccess={() => {
+          if (onRefresh) onRefresh();
+        }}
+      />
     </div>
   );
 };

@@ -207,6 +207,52 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
                   );
                 })}
 
+                {/* HR Sub-Profiles Section */}
+                <div className="pt-2 border-t border-[#252A32] space-y-1">
+                  <div className="text-[10px] font-bold text-amber-400 px-3 py-1 uppercase tracking-wider font-mono">
+                    HR Profiles
+                  </div>
+                  <button
+                    onClick={() => {
+                      onSelectSection('hr-nisha');
+                      onClose();
+                    }}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs transition ${
+                      activeSection === 'hr-nisha'
+                        ? 'bg-[#1B2028] text-amber-300 font-bold border-l-2 border-amber-400'
+                        : 'text-[#AEB7C4] hover:text-[#F5F6F8] hover:bg-[#1B2028]/60'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 rounded-md bg-amber-400/20 text-amber-300 font-bold text-[10px] flex items-center justify-center">
+                        N
+                      </div>
+                      <span>Nisha (Senior HR)</span>
+                    </div>
+                    <span className="text-[10px] text-amber-400 font-mono">Active</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      onSelectSection('hr-shriyanshi');
+                      onClose();
+                    }}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs transition ${
+                      activeSection === 'hr-shriyanshi'
+                        ? 'bg-[#1B2028] text-amber-300 font-bold border-l-2 border-amber-400'
+                        : 'text-[#AEB7C4] hover:text-[#F5F6F8] hover:bg-[#1B2028]/60'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 rounded-md bg-sky-400/20 text-sky-300 font-bold text-[10px] flex items-center justify-center">
+                        S
+                      </div>
+                      <span>Shriyanshi (Intake HR)</span>
+                    </div>
+                    <span className="text-[10px] text-sky-400 font-mono">Active</span>
+                  </button>
+                </div>
+
                 <div className="pt-3 border-t border-[#252A32]">
                   <div className="text-[10px] font-bold text-[#AEB7C4] px-3 py-1 uppercase tracking-wider">
                     Role Views

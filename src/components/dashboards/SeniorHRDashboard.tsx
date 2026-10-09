@@ -14,8 +14,12 @@ import {
   Eye,
   Shield,
   ArrowRight,
+  Edit3,
+  Trash2,
 } from 'lucide-react';
 import type { Candidate, Interview, Room } from '../../types/index.ts';
+import { EditRecordModal } from '../modals/EditRecordModal.tsx';
+import { DeleteConfirmModal, DeleteRecordType } from '../modals/DeleteConfirmModal.tsx';
 
 interface SeniorHRDashboardProps {
   candidates: Candidate[];
@@ -41,6 +45,30 @@ export const SeniorHRDashboard: React.FC<SeniorHRDashboardProps> = ({
   onRefresh,
 }) => {
   const [filterTab, setFilterTab] = useState<'pending' | 'active' | 'completed'>('pending');
+
+  // Modal states for Edit and Delete
+  const [editModal, setEditModal] = useState<{
+    isOpen: boolean;
+    recordType: DeleteRecordType;
+    record: any;
+  }>({
+    isOpen: false,
+    recordType: 'INTERVIEW',
+    record: null,
+  });
+
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    recordType: DeleteRecordType;
+    recordId: string;
+    recordName: string;
+    metadata?: Record<string, any>;
+  }>({
+    isOpen: false,
+    recordType: 'INTERVIEW',
+    recordId: '',
+    recordName: '',
+  });
 
   // Filter interviews assigned to Kimmi Mam ('usr-cofounder-kimmi') or mentioning Kimmi
   const myInterviews = interviews.filter(
@@ -281,6 +309,40 @@ export const SeniorHRDashboard: React.FC<SeniorHRDashboardProps> = ({
                     <span>View Dossier & Resume</span>
                   </button>
 
+                  {/* Clearly visible Edit and Delete Interview Schedule buttons */}
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setEditModal({
+                          isOpen: true,
+                          recordType: 'INTERVIEW',
+                          record: intv,
+                        })
+                      }
+                      className="p-2 rounded-xl bg-[#25272B] hover:bg-amber-500/20 text-[#E0E0E0] hover:text-amber-300 border border-white/10 transition cursor-pointer"
+                      title="Edit Interview Schedule"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setDeleteModal({
+                          isOpen: true,
+                          recordType: 'INTERVIEW',
+                          recordId: intv.id,
+                          recordName: `${intv.candidateName || 'Interview'} (${intv.roundName})`,
+                          metadata: { status: intv.status },
+                        })
+                      }
+                      className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 border border-rose-500/25 transition cursor-pointer"
+                      title="Delete Interview Schedule"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
                   {intv.status === 'CANDIDATE_ARRIVED' || intv.status === 'ROOM_ASSIGNED' ? (
                     <button
                       type="button"
@@ -310,6 +372,30 @@ export const SeniorHRDashboard: React.FC<SeniorHRDashboardProps> = ({
           })}
         </div>
       )}
+
+      {/* Edit Record Modal */}
+      <EditRecordModal
+        isOpen={editModal.isOpen}
+        recordType={editModal.recordType}
+        record={editModal.record}
+        onClose={() => setEditModal((prev) => ({ ...prev, isOpen: false }))}
+        onSuccess={() => {
+          if (onRefresh) onRefresh();
+        }}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={deleteModal.isOpen}
+        recordType={deleteModal.recordType}
+        recordId={deleteModal.recordId}
+        recordName={deleteModal.recordName}
+        metadata={deleteModal.metadata}
+        onClose={() => setDeleteModal((prev) => ({ ...prev, isOpen: false }))}
+        onSuccess={() => {
+          if (onRefresh) onRefresh();
+        }}
+      />
     </div>
   );
 };

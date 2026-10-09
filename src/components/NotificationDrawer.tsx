@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   X,
@@ -11,8 +11,12 @@ import {
   User,
   DoorOpen,
   Coffee,
+  Edit3,
+  Trash2,
 } from 'lucide-react';
 import type { Notification, UserRole } from '../types/index.ts';
+import { EditRecordModal } from './modals/EditRecordModal.tsx';
+import { DeleteConfirmModal, DeleteRecordType } from './modals/DeleteConfirmModal.tsx';
 
 interface NotificationDrawerProps {
   isOpen: boolean;
@@ -21,6 +25,7 @@ interface NotificationDrawerProps {
   role: UserRole;
   onActionClick: (actionKey: string, payload?: any) => void;
   onMarkRead: (id: string) => void;
+  onRefresh?: () => void;
 }
 
 export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
@@ -30,7 +35,30 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
   role,
   onActionClick,
   onMarkRead,
+  onRefresh,
 }) => {
+  const [editModal, setEditModal] = useState<{
+    isOpen: boolean;
+    recordType: DeleteRecordType;
+    record: any;
+  }>({
+    isOpen: false,
+    recordType: 'NOTIFICATION',
+    record: null,
+  });
+
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    recordType: DeleteRecordType;
+    recordId: string;
+    recordName: string;
+    metadata?: Record<string, any>;
+  }>({
+    isOpen: false,
+    recordType: 'NOTIFICATION',
+    recordId: '',
+    recordName: '',
+  });
   return (
     <AnimatePresence>
       {isOpen && (
@@ -176,14 +204,45 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
                             ))}
                           </div>
 
-                          {!notif.read && (
+                          <div className="flex items-center gap-1.5 ml-auto">
                             <button
-                              onClick={() => onMarkRead(notif.id)}
-                              className="text-[10px] text-slate-400 hover:text-white transition cursor-pointer"
+                              type="button"
+                              onClick={() =>
+                                setEditModal({
+                                  isOpen: true,
+                                  recordType: 'NOTIFICATION',
+                                  record: notif,
+                                })
+                              }
+                              className="p-1 rounded bg-white/5 hover:bg-amber-500/20 text-slate-300 hover:text-amber-300 border border-white/10 transition cursor-pointer"
+                              title="Edit Notification"
                             >
-                              Mark read
+                              <Edit3 className="w-3 h-3" />
                             </button>
-                          )}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setDeleteModal({
+                                  isOpen: true,
+                                  recordType: 'NOTIFICATION',
+                                  recordId: notif.id,
+                                  recordName: notif.title,
+                                })
+                              }
+                              className="p-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 border border-rose-500/25 transition cursor-pointer"
+                              title="Delete Notification"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                            {!notif.read && (
+                              <button
+                                onClick={() => onMarkRead(notif.id)}
+                                className="text-[10px] text-slate-400 hover:text-white transition cursor-pointer ml-1"
+                              >
+                                Mark read
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </motion.div>
                     );
@@ -200,6 +259,30 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
               </div>
             </motion.div>
           </div>
+
+          {/* Edit Record Modal */}
+          <EditRecordModal
+            isOpen={editModal.isOpen}
+            recordType={editModal.recordType}
+            record={editModal.record}
+            onClose={() => setEditModal((prev) => ({ ...prev, isOpen: false }))}
+            onSuccess={() => {
+              if (onRefresh) onRefresh();
+            }}
+          />
+
+          {/* Delete Confirmation Modal */}
+          <DeleteConfirmModal
+            isOpen={deleteModal.isOpen}
+            recordType={deleteModal.recordType}
+            recordId={deleteModal.recordId}
+            recordName={deleteModal.recordName}
+            metadata={deleteModal.metadata}
+            onClose={() => setDeleteModal((prev) => ({ ...prev, isOpen: false }))}
+            onSuccess={() => {
+              if (onRefresh) onRefresh();
+            }}
+          />
         </div>
       )}
     </AnimatePresence>

@@ -25,12 +25,17 @@ import {
   Layers,
   ChevronRight,
   EyeOff,
+  Edit3,
+  Trash2,
 } from 'lucide-react';
 import type { Candidate, Room, Visitor, ActionTask } from '../../types/index.ts';
 import { ReceptionPhotoModal } from '../ReceptionPhotoModal.tsx';
 import { CandidateDossierModal } from '../CandidateDossierModal.tsx';
 import { VisitorArrivalTimeline } from '../VisitorArrivalTimeline.tsx';
 import { formatPhotoTimestamp } from '../../utils/dateFormatter.ts';
+import { authenticatedFetch } from '../../utils/apiClient.ts';
+import { EditRecordModal } from '../modals/EditRecordModal.tsx';
+import { DeleteConfirmModal, DeleteRecordType } from '../modals/DeleteConfirmModal.tsx';
 
 interface ReceptionDashboardProps {
   candidates: Candidate[];
@@ -74,10 +79,34 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
   const [selectedPhotoCandidate, setSelectedPhotoCandidate] = useState<Candidate | null>(null);
   const [selectedProfileCandidateId, setSelectedProfileCandidateId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [activeFilter, setActiveFilter] = useState<'ALL' | 'WAITING' | 'IN_MEETING' | 'CHECKOUT' | 'WALK_IN' | 'PRIORITY'>('ALL');
+  const [activeFilter, setActiveFilter] = useState<'ALL' | 'WAITING' | 'IN_MEETING' | 'CHECKOUT' | 'WALK_IN' | 'PRIORITY' | 'VISITORS'>('ALL');
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [showSecondarySections, setShowSecondarySections] = useState(false);
   const moreMenuRef = React.useRef<HTMLDivElement>(null);
+
+  // Edit / Delete Modal State
+  const [editModal, setEditModal] = useState<{
+    isOpen: boolean;
+    recordType: DeleteRecordType;
+    record: any;
+  }>({
+    isOpen: false,
+    recordType: 'CANDIDATE',
+    record: null,
+  });
+
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    recordType: DeleteRecordType;
+    recordId: string;
+    recordName: string;
+    metadata?: Record<string, any>;
+  }>({
+    isOpen: false,
+    recordType: 'CANDIDATE',
+    recordId: '',
+    recordName: '',
+  });
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -416,6 +445,18 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
             In Meetings ({candidates.filter((c) => c.status === 'IN_INTERVIEW' || c.status === 'ROOM_ASSIGNED').length})
           </button>
 
+          {/* Visitors & Clients Tab */}
+          <button
+            onClick={() => setActiveFilter('VISITORS')}
+            className={`wcr-filter-tab px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer shrink-0 border flex items-center gap-1.5 ${
+              activeFilter === 'VISITORS'
+                ? 'is-active bg-purple-500 text-white shadow-md ring-2 ring-purple-400/50 border-purple-400 font-black'
+                : 'bg-[#0B0B0D] text-white border-white/15 hover:bg-[#1A1D24] hover:text-white hover:border-white/30'
+            }`}
+          >
+            <span>Visitors & Clients ({visitors.length})</span>
+          </button>
+
           {/* More Menu Dropdown Anchor */}
           <div className="relative shrink-0" ref={moreMenuRef}>
             {(() => {
@@ -601,7 +642,135 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
         </div>
       </div>
 
-      {/* Primary Candidate Intake & Verification Roster */}
+      {/* Primary Candidate Intake & Verification Roster or Visitors & Clients */}
+      {activeFilter === 'VISITORS' ? (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between pb-1 border-b border-white/10">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-purple-400" />
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <span>Official Visitors & Clients Log</span>
+                <span className="px-2 py-0.5 rounded-full text-xs font-mono bg-purple-500/15 text-purple-300 border border-purple-500/30">
+                  {visitors.length}
+                </span>
+              </h3>
+            </div>
+            <span className="text-[11px] text-white/50">
+              Manage client visits, vendor check-ins & appointments
+            </span>
+          </div>
+
+          {visitors.length === 0 ? (
+            <div className="p-10 text-center bg-[#0B0B0D] card-dark rounded-2xl text-xs text-white/60 border border-white/10 shadow-lg">
+              No official visitors or clients recorded for today.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {visitors.map((vis) => (
+                <div
+                  key={vis.id}
+                  className="p-4 rounded-2xl space-y-3 text-xs shadow-xl bg-[#0B0B0D] card-dark text-white border border-purple-500/30 hover:border-purple-400/60 transition"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-bold text-sm text-white">{vis.fullName}</h4>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-purple-500/15 text-purple-300 border border-purple-500/30">
+                          {vis.visitorType || 'CLIENT'}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-amber-300 font-semibold">{vis.company || 'Official Guest'}</p>
+                      <p className="text-[10px] text-white/60 mt-0.5">
+                        Host: <strong className="text-white">{vis.hostName}</strong>
+                      </p>
+                    </div>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono border bg-emerald-500/15 text-emerald-300 border-emerald-500/30">
+                      {vis.status || 'CHECKED_IN'}
+                    </span>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-black/40 border border-white/5 space-y-1 text-[11px]">
+                    <div className="flex justify-between text-white/70">
+                      <span>Purpose:</span>
+                      <strong className="text-white">{vis.purpose || 'Business Meeting'}</strong>
+                    </div>
+                    <div className="flex justify-between text-white/70">
+                      <span>Phone:</span>
+                      <strong className="text-amber-400 font-mono">{vis.phone || 'N/A'}</strong>
+                    </div>
+                    {vis.checkInTime && (
+                      <div className="flex justify-between text-white/70">
+                        <span>Check-In:</span>
+                        <span className="font-mono text-slate-300">
+                          {new Date(vis.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Clearly visible Edit and Delete buttons for Visitors */}
+                  <div className="pt-2 border-t border-white/10 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setEditModal({
+                            isOpen: true,
+                            recordType: 'VISITOR',
+                            record: vis,
+                          })
+                        }
+                        className="px-2.5 py-1.5 rounded-xl border font-bold text-xs flex items-center gap-1.5 transition cursor-pointer bg-white/5 hover:bg-amber-500/20 text-slate-300 hover:text-amber-300 border-white/10"
+                        title="Edit Visitor Information"
+                      >
+                        <Edit3 className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Edit</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setDeleteModal({
+                            isOpen: true,
+                            recordType: 'VISITOR',
+                            recordId: vis.id,
+                            recordName: vis.fullName,
+                          })
+                        }
+                        className="px-2.5 py-1.5 rounded-xl border font-bold text-xs flex items-center gap-1.5 transition cursor-pointer bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 border-rose-500/25"
+                        title="Delete Visitor Record"
+                      >
+                        <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+                        <span>Delete</span>
+                      </button>
+                    </div>
+
+                    {vis.status !== 'CHECKED_OUT' && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          authenticatedFetch(`/api/visitors/${vis.id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ ...vis, status: 'CHECKED_OUT', checkOutTime: new Date().toISOString() }),
+                          }).then(() => {
+                            if (onRefresh) onRefresh();
+                          });
+                        }}
+                        className="px-2.5 py-1.5 rounded-xl border font-bold text-xs flex items-center gap-1 transition cursor-pointer bg-emerald-500/20 hover:bg-emerald-500/30 border-emerald-500/40 text-emerald-300"
+                      >
+                        <LogOut className="w-3.5 h-3.5" />
+                        <span>Check-Out</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+      /* Primary Candidate Intake & Verification Roster */
       <div className="space-y-3">
         <div className="flex items-center justify-between pb-1 border-b border-white/10">
           <div className="flex items-center gap-2">
@@ -709,7 +878,43 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
                       </span>
                     )}
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
+                      {/* Clearly visible Edit Candidate Button */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditModal({
+                            isOpen: true,
+                            recordType: 'CANDIDATE',
+                            record: cand,
+                          });
+                        }}
+                        className="p-1.5 rounded-xl border font-bold text-xs flex items-center transition cursor-pointer bg-white/5 hover:bg-amber-500/20 text-slate-300 hover:text-amber-300 border-white/10"
+                        title="Edit Candidate Information"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                      </button>
+
+                      {/* Clearly visible Delete Candidate Button */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeleteModal({
+                            isOpen: true,
+                            recordType: 'CANDIDATE',
+                            recordId: cand.id,
+                            recordName: cand.fullName,
+                            metadata: { status: cand.status },
+                          });
+                        }}
+                        className="p-1.5 rounded-xl border font-bold text-xs flex items-center transition cursor-pointer bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 border-rose-500/25"
+                        title="Delete / Archive Candidate"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -741,6 +946,7 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
           </div>
         )}
       </div>
+      )}
 
       {/* Expandable Inline Secondary Sections (Hidden by default, shown only when explicitly toggled) */}
       {showSecondarySections && (
@@ -921,6 +1127,30 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
           }}
         />
       )}
+
+      {/* Edit Record Modal */}
+      <EditRecordModal
+        isOpen={editModal.isOpen}
+        recordType={editModal.recordType}
+        record={editModal.record}
+        onClose={() => setEditModal((prev) => ({ ...prev, isOpen: false }))}
+        onSuccess={() => {
+          if (onRefresh) onRefresh();
+        }}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={deleteModal.isOpen}
+        recordType={deleteModal.recordType}
+        recordId={deleteModal.recordId}
+        recordName={deleteModal.recordName}
+        metadata={deleteModal.metadata}
+        onClose={() => setDeleteModal((prev) => ({ ...prev, isOpen: false }))}
+        onSuccess={() => {
+          if (onRefresh) onRefresh();
+        }}
+      />
     </div>
   );
 };

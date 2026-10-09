@@ -15,16 +15,23 @@ import {
   MessageSquare,
   ShieldCheck,
   Calendar,
+  Edit3,
+  Trash2,
+  User,
 } from 'lucide-react';
 import type { Candidate, Interview, Room, ActionTask } from '../../types/index.ts';
 import { authenticatedFetch } from '../../utils/apiClient.ts';
 import { formatPhotoTimestamp } from '../../utils/dateFormatter.ts';
+import { HRSubProfileView, HRProfileKey } from '../HRSubProfileView.tsx';
+import { EditRecordModal } from '../modals/EditRecordModal.tsx';
+import { DeleteConfirmModal, DeleteRecordType } from '../modals/DeleteConfirmModal.tsx';
 
 interface HRDashboardProps {
   candidates: Candidate[];
   interviews: Interview[];
   rooms: Room[];
   actionTasks?: ActionTask[];
+  initialSubProfile?: 'all' | 'nisha' | 'shriyanshi';
   onOpenDossier: (candidateId: string) => void;
   onAssignRoom: (candidateId: string, interviewId?: string) => void;
   onOpenChat?: () => void;
@@ -43,13 +50,52 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
   interviews,
   rooms,
   actionTasks = [],
+  initialSubProfile = 'all',
   onOpenDossier,
   onAssignRoom,
   onOpenChat,
   onOpenChatWithContext,
   onRefresh,
 }) => {
+  const [subProfileMode, setSubProfileMode] = useState<'all' | 'nisha' | 'shriyanshi'>(initialSubProfile);
   const [assigningKimmiId, setAssigningKimmiId] = useState<string | null>(null);
+
+  // Modal states for Edit and Delete
+  const [editModal, setEditModal] = useState<{
+    isOpen: boolean;
+    recordType: DeleteRecordType;
+    record: any;
+  }>({
+    isOpen: false,
+    recordType: 'CANDIDATE',
+    record: null,
+  });
+
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    recordType: DeleteRecordType;
+    recordId: string;
+    recordName: string;
+    metadata?: Record<string, any>;
+  }>({
+    isOpen: false,
+    recordType: 'CANDIDATE',
+    recordId: '',
+    recordName: '',
+  });
+
+  // If viewing a dedicated HR sub-profile, render HRSubProfileView directly
+  if (subProfileMode === 'nisha' || subProfileMode === 'shriyanshi') {
+    return (
+      <HRSubProfileView
+        activeProfileKey={subProfileMode as HRProfileKey}
+        onSelectProfile={(p) => setSubProfileMode(p)}
+        onBackToHRDashboard={() => setSubProfileMode('all')}
+        onOpenDossier={onOpenDossier}
+        onAssignRoom={onAssignRoom}
+      />
+    );
+  }
 
   // Active action tasks relevant to HR
   const activeHRTasks = actionTasks.filter(
@@ -93,6 +139,49 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* HR Module Profile Selector Header */}
+      <div className="p-4 rounded-2xl card-dark bg-[#0B0B0D] border border-white/10 shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-400 flex items-center justify-center font-bold">
+            <Users className="w-4 h-4" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-white">HR Operations & Officer Profiles</h3>
+            <p className="text-[11px] text-[#BDBDBD]">Switch between full intake pipeline and dedicated HR officer workspaces.</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 bg-[#17191D] p-1.5 rounded-xl border border-white/10">
+          <button
+            type="button"
+            onClick={() => setSubProfileMode('all')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+              subProfileMode === 'all'
+                ? 'bg-amber-500 text-slate-950 shadow'
+                : 'text-slate-300 hover:text-white'
+            }`}
+          >
+            All Intake Queue
+          </button>
+          <button
+            type="button"
+            onClick={() => setSubProfileMode('nisha')}
+            className="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer text-slate-300 hover:text-white"
+          >
+            <Award className="w-3.5 h-3.5" />
+            <span>Nisha (Sr. HR)</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setSubProfileMode('shriyanshi')}
+            className="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer text-slate-300 hover:text-white"
+          >
+            <User className="w-3.5 h-3.5" />
+            <span>Shriyanshi (Intake)</span>
+          </button>
+        </div>
+      </div>
+
       {/* Live Dispatched Action Alerts & Escort Status */}
       {activeHRTasks.length > 0 && (
         <motion.div
@@ -242,15 +331,49 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
                         </div>
                       </div>
 
-                      {/* Right Action: Assign Room & Dossier */}
+                      {/* Right Action: Assign Room & Dossier + Edit / Delete */}
                       <div className="flex flex-col items-end gap-1.5 shrink-0">
-                        <button
-                          onClick={() => onAssignRoom(cand.id, intv?.id)}
-                          className="btn-assign-room px-3.5 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs rounded-xl shadow-md transition flex items-center gap-1.5 cursor-pointer"
-                        >
-                          <DoorOpen className="w-3.5 h-3.5 text-slate-950" />
-                          <span>Assign Room</span>
-                        </button>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditModal({
+                                isOpen: true,
+                                recordType: 'CANDIDATE',
+                                record: cand,
+                              });
+                            }}
+                            className="p-1.5 bg-white/5 hover:bg-amber-500/20 text-slate-300 hover:text-amber-300 border border-white/10 hover:border-amber-400/40 rounded-xl transition cursor-pointer"
+                            title="Edit Candidate Information"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeleteModal({
+                                isOpen: true,
+                                recordType: 'CANDIDATE',
+                                recordId: cand.id,
+                                recordName: cand.fullName,
+                                metadata: { status: cand.status },
+                              });
+                            }}
+                            className="p-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 border border-rose-500/25 hover:border-rose-500/40 rounded-xl transition cursor-pointer"
+                            title="Delete / Archive Candidate"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => onAssignRoom(cand.id, intv?.id)}
+                            className="btn-assign-room px-3.5 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs rounded-xl shadow-md transition flex items-center gap-1.5 cursor-pointer"
+                          >
+                            <DoorOpen className="w-3.5 h-3.5 text-slate-950" />
+                            <span>Assign Room</span>
+                          </button>
+                        </div>
                         <button
                           onClick={() => onOpenDossier(cand.id)}
                           className="candidate-dossier-link text-[11px] font-semibold underline text-blue-400 hover:text-blue-300 transition cursor-pointer"
@@ -309,6 +432,38 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditModal({
+                              isOpen: true,
+                              recordType: 'CANDIDATE',
+                              record: cand,
+                            });
+                          }}
+                          className="p-1.5 bg-white/5 hover:bg-amber-500/20 text-slate-300 hover:text-amber-300 border border-white/10 hover:border-amber-400/40 rounded-xl transition cursor-pointer"
+                          title="Edit Candidate Information"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteModal({
+                              isOpen: true,
+                              recordType: 'CANDIDATE',
+                              recordId: cand.id,
+                              recordName: cand.fullName,
+                              metadata: { status: cand.status },
+                            });
+                          }}
+                          className="p-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 border border-rose-500/25 hover:border-rose-500/40 rounded-xl transition cursor-pointer"
+                          title="Delete / Archive Candidate"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                         <button
                           onClick={() => onAssignRoom(cand.id, cand.currentInterviewId)}
                           className="px-3 py-1.5 font-bold text-xs rounded-xl border border-white/15 transition cursor-pointer bg-white/10 hover:bg-white/20 text-white"
@@ -375,12 +530,46 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
 
                   <div className="flex items-center justify-between text-[11px] text-[#E0E0E0]">
                     <span className="capitalize">{room.type?.replace('_', ' ').toLowerCase() || 'Meeting Cabin'}</span>
-                    {room.currentCandidateName && (
-                      <span className="font-semibold truncate max-w-[140px] text-amber-400">
-                        Occupant: {room.currentCandidateName}
-                      </span>
-                    )}
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditModal({
+                            isOpen: true,
+                            recordType: 'ROOM',
+                            record: room,
+                          });
+                        }}
+                        className="p-1 rounded bg-white/5 hover:bg-amber-500/20 text-slate-300 hover:text-amber-300 border border-white/10 text-[10px] transition cursor-pointer"
+                        title="Edit Room Details"
+                      >
+                        <Edit3 className="w-3 h-3" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeleteModal({
+                            isOpen: true,
+                            recordType: 'ROOM',
+                            recordId: room.id,
+                            recordName: room.name,
+                            metadata: { status: room.status },
+                          });
+                        }}
+                        className="p-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 border border-rose-500/25 text-[10px] transition cursor-pointer"
+                        title="Delete Room"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
                   </div>
+                  {room.currentCandidateName && (
+                    <div className="text-[10px] font-semibold truncate text-amber-400 pt-0.5">
+                      Occupant: {room.currentCandidateName}
+                    </div>
+                  )}
                 </motion.div>
               );
             })}
@@ -417,6 +606,30 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Edit Record Modal */}
+      <EditRecordModal
+        isOpen={editModal.isOpen}
+        recordType={editModal.recordType}
+        record={editModal.record}
+        onClose={() => setEditModal((prev) => ({ ...prev, isOpen: false }))}
+        onSuccess={() => {
+          if (onRefresh) onRefresh();
+        }}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={deleteModal.isOpen}
+        recordType={deleteModal.recordType}
+        recordId={deleteModal.recordId}
+        recordName={deleteModal.recordName}
+        metadata={deleteModal.metadata}
+        onClose={() => setDeleteModal((prev) => ({ ...prev, isOpen: false }))}
+        onSuccess={() => {
+          if (onRefresh) onRefresh();
+        }}
+      />
     </div>
   );
 };
