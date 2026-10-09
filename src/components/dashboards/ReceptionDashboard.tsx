@@ -388,7 +388,7 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
             className={`wcr-filter-tab px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer shrink-0 border ${
               activeFilter === 'ALL'
                 ? 'is-active bg-amber-500 text-slate-950 shadow-md ring-2 ring-amber-400/50 border-amber-400 font-black'
-                : 'bg-[#0B0B0D] text-white border-white/15 hover:bg-white hover:text-black hover:border-black/20'
+                : 'bg-[#0B0B0D] text-white border-white/15 hover:bg-[#1A1D24] hover:text-white hover:border-white/30'
             }`}
           >
             All Active ({activeCandidates.length})
@@ -398,7 +398,7 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
             className={`wcr-filter-tab px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer shrink-0 border ${
               activeFilter === 'WAITING'
                 ? 'is-active bg-amber-500 text-slate-950 shadow-md ring-2 ring-amber-400/50 border-amber-400 font-black'
-                : 'bg-[#0B0B0D] text-white border-white/15 hover:bg-white hover:text-black hover:border-black/20'
+                : 'bg-[#0B0B0D] text-white border-white/15 hover:bg-[#1A1D24] hover:text-white hover:border-white/30'
             }`}
           >
             Waiting Lounge ({waitingCandidates.length})
@@ -409,7 +409,7 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
             className={`wcr-filter-tab px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer shrink-0 border ${
               activeFilter === 'IN_MEETING'
                 ? 'is-active bg-amber-500 text-slate-950 shadow-md ring-2 ring-amber-400/50 border-amber-400 font-black'
-                : 'bg-[#0B0B0D] text-white border-white/15 hover:bg-white hover:text-black hover:border-black/20'
+                : 'bg-[#0B0B0D] text-white border-white/15 hover:bg-[#1A1D24] hover:text-white hover:border-white/30'
             }`}
           >
             In Meetings ({candidates.filter((c) => c.status === 'IN_INTERVIEW' || c.status === 'ROOM_ASSIGNED').length})
@@ -438,8 +438,8 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
                     isMoreActive
                       ? 'is-active bg-amber-500 text-slate-950 shadow-md ring-2 ring-amber-400/50 border-amber-400 font-black'
                       : isMoreMenuOpen
-                      ? 'bg-white text-black border-black/20'
-                      : 'bg-[#0B0B0D] text-white border-white/15 hover:bg-white hover:text-black hover:border-black/20'
+                      ? 'bg-[#1F242D] text-white border-white/30'
+                      : 'bg-[#0B0B0D] text-white border-white/15 hover:bg-[#1A1D24] hover:text-white hover:border-white/30'
                   }`}
                 >
                   <span>{isMoreActive ? `More: ${activeMoreLabel}` : 'More'}</span>
