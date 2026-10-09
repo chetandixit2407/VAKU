@@ -100,27 +100,27 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
     currentUser.role === 'CO_FOUNDER';
 
   return (
-    <aside className="hidden lg:flex flex-col w-64 shrink-0 h-screen sticky top-0 z-30 p-4 select-none">
-      <div className="flex-1 flex flex-col glass-panel rounded-3xl p-3.5 border border-white/8 relative overflow-hidden backdrop-blur-2xl">
-        {/* Subtle Inner Highlight Ray */}
-        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-amber-400/25 to-transparent pointer-events-none" />
+    <aside className="hidden lg:flex flex-col w-64 shrink-0 h-[100dvh] fixed top-0 left-0 z-30 bg-[#0B0F14] border-r border-[#252A32] select-none text-[#F5F6F8]">
+      <div className="flex-1 flex flex-col p-3.5 bg-[#0B0F14] relative overflow-hidden">
+        {/* Subtle Top Inner Highlight */}
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-amber-400/20 to-transparent pointer-events-none" />
 
         {/* Brand Block */}
-        <div className="px-2.5 py-3 border-b border-white/6 flex items-center justify-between">
+        <div className="px-2.5 py-3 border-b border-[#252A32] flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="relative">
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-700 flex items-center justify-center text-slate-950 font-black text-xs shadow-lg shadow-amber-500/15 tracking-wider">
                 WCR
               </div>
-              <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-[#07090C]" />
+              <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-[#0B0F14]" />
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="font-bold text-white text-xs tracking-tight">
+                <span className="font-bold text-[#F5F6F8] text-xs tracking-tight">
                   White Collar Realty
                 </span>
               </div>
-              <span className="text-[10px] text-amber-400/80 font-mono tracking-wider uppercase block">
+              <span className="text-[10px] text-amber-400/90 font-mono tracking-wider uppercase block">
                 Command Center
               </span>
             </div>
@@ -153,15 +153,15 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
                 }}
                 className={`relative w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all group cursor-pointer ${
                   isActive
-                    ? 'text-white'
-                    : 'text-slate-400 hover:text-white hover:bg-white/4'
+                    ? 'bg-[#1B2028] text-[#F5F6F8] font-semibold'
+                    : 'text-[#AEB7C4] hover:text-[#F5F6F8] hover:bg-[#1B2028]/60'
                 }`}
               >
-                {/* Animated Glass Highlight */}
+                {/* Active Indicator Accent Line */}
                 {isActive && (
                   <motion.div
                     layoutId="sidebar-active-indicator"
-                    className="absolute inset-0 bg-gradient-to-r from-amber-500/15 via-white/5 to-transparent border-l-2 border-amber-400 rounded-xl pointer-events-none"
+                    className="absolute inset-0 border-l-2 border-amber-400 rounded-xl pointer-events-none"
                     transition={{ type: 'spring', stiffness: 350, damping: 30 }}
                   />
                 )}
@@ -169,7 +169,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
                 <div className="flex items-center gap-2.5 relative z-10">
                   <Icon
                     className={`w-4 h-4 transition-colors ${
-                      isActive ? 'text-amber-400' : 'text-slate-400 group-hover:text-slate-200'
+                      isActive ? 'text-amber-400' : 'text-[#AEB7C4] group-hover:text-[#F5F6F8]'
                     }`}
                   />
                   <span className="tracking-tight">{item.label}</span>
@@ -186,10 +186,10 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         </nav>
 
         {/* Quick Launch Terminals */}
-        <div className="py-2.5 border-t border-white/6 space-y-1.5">
+        <div className="py-2.5 border-t border-[#252A32] space-y-1.5">
           <button
             onClick={onOpenQRPasses}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl bg-white/4 hover:bg-white/8 border border-white/6 text-slate-300 hover:text-white text-xs font-semibold transition cursor-pointer"
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl bg-[#141820] hover:bg-[#1B2028] border border-[#252A32] text-[#F5F6F8] text-xs font-semibold transition cursor-pointer"
           >
             <QrCode className="w-3.5 h-3.5 text-amber-400" />
             <span className="truncate">QR Station Standee</span>
@@ -197,7 +197,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
 
           <button
             onClick={onOpenBlankRegister}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-r from-emerald-500/15 to-emerald-600/10 hover:from-emerald-500/25 hover:to-emerald-600/20 border border-emerald-500/30 text-emerald-300 text-xs font-semibold transition cursor-pointer"
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-950/40 hover:bg-emerald-900/40 border border-emerald-500/30 text-emerald-300 text-xs font-semibold transition cursor-pointer"
           >
             <UserPlus className="w-3.5 h-3.5 text-emerald-400" />
             <span className="truncate">Blank Intake Form</span>
@@ -205,18 +205,18 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         </div>
 
         {/* Role Switcher & User Profile */}
-        <div className="pt-3 border-t border-white/6 relative">
+        <div className="pt-3 border-t border-[#252A32] relative">
           {canSwitchViews && (
             <div className="mb-2 relative">
               <button
                 onClick={() => setRoleDropdownOpen(!roleDropdownOpen)}
-                className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-white/4 hover:bg-white/7 border border-white/6 text-[11px] font-semibold text-slate-300 transition cursor-pointer"
+                className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-[#141820] hover:bg-[#1B2028] border border-[#252A32] text-[11px] font-semibold text-[#F5F6F8] transition cursor-pointer"
               >
                 <div className="flex items-center gap-1.5 truncate">
                   <Shield className="w-3 h-3 text-amber-400 shrink-0" />
                   <span className="truncate">Role: {currentRole}</span>
                 </div>
-                <ChevronDown className="w-3 h-3 text-slate-400 shrink-0" />
+                <ChevronDown className="w-3 h-3 text-[#AEB7C4] shrink-0" />
               </button>
 
               <AnimatePresence>
@@ -226,9 +226,9 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 5, scale: 0.95 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute bottom-full left-0 right-0 mb-1 glass-panel-elevated rounded-2xl p-1.5 z-50 border border-white/12 shadow-2xl max-h-56 overflow-y-auto"
+                    className="absolute bottom-full left-0 right-0 mb-1 bg-[#141820] rounded-2xl p-1.5 z-50 border border-[#252A32] shadow-2xl max-h-56 overflow-y-auto"
                   >
-                    <div className="text-[10px] font-bold text-slate-400 px-2 py-1 uppercase tracking-wider">
+                    <div className="text-[10px] font-bold text-[#AEB7C4] px-2 py-1 uppercase tracking-wider">
                       Switch Active Role
                     </div>
                     {allRoles.map((r) => (
@@ -241,7 +241,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
                         className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs transition text-left cursor-pointer ${
                           currentRole === r.role
                             ? 'bg-amber-500/20 text-amber-300 font-bold'
-                            : 'text-slate-300 hover:text-white hover:bg-white/6'
+                            : 'text-[#AEB7C4] hover:text-[#F5F6F8] hover:bg-[#1B2028]'
                         }`}
                       >
                         <r.icon className={`w-3.5 h-3.5 ${r.color}`} />
@@ -256,15 +256,15 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
 
           {/* User profile card */}
           {currentUser && (
-            <div className="flex items-center justify-between p-2 rounded-2xl bg-white/4 border border-white/6">
+            <div className="flex items-center justify-between p-2 rounded-2xl bg-[#141820] border border-[#252A32]">
               <div className="min-w-0 pr-2">
-                <p className="text-xs font-bold text-white truncate">{currentUser.name}</p>
-                <p className="text-[10px] text-amber-400/80 font-mono truncate">{currentUser.email}</p>
+                <p className="text-xs font-bold text-[#F5F6F8] truncate">{currentUser.name}</p>
+                <p className="text-[10px] text-[#AEB7C4] font-mono truncate">{currentUser.email}</p>
               </div>
               {onLogout && (
                 <button
                   onClick={onLogout}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition cursor-pointer"
+                  className="p-1.5 rounded-lg text-[#AEB7C4] hover:text-rose-400 hover:bg-rose-500/10 transition cursor-pointer"
                   title="Sign out"
                 >
                   <LogOut className="w-3.5 h-3.5" />

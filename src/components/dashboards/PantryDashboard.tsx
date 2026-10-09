@@ -247,7 +247,7 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
   return (
     <div className="space-y-6">
       {/* Hospitality Header */}
-      <div className="p-6 glass-panel rounded-3xl border border-white/8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="p-6 card-dark bg-[#0B0B0D] text-white rounded-3xl border border-white/10 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center justify-center">
@@ -257,7 +257,7 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
               Hospitality & Pantry Operations Desk
             </h1>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-[#E0E0E0] mt-1">
             Dynamic room preparation, mineral water & beverage service, sanitization reset queue.
           </p>
         </div>
@@ -293,14 +293,14 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-5 glass-panel-elevated rounded-3xl space-y-3 border border-amber-500/40 shadow-xl"
+          className="p-5 card-dark bg-[#0B0B0D] rounded-3xl space-y-3 border border-amber-500/40 shadow-xl"
         >
-          <div className="flex items-center justify-between pb-2 border-b border-white/8">
+          <div className="flex items-center justify-between pb-2 border-b border-white/10">
             <h2 className="text-xs font-black text-amber-300 tracking-wide uppercase flex items-center gap-1.5 font-mono">
               <Sparkles className="w-4 h-4 text-amber-400" />
               <span>Urgent Service Requests ({pantryActionTasks.length})</span>
             </h2>
-            <span className="text-[10px] text-slate-400">Live request channel</span>
+            <span className="text-[10px] text-[#BDBDBD]">Live request channel</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
@@ -313,9 +313,9 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
                   key={task.id}
                   whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
                   whileTap={{ scale: 0.99 }}
-                  className="p-4 glass-panel dashboard-card rounded-2xl border border-amber-400/60 flex flex-col justify-between space-y-3 shadow-xl hover:shadow-2xl hover:shadow-amber-500/15"
+                  className="p-4 dashboard-card card-dark bg-[#0B0B0D] rounded-2xl border border-amber-400/60 flex flex-col justify-between space-y-3 shadow-xl hover:shadow-2xl hover:shadow-amber-500/15"
                 >
-                  <div className="flex items-center justify-between text-xs pb-2 border-b border-white/8">
+                  <div className="flex items-center justify-between text-xs pb-2 border-b border-white/10">
                     <span className="font-bold text-white truncate">{task.title}</span>
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-300 font-mono">
                       {task.status}
@@ -323,12 +323,12 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
                   </div>
 
                   <div className="space-y-1 text-xs">
-                    <span className="text-[11px] text-slate-400">Target Room:</span>
+                    <span className="text-[11px] text-[#BDBDBD]">Target Room:</span>
                     <strong className="text-amber-400 block font-mono text-sm">{resolvedRoom}</strong>
-                    <p className="text-xs text-slate-200 mt-1">{task.instruction || 'Serve refreshments'}</p>
+                    <p className="text-xs text-[#E0E0E0] mt-1">{task.instruction || 'Serve refreshments'}</p>
                   </div>
 
-                  <div className="pt-2 border-t border-white/8 flex justify-end gap-2">
+                  <div className="pt-2 border-t border-white/10 flex justify-end gap-2">
                     {isPending && onAcknowledgeTask && (
                       <button
                         onClick={() => onAcknowledgeTask(task.id)}
@@ -359,14 +359,14 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left 2 Cols: Task Queue */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between pb-1 border-b border-white/6">
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+          <div className="flex items-center justify-between pb-1 border-b border-black/10">
+            <h2 className="text-base font-bold text-[#111318] flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
               <span>Hospitality Task Queue ({pendingTasks.length})</span>
             </h2>
             <button
               onClick={onRefresh}
-              className="text-xs text-slate-400 hover:text-amber-400 flex items-center gap-1 cursor-pointer"
+              className="text-xs text-[#252A32] hover:text-[#111318] flex items-center gap-1 cursor-pointer font-medium"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               <span>Sync</span>
@@ -374,10 +374,10 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
           </div>
 
           {pendingTasks.length === 0 ? (
-            <div className="p-12 text-center glass-panel-subtle rounded-3xl space-y-2 border border-white/6">
+            <div className="p-12 text-center card-dark bg-[#0B0B0D] rounded-3xl space-y-2 border border-white/10">
               <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" />
               <h3 className="text-sm font-bold text-white">All meeting cabins prepped & sanitized</h3>
-              <p className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
+              <p className="text-xs text-[#E0E0E0] max-w-sm mx-auto leading-relaxed">
                 Hospitality tasks generate automatically when HR assigns candidates to cabins.
               </p>
             </div>
@@ -392,11 +392,11 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
                     key={task.id}
                     whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
                     whileTap={{ scale: 0.99 }}
-                    className="p-5 glass-panel dashboard-card rounded-2xl border border-amber-500/40 hover:border-amber-400 shadow-xl hover:shadow-2xl hover:shadow-amber-500/15 space-y-3.5 transition"
+                    className="p-5 rounded-2xl space-y-3.5 transition shadow-xl card-dark bg-[#0B0B0D] text-white border border-white/10"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                        <div className="w-11 h-11 rounded-2xl flex items-center justify-center bg-amber-500/10 border border-amber-500/30 text-amber-400">
                           {task.taskType === 'ROOM_RESET' ? (
                             <RefreshCw className="w-5 h-5" />
                           ) : task.taskType === 'WATER_BEVERAGE' ? (
@@ -407,42 +407,42 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="text-[10px] uppercase font-bold text-amber-400 tracking-wider font-mono">
+                            <span className="text-[10px] uppercase font-bold tracking-wider font-mono text-amber-400">
                               {task.taskType === 'ROOM_RESET'
                                 ? 'Sanitization Reset'
                                 : task.taskType === 'WATER_BEVERAGE'
                                 ? 'Beverage Delivery'
                                 : 'Hospitality Setup'}
                             </span>
-                            <span className="text-slate-600">&bull;</span>
-                            <span className="text-[11px] text-slate-400 font-mono">
+                            <span className="text-[#BDBDBD]">&bull;</span>
+                            <span className="text-[11px] font-mono text-[#E0E0E0]">
                               {new Date(task.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
                           </div>
-                          <h3 className="text-lg font-bold text-white tracking-tight">{resolvedName}</h3>
+                          <h3 className="text-lg font-bold tracking-tight text-white">{resolvedName}</h3>
                           {task.candidateName && (
-                            <p className="text-xs text-slate-300 font-medium">
+                            <p className="text-xs font-medium text-[#E0E0E0]">
                               For: <strong className="text-amber-400">{task.candidateName}</strong>
                             </p>
                           )}
                         </div>
                       </div>
 
-                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 font-mono animate-pulse">
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold font-mono animate-pulse bg-amber-500/15 text-amber-300 border border-amber-500/30">
                         Pending Action
                       </span>
                     </div>
 
-                    <p className="text-xs text-slate-200">{displayDesc}</p>
+                    <p className="text-xs text-[#E0E0E0]">{displayDesc}</p>
 
                     {/* Checklist of required items */}
-                    <div className="p-3 bg-black/40 border border-white/6 rounded-xl space-y-1.5 text-xs">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block font-mono">
+                    <div className="p-3 card-inner inner-box bg-[#25272B] border border-white/10 text-[#E0E0E0] rounded-xl space-y-1.5 text-xs">
+                      <span className="text-[10px] font-bold uppercase tracking-wider block font-mono text-[#BDBDBD]">
                         Hospitality Checklist:
                       </span>
-                      <ul className="space-y-1 text-slate-300 pl-4 list-disc text-[11px]">
-                        {task.requiredItems?.map((item, idx) => (
-                          <li key={idx}>{item}</li>
+                      <ul className="space-y-1 pl-4 list-disc text-[11px]">
+                        {task.requiredItems?.map((item, i) => (
+                          <li key={i}>{item}</li>
                         ))}
                       </ul>
                     </div>
@@ -470,12 +470,12 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
 
         {/* Right Col: Live Rooms Status Grid */}
         <div className="space-y-4">
-          <div className="pb-1 border-b border-white/6">
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
-              <DoorOpen className="w-4 h-4 text-amber-400" />
+          <div className="pb-1 border-b border-black/10">
+            <h2 className="text-base font-bold text-[#111318] flex items-center gap-2">
+              <DoorOpen className="w-4 h-4 text-amber-500" />
               Office Cabins & Pods
             </h2>
-            <p className="text-xs text-slate-400 mt-0.5">Real-time room occupancy and cleanliness.</p>
+            <p className="text-xs text-[#252A32] mt-0.5">Real-time room occupancy and cleanliness.</p>
           </div>
 
           <div className="space-y-2.5">
@@ -488,16 +488,16 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
               return (
                 <div
                   key={room.id}
-                  className="p-3.5 glass-panel dashboard-card rounded-2xl flex items-center justify-between text-xs border border-white/8"
+                  className="p-3.5 rounded-2xl flex items-center justify-between text-xs transition shadow-md card-dark bg-[#0B0B0D] border border-white/10 text-white"
                 >
                   <div className="space-y-0.5">
                     <h4 className="font-bold text-white">{room.name}</h4>
                     {room.currentCandidateName ? (
-                      <p className="text-[11px] text-amber-400 font-semibold truncate max-w-[140px]">
+                      <p className="text-[11px] font-semibold truncate max-w-[140px] text-amber-400">
                         Occupant: {room.currentCandidateName}
                       </p>
                     ) : (
-                      <p className="text-[10px] text-slate-400 uppercase tracking-wider">
+                      <p className="text-[10px] uppercase tracking-wider text-[#E0E0E0]">
                         {room.type?.replace('_', ' ') || 'Room'}
                       </p>
                     )}
@@ -512,8 +512,8 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
                           : isCleaning
                           ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse'
                           : isOccupied
-                          ? 'bg-blue-500/15 text-blue-400 border border-blue-500/30'
-                          : 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
+                          ? 'bg-blue-500/15 text-blue-300 border border-blue-500/30'
+                          : 'bg-rose-500/15 text-rose-300 border border-rose-500/30'
                       }`}
                     >
                       {isCleaning ? 'Cleaning' : room.status}

@@ -52,14 +52,14 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   onToggleMobileMenu,
 }) => {
   return (
-    <header className="sticky top-0 z-20 px-4 sm:px-6 py-3 border-b border-white/6 glass-panel backdrop-blur-2xl transition-all">
+    <header className="sticky top-0 z-20 px-4 sm:px-6 py-3 border-b border-[#252A32] bg-[#0B0F14] transition-all">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
         {/* Left: Mobile trigger & Page Context */}
         <div className="flex items-center gap-3">
           {onToggleMobileMenu && (
             <button
               onClick={onToggleMobileMenu}
-              className="lg:hidden p-2 rounded-xl bg-white/5 border border-white/8 text-slate-300 hover:text-white transition cursor-pointer"
+              className="lg:hidden p-2 rounded-xl bg-[#141820] border border-[#252A32] text-[#AEB7C4] hover:text-[#F5F6F8] transition cursor-pointer"
               title="Open Navigation Menu"
             >
               <Menu className="w-4 h-4" />
@@ -68,16 +68,16 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
 
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-sm sm:text-base font-bold text-white tracking-tight">
+              <h1 className="text-sm sm:text-base font-bold text-[#F5F6F8] tracking-tight">
                 {pageTitle}
               </h1>
-              <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/5 border border-white/8 text-amber-400">
+              <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#1B2028] border border-[#252A32] text-amber-400">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
                 <span>Active Console</span>
               </span>
             </div>
-            <p className="text-[11px] text-slate-400 hidden md:block">
-              White Collar Realty Operations &middot; Role: <strong className="text-slate-200">{currentRole}</strong>
+            <p className="text-[11px] text-[#AEB7C4] hidden md:block">
+              White Collar Realty Operations &middot; Role: <strong className="text-[#F5F6F8]">{currentRole}</strong>
             </p>
           </div>
         </div>
@@ -103,7 +103,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           {/* Quick Intake Button */}
           <button
             onClick={onOpenCheckIn}
-            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-amber-300 font-semibold text-xs transition cursor-pointer"
+            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#141820] hover:bg-[#1B2028] border border-[#252A32] text-amber-300 font-semibold text-xs transition cursor-pointer"
             title="Candidate Self Check-In Form"
           >
             <Smartphone className="w-3.5 h-3.5 text-amber-400" />
@@ -113,7 +113,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           {/* QR Station */}
           <button
             onClick={onOpenQRPasses}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/8 text-slate-300 hover:text-white font-medium text-xs transition cursor-pointer"
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#141820] hover:bg-[#1B2028] border border-[#252A32] text-[#AEB7C4] hover:text-[#F5F6F8] font-medium text-xs transition cursor-pointer"
             title="WCR QR Codes & Passes"
           >
             <QrCode className="w-3.5 h-3.5 text-amber-400" />
@@ -123,7 +123,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           {/* Office Internal Chat */}
           <button
             onClick={onOpenChat}
-            className="relative p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/8 text-slate-300 hover:text-amber-300 transition cursor-pointer flex items-center gap-1.5"
+            className="relative p-2 rounded-xl bg-[#141820] hover:bg-[#1B2028] border border-[#252A32] text-[#AEB7C4] hover:text-amber-300 transition cursor-pointer flex items-center gap-1.5"
             title="Internal Office Chat"
           >
             <MessageSquare className="w-4 h-4 text-amber-400" />
@@ -138,7 +138,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           {/* Notifications Bell */}
           <button
             onClick={onOpenNotifications}
-            className="relative p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/8 text-slate-300 hover:text-white transition cursor-pointer"
+            className="relative p-2 rounded-xl bg-[#141820] hover:bg-[#1B2028] border border-[#252A32] text-[#AEB7C4] hover:text-[#F5F6F8] transition cursor-pointer"
             title="Alert Feed"
           >
             <Bell className="w-4 h-4" />
@@ -149,9 +149,9 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
             )}
           </button>
 
-          {/* Active In-App Panel Status & Close Control (Replaces redundant top-right login info) */}
+          {/* Active In-App Panel Status & Close Control */}
           {openPanels && openPanels.length > 0 && (
-            <div className="flex items-center gap-1.5 pl-2 border-l border-white/8">
+            <div className="flex items-center gap-1.5 pl-2 border-l border-[#252A32]">
               {openPanels.map((panel) => (
                 <div
                   key={panel.id}

@@ -559,21 +559,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-black/10">
         <div>
           <div className="flex items-center gap-2">
-            <Shield className="w-5 h-5 text-purple-400" />
-            <h1 className="text-xl font-bold text-white tracking-tight">
+            <Shield className="w-5 h-5 text-purple-600" />
+            <h1 className="text-xl font-bold text-[#111318] tracking-tight">
               Operations & Security Administration
             </h1>
           </div>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-[#252A32] font-medium mt-0.5">
             Full Access Credentials Manager (Sameer Sir), Room Configuration, Password Reset Approvals, and Central Audit Trail.
           </p>
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex flex-wrap bg-slate-900 border border-slate-800 rounded-2xl p-1 gap-1">
+        <div className="flex flex-wrap bg-[#0B0F14] border border-[#252A32] rounded-2xl p-1 gap-1">
           <button
             onClick={() => setActiveTab('candidates')}
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
@@ -684,23 +684,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         <div className="space-y-4 animate-in fade-in duration-200">
           {/* Summary Metric Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="p-4 bg-slate-900 dashboard-card border border-slate-800 rounded-2xl">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+            <div className="p-4 bg-[#0B0B0D] card-dark dashboard-card border border-white/10 rounded-2xl">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#BDBDBD] block">
                 Total Intake
               </span>
               <div className="text-xl font-black text-white mt-1">{candidates.length}</div>
-              <span className="text-[10px] text-slate-500">Authorized View</span>
+              <span className="text-[10px] text-[#BDBDBD]">Authorized View</span>
             </div>
-            <div className="p-4 bg-slate-900 dashboard-card border border-blue-500/30 rounded-2xl">
+            <div className="p-4 bg-[#0B0B0D] card-dark dashboard-card border border-blue-500/30 rounded-2xl">
               <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400 block">
                 In Session
               </span>
               <div className="text-xl font-black text-blue-300 mt-1">
                 {candidates.filter((c) => c.status === 'IN_INTERVIEW').length}
               </div>
-              <span className="text-[10px] text-blue-400/70">Live Interviews</span>
+              <span className="text-[10px] text-blue-300">Live Interviews</span>
             </div>
-            <div className="p-4 bg-slate-900 dashboard-card border border-amber-500/30 rounded-2xl">
+            <div className="p-4 bg-[#0B0B0D] card-dark dashboard-card border border-amber-500/30 rounded-2xl">
               <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 block">
                 Waiting / Assigned
               </span>
@@ -715,9 +715,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   ).length
                 }
               </div>
-              <span className="text-[10px] text-amber-400/70">In Pipeline</span>
+              <span className="text-[10px] text-amber-300">In Pipeline</span>
             </div>
-            <div className="p-4 bg-slate-900 dashboard-card border border-emerald-500/30 rounded-2xl">
+            <div className="p-4 bg-[#0B0B0D] card-dark dashboard-card border border-emerald-500/30 rounded-2xl">
               <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 block">
                 Completed Today
               </span>
@@ -732,7 +732,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   ).length
                 }
               </div>
-              <span className="text-[10px] text-emerald-400/70">Evaluated / Departed</span>
+              <span className="text-[10px] text-emerald-300">Evaluated / Departed</span>
             </div>
           </div>
 

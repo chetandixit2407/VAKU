@@ -183,7 +183,8 @@ export const VisitorJourneyOverview: React.FC<{
   candidates: Candidate[];
   selectedStage?: ArrivalStage | null;
   onSelectStage?: (stage: ArrivalStage | null) => void;
-}> = ({ candidates, selectedStage, onSelectStage }) => {
+  onOpenStageDetails?: (stage: ArrivalStage) => void;
+}> = ({ candidates, selectedStage, onSelectStage, onOpenStageDetails }) => {
   const stages: {
     id: ArrivalStage;
     label: string;
@@ -216,16 +217,20 @@ export const VisitorJourneyOverview: React.FC<{
   });
 
   return (
-    <div className="glass-panel rounded-2xl p-4 border border-white/8 space-y-3">
+    <div className="intake-flow-container bg-[#0B0F14] rounded-2xl p-4 border border-white/12 border-t-white/20 space-y-3 shadow-xl relative">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
           <h3 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
             Visitor & Candidate Intake Flow
           </h3>
+          <span className="text-[10px] text-[#AEB7C4] hidden md:inline">
+            (Click any stage tile to view records)
+          </span>
         </div>
         {selectedStage && (
           <button
+            type="button"
             onClick={() => onSelectStage && onSelectStage(null)}
             className="text-[11px] text-amber-400 hover:text-amber-300 underline cursor-pointer"
           >
@@ -234,7 +239,7 @@ export const VisitorJourneyOverview: React.FC<{
         )}
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5">
         {stages.map((stg) => {
           const Icon = stg.icon;
           const count = countsByStage[stg.id] || 0;
@@ -243,26 +248,36 @@ export const VisitorJourneyOverview: React.FC<{
           return (
             <motion.button
               key={stg.id}
-              onClick={() => onSelectStage && onSelectStage(isSelected ? null : stg.id)}
-              whileHover={{ y: -2, scale: 1.02 }}
+              type="button"
+              aria-pressed={isSelected}
+              onClick={() => {
+                if (onSelectStage) onSelectStage(isSelected ? null : stg.id);
+                if (onOpenStageDetails) onOpenStageDetails(stg.id);
+              }}
+              whileHover={{ y: -3, scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer relative overflow-hidden ${
+              className={`intake-stage-card p-3 rounded-xl border text-left transition-all cursor-pointer relative overflow-hidden group select-none focus-visible:outline-2 focus-visible:outline-amber-400 focus-visible:outline-offset-2 ${
                 isSelected
-                  ? 'bg-amber-500/15 border-amber-400 text-white shadow-lg shadow-amber-500/15'
-                  : count > 0
-                  ? 'bg-white/4 border-white/8 hover:bg-white/8 hover:border-white/16 text-slate-200'
-                  : 'bg-white/2 border-white/5 opacity-60 hover:opacity-90 text-slate-400'
+                  ? 'is-selected bg-amber-500/20 border-amber-400 text-white shadow-lg ring-1 ring-amber-400'
+                  : 'bg-[#141820] border-[#252A32] text-white shadow-md hover:bg-[#1B2028]'
               }`}
+              title={`Click to view ${stg.label} records (${count})`}
             >
-              <div className="flex items-center justify-between gap-1 mb-1">
-                <Icon className={`w-3.5 h-3.5 ${stg.accent}`} />
-                <span className="text-xs font-mono font-bold tabular-nums">
+              <div className="flex items-center justify-between gap-1 mb-1.5 pointer-events-none">
+                <div className="intake-icon-badge w-6 h-6 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center transition-transform group-hover:scale-110">
+                  <Icon className={`w-3.5 h-3.5 ${stg.accent}`} />
+                </div>
+                <span className="text-sm font-mono font-bold tabular-nums text-white intake-stage-count">
                   {count}
                 </span>
               </div>
-              <p className="text-[10px] font-semibold tracking-tight truncate">
+              <p className="text-[11px] font-semibold tracking-tight truncate text-[#F5F6F8] intake-stage-label pointer-events-none">
                 {stg.label}
               </p>
+              <div className="flex items-center justify-between mt-1 pt-1 border-t border-white/[0.06] text-[9px] text-[#AEB7C4] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none intake-stage-footer">
+                <span>View Records</span>
+                <span>&rarr;</span>
+              </div>
             </motion.button>
           );
         })}

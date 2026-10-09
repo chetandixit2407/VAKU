@@ -129,7 +129,7 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
   return (
     <div className="space-y-6">
       {/* Front Desk Bar */}
-      <div className="p-6 glass-panel rounded-3xl border border-white/8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="p-6 card-dark bg-[#0B0B0D] text-white rounded-3xl border border-white/10 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center">
@@ -139,7 +139,7 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
               Front Desk Reception & Escort Terminal
             </h1>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-[#E0E0E0] mt-1">
             Real-time candidate intake, visitor timeline verification, live desk photo capture, and physical checkout.
           </p>
         </div>
@@ -276,16 +276,16 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
                     </div>
 
                     <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div className="p-2.5 rounded-xl bg-black/40 border border-white/6">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                      <div className="p-2.5 rounded-xl bg-[#25272B] card-inner inner-box border border-white/10">
+                        <span className="text-[10px] font-bold text-[#BDBDBD] uppercase tracking-wider block">
                           Candidate
                         </span>
                         <span className="text-xs font-bold text-amber-300 truncate block mt-0.5">
                           {task.candidateName || 'Candidate'}
                         </span>
                       </div>
-                      <div className="p-2.5 rounded-xl bg-black/40 border border-white/6">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                      <div className="p-2.5 rounded-xl bg-[#25272B] card-inner inner-box border border-white/10">
+                        <span className="text-[10px] font-bold text-[#BDBDBD] uppercase tracking-wider block">
                           Destination Room
                         </span>
                         <span className="text-xs font-bold text-emerald-400 truncate block mt-0.5">
@@ -341,7 +341,7 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
       )}
 
       {/* Filter & Search Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 bg-[#17191D] dashboard-card rounded-3xl border border-white/10 shadow-xl">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 bg-[#0B0B0D] dashboard-card rounded-3xl border border-white/10 shadow-xl">
         <div className="flex items-center gap-2.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
           <button
             onClick={() => setActiveFilter('ALL')}
@@ -401,97 +401,99 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Waiting Lounge Column */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between pb-1 border-b border-white/6">
-            <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-amber-400" />
+          <div className="flex items-center justify-between pb-1 border-b border-black/10">
+            <h3 className="text-sm font-bold text-[#111318] flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-amber-500" />
               Lounge Waiting Area ({waitingCandidates.length})
             </h3>
           </div>
 
           <div className="space-y-3">
             {waitingCandidates.length === 0 ? (
-              <div className="p-8 text-center glass-panel-subtle rounded-2xl text-xs text-slate-500">
+              <div className="p-8 text-center card-dark bg-[#0B0B0D] rounded-2xl text-xs text-[#E0E0E0] border border-white/10">
                 Lounge is currently clear.
               </div>
             ) : (
-              waitingCandidates.map((cand) => (
-                <motion.div
-                  key={cand.id}
-                  whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
-                  whileTap={{ scale: 0.99 }}
-                  onClick={() => setSelectedProfileCandidateId(cand.id)}
-                  className="p-4 glass-panel dashboard-card hover:border-amber-500/50 rounded-2xl space-y-3 text-xs shadow-xl hover:shadow-2xl hover:shadow-amber-500/15 cursor-pointer transition border border-white/8"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      {cand.receptionPhotoUrl || cand.photoUrl ? (
-                        <img
-                          src={cand.receptionPhotoUrl || cand.photoUrl}
-                          alt={cand.fullName}
-                          className="w-12 h-12 rounded-xl object-cover border border-amber-500/40 shadow-md shrink-0"
-                        />
-                      ) : (
-                        <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 shrink-0 font-bold">
-                          {cand.fullName.slice(0, 2).toUpperCase()}
+              waitingCandidates.map((cand) => {
+                return (
+                  <motion.div
+                    key={cand.id}
+                    whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
+                    whileTap={{ scale: 0.99 }}
+                    onClick={() => setSelectedProfileCandidateId(cand.id)}
+                    className="p-4 rounded-2xl space-y-3 text-xs shadow-xl cursor-pointer transition card-dark bg-[#0B0B0D] text-white border border-white/10"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        {cand.receptionPhotoUrl || cand.photoUrl ? (
+                          <img
+                            src={cand.receptionPhotoUrl || cand.photoUrl}
+                            alt={cand.fullName}
+                            className="w-12 h-12 rounded-xl object-cover border border-amber-500/40 shadow-md shrink-0"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 font-bold bg-white/5 border border-white/10 text-slate-300">
+                            {cand.fullName.slice(0, 2).toUpperCase()}
+                          </div>
+                        )}
+                        <div>
+                          <h4 className="font-bold text-sm flex items-center gap-1 text-white hover:text-amber-400">
+                            {cand.fullName}
+                            <Eye className="w-3 h-3 text-slate-400" />
+                          </h4>
+                          <p className="text-[11px] font-medium text-amber-400">{cand.position}</p>
+                          <p className="text-[10px] mt-0.5 text-[#E0E0E0]">
+                            Arrived: {cand.checkedInAt ? new Date(cand.checkedInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Today'}
+                          </p>
                         </div>
-                      )}
-                      <div>
-                        <h4 className="font-bold text-white text-sm hover:text-amber-400 flex items-center gap-1">
-                          {cand.fullName}
-                          <Eye className="w-3 h-3 text-slate-500" />
-                        </h4>
-                        <p className="text-[11px] text-amber-400 font-medium">{cand.position}</p>
-                        <p className="text-[10px] text-slate-400 mt-0.5">
-                          Arrived: {cand.checkedInAt ? new Date(cand.checkedInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Today'}
-                        </p>
                       </div>
+
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 font-mono bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                        Waiting
+                      </span>
                     </div>
 
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 shrink-0 font-mono">
-                      Waiting
-                    </span>
-                  </div>
+                    {/* Visitor Lifecycle Stage Tracker */}
+                    <div className="pt-2 border-t border-white/8">
+                      <VisitorArrivalTimeline candidate={cand} compact={true} />
+                    </div>
 
-                  {/* Visitor Lifecycle Stage Tracker */}
-                  <div className="pt-2 border-t border-white/6">
-                    <VisitorArrivalTimeline candidate={cand} compact={true} />
-                  </div>
+                    {/* Desk Photo Verification status & Action */}
+                    <div className="pt-2 border-t flex items-center justify-between gap-2 border-white/8">
+                      {cand.receptionPhotoUrl ? (
+                        <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          Desk Photo Verified
+                        </span>
+                      ) : (
+                        <span className="text-[10px] italic text-amber-300">
+                          Desk Photo Required
+                        </span>
+                      )}
 
-                  {/* Desk Photo Verification status & Action */}
-                  <div className="pt-2 border-t border-white/6 flex items-center justify-between gap-2">
-                    {cand.receptionPhotoUrl ? (
-                      <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        Desk Photo Verified
-                      </span>
-                    ) : (
-                      <span className="text-[10px] text-amber-400/80 italic">
-                        Desk Photo Required
-                      </span>
-                    )}
-
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedPhotoCandidate(cand);
-                      }}
-                      className="px-3 py-1.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/40 text-cyan-300 font-bold text-xs flex items-center gap-1.5 transition cursor-pointer"
-                    >
-                      <Camera className="w-3.5 h-3.5" />
-                      <span>{cand.receptionPhotoUrl ? 'Retake' : 'Capture Desk Photo'}</span>
-                    </button>
-                  </div>
-                </motion.div>
-              ))
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedPhotoCandidate(cand);
+                        }}
+                        className="px-3 py-1.5 rounded-xl border font-bold text-xs flex items-center gap-1.5 transition cursor-pointer bg-cyan-500/15 hover:bg-cyan-500/25 border-cyan-500/40 text-cyan-300"
+                      >
+                        <Camera className="w-3.5 h-3.5" />
+                        <span>{cand.receptionPhotoUrl ? 'Retake' : 'Capture Desk Photo'}</span>
+                      </button>
+                    </div>
+                  </motion.div>
+                );
+              })
             )}
           </div>
         </div>
 
         {/* In-Session Meetings Column */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between pb-1 border-b border-white/6">
-            <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-blue-400" />
+          <div className="flex items-center justify-between pb-1 border-b border-black/10">
+            <h3 className="text-sm font-bold text-[#111318] flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-blue-500" />
               In Active Meetings ({candidates.filter((c) => c.status === 'IN_INTERVIEW' || c.status === 'ROOM_ASSIGNED').length})
             </h3>
           </div>
@@ -499,109 +501,115 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
           <div className="space-y-3">
             {candidates
               .filter((c) => c.status === 'IN_INTERVIEW' || c.status === 'ROOM_ASSIGNED')
-              .map((cand) => (
-                <motion.div
-                  key={cand.id}
-                  whileHover={{ y: -2 }}
-                  onClick={() => setSelectedProfileCandidateId(cand.id)}
-                  className="p-4 glass-panel dashboard-card border border-blue-500/30 hover:border-blue-500/60 rounded-2xl space-y-2.5 text-xs cursor-pointer transition shadow-md"
+              .map((cand) => {
+                return (
+                  <motion.div
+                    key={cand.id}
+                    whileHover={{ y: -2 }}
+                    onClick={() => setSelectedProfileCandidateId(cand.id)}
+                    className="p-4 rounded-2xl space-y-2.5 text-xs cursor-pointer transition shadow-md card-dark bg-[#0B0B0D] border border-blue-500/30 text-white"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold flex items-center gap-1 text-sm text-white hover:text-cyan-300">
+                        {cand.fullName}
+                        <Eye className="w-3 h-3 text-slate-400" />
+                      </span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold font-mono text-blue-300 bg-blue-500/15 border border-blue-500/30">
+                        {cand.status}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-[11px] text-[#E0E0E0]">
+                      <span>{cand.position}</span>
+                      <span className="font-semibold flex items-center gap-1 text-amber-400">
+                        <MapPin className="w-3 h-3" />
+                        {cand.assignedRoomName || cand.currentLocation || 'Cabin'}
+                      </span>
+                    </div>
+
+                    {/* Compact Timeline */}
+                    <div className="pt-2 border-t border-white/8">
+                      <VisitorArrivalTimeline candidate={cand} compact={true} />
+                    </div>
+                  </motion.div>
+                );
+              })}
+
+            {visitors.map((vis) => {
+              return (
+                <div
+                  key={vis.id}
+                  className="p-3.5 rounded-2xl space-y-1 text-xs card-dark bg-[#0B0B0D] text-white border border-white/10"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-white hover:text-cyan-300 flex items-center gap-1 text-sm">
-                      {cand.fullName}
-                      <Eye className="w-3 h-3 text-slate-500" />
-                    </span>
-                    <span className="text-[10px] text-blue-300 bg-blue-500/15 px-2 py-0.5 rounded-full font-semibold border border-blue-500/30 font-mono">
-                      {cand.status}
+                    <span className="font-bold text-white">{vis.fullName}</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold font-mono text-purple-300 bg-purple-500/15">
+                      {vis.visitorType}
                     </span>
                   </div>
-
-                  <div className="flex items-center justify-between text-[11px] text-slate-300">
-                    <span>{cand.position}</span>
-                    <span className="text-amber-400 font-semibold flex items-center gap-1">
-                      <MapPin className="w-3 h-3" />
-                      {cand.assignedRoomName || cand.currentLocation || 'Cabin'}
-                    </span>
+                  <div className="flex items-center justify-between text-[11px] text-[#E0E0E0]">
+                    <span>Host: {vis.hostName}</span>
+                    <span>{vis.company || 'Official Visit'}</span>
                   </div>
-
-                  {/* Compact Timeline */}
-                  <div className="pt-2 border-t border-white/6">
-                    <VisitorArrivalTimeline candidate={cand} compact={true} />
-                  </div>
-                </motion.div>
-              ))}
-
-            {visitors.map((vis) => (
-              <div
-                key={vis.id}
-                className="p-3.5 glass-panel-subtle dashboard-card rounded-2xl space-y-1 text-xs border border-white/6"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-white">{vis.fullName}</span>
-                  <span className="text-[10px] text-purple-300 bg-purple-500/15 px-2 py-0.5 rounded-full font-semibold font-mono">
-                    {vis.visitorType}
-                  </span>
                 </div>
-                <div className="flex items-center justify-between text-[11px] text-slate-400">
-                  <span>Host: {vis.hostName}</span>
-                  <span className="text-slate-300">{vis.company || 'Official Visit'}</span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
         {/* Physical Checkout Terminal Column */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between pb-1 border-b border-white/6">
-            <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-400" />
+          <div className="flex items-center justify-between pb-1 border-b border-black/10">
+            <h3 className="text-sm font-bold text-[#111318] flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
               Physical Check-Out ({readyForCheckout.length})
             </h3>
           </div>
 
           <div className="space-y-3">
             {readyForCheckout.length === 0 ? (
-              <div className="p-8 text-center glass-panel-subtle rounded-2xl text-xs text-slate-500">
+              <div className="p-8 text-center card-dark bg-[#0B0B0D] rounded-2xl text-xs text-[#E0E0E0] border border-white/10">
                 No visitors currently awaiting checkout.
               </div>
             ) : (
-              readyForCheckout.map((cand) => (
-                <motion.div
-                  key={cand.id}
-                  whileHover={{ y: -2 }}
-                  onClick={() => setSelectedProfileCandidateId(cand.id)}
-                  className="p-4 glass-panel dashboard-card border border-emerald-500/40 hover:border-emerald-500 rounded-2xl space-y-3 text-xs shadow-lg cursor-pointer transition"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-bold text-white hover:text-emerald-300 flex items-center gap-1 text-sm">
-                        {cand.fullName}
-                        <Eye className="w-3 h-3 text-slate-500" />
-                      </h4>
-                      <p className="text-[11px] text-slate-400">{cand.position}</p>
-                    </div>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-mono">
-                      Completed
-                    </span>
-                  </div>
-
-                  <div className="pt-1">
-                    <VisitorArrivalTimeline candidate={cand} compact={true} />
-                  </div>
-
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onCheckout(cand.id);
-                    }}
-                    className="w-full py-2.5 px-3 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-black text-xs rounded-xl shadow-md transition cursor-pointer flex items-center justify-center gap-1.5"
+              readyForCheckout.map((cand) => {
+                return (
+                  <motion.div
+                    key={cand.id}
+                    whileHover={{ y: -2 }}
+                    onClick={() => setSelectedProfileCandidateId(cand.id)}
+                    className="p-4 rounded-2xl space-y-3 text-xs shadow-lg cursor-pointer transition card-dark bg-[#0B0B0D] text-white border border-emerald-500/40"
                   >
-                    <LogOut className="w-3.5 h-3.5" />
-                    <span>Complete Physical Checkout</span>
-                  </button>
-                </motion.div>
-              ))
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-bold flex items-center gap-1 text-sm text-white hover:text-emerald-300">
+                          {cand.fullName}
+                          <Eye className="w-3 h-3 text-slate-400" />
+                        </h4>
+                        <p className="text-[11px] text-[#E0E0E0]">{cand.position}</p>
+                      </div>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                        Completed
+                      </span>
+                    </div>
+
+                    <div className="pt-1">
+                      <VisitorArrivalTimeline candidate={cand} compact={true} />
+                    </div>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onCheckout(cand.id);
+                      }}
+                      className="w-full py-2.5 px-3 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-black text-xs rounded-xl shadow-md transition cursor-pointer flex items-center justify-center gap-1.5"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      <span>Complete Physical Checkout</span>
+                    </button>
+                  </motion.div>
+                );
+              })
             )}
           </div>
         </div>

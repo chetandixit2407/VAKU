@@ -97,14 +97,14 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-4 glass-panel-elevated rounded-2xl space-y-2.5 border border-amber-500/40 shadow-xl"
+          className="p-4 card-dark bg-[#0B0B0D] rounded-2xl space-y-2.5 border border-amber-500/40 shadow-xl"
         >
-          <div className="flex items-center justify-between pb-1 border-b border-white/8">
+          <div className="flex items-center justify-between pb-1 border-b border-white/10">
             <h3 className="text-xs font-bold text-amber-300 uppercase tracking-wider flex items-center gap-1.5 font-mono">
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
               <span>Dispatched Action Alerts & Live Status ({activeHRTasks.length})</span>
             </h3>
-            <span className="text-[10px] text-slate-400">Synchronized live with Reception & Pantry</span>
+            <span className="text-[10px] text-[#BDBDBD]">Synchronized live with Reception & Pantry</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
@@ -114,14 +114,14 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
               return (
                 <div
                   key={task.id}
-                  className="p-3 glass-panel rounded-xl flex items-center justify-between gap-3 text-xs border border-white/6"
+                  className="p-3 card-inner inner-box bg-[#25272B] rounded-xl flex items-center justify-between gap-3 text-xs border border-white/10"
                 >
                   <div className="min-w-0">
                     <span className="font-bold text-white truncate block">{task.title}</span>
-                    <div className="text-[10px] text-slate-400 flex items-center gap-2 mt-0.5">
-                      <span>Target: <strong className="text-slate-300">{task.targetRole}</strong></span>
+                    <div className="text-[10px] text-[#BDBDBD] flex items-center gap-2 mt-0.5">
+                      <span>Target: <strong className="text-white">{task.targetRole}</strong></span>
                       <span>&bull;</span>
-                      <span className="font-mono">{new Date(task.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      <span className="font-mono text-[#E0E0E0]">{new Date(task.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
                   </div>
 
@@ -147,42 +147,41 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left 2 Cols: Candidate Priority Queue */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between pb-1 border-b border-white/6">
+          <div className="flex items-center justify-between pb-1 border-b border-black/10">
             <div>
-              <h2 className="text-base font-bold text-white flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+              <h2 className="text-base font-bold text-[#111318] flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
                 Live Candidate Intake & Room Allocation Queue
               </h2>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-[#252A32] mt-0.5">
                 Authorized candidate management & live room assignment control.
               </p>
             </div>
-            <span className="px-2.5 py-1 glass-panel rounded-xl text-xs text-amber-300 font-semibold font-mono border border-white/8">
+            <span className="px-2.5 py-1 bg-[#17191D] rounded-xl text-xs text-amber-300 font-semibold font-mono border border-white/10">
               {waitingCandidates.length} Pending
             </span>
           </div>
 
           {waitingCandidates.length === 0 ? (
-            <div className="p-12 text-center glass-panel-subtle rounded-3xl space-y-2 border border-white/6">
+            <div className="p-12 text-center card-dark bg-[#0B0B0D] rounded-3xl space-y-2 border border-white/10">
               <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" />
               <h3 className="text-sm font-bold text-white">No candidates waiting right now</h3>
-              <p className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
+              <p className="text-xs text-[#E0E0E0] max-w-sm mx-auto leading-relaxed">
                 When a candidate completes QR check-in and submits their profile, they appear here instantly in real time.
               </p>
             </div>
           ) : (
             <div className="space-y-3">
-              {waitingCandidates.map((cand, idx) => {
+              {waitingCandidates.map((cand) => {
                 const intv = interviews.find((i) => i.id === cand.currentInterviewId);
                 const isKimmi = cand.status === 'With Kimmi Mam – Senior HR Interview';
-                const isDark = idx % 2 === 0;
 
                 return (
                   <motion.div
                     key={cand.id}
                     whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
                     whileTap={{ scale: 0.99 }}
-                    className="p-4 sm:p-5 bg-[#17191D] dashboard-card text-white rounded-2xl shadow-xl transition border border-white/10"
+                    className="p-4 sm:p-5 rounded-2xl shadow-xl transition card-dark bg-[#0B0B0D] text-white border border-white/10"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3.5">
@@ -193,26 +192,30 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
                             className="w-13 h-13 rounded-2xl object-cover border-2 border-amber-500 shadow-md shrink-0"
                           />
                         ) : (
-                          <div className="w-13 h-13 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 shrink-0 font-bold">
+                          <div className="w-13 h-13 rounded-2xl flex items-center justify-center shrink-0 font-bold bg-[#25272B] border border-white/10 text-white">
                             {cand.fullName.slice(0, 2).toUpperCase()}
                           </div>
                         )}
                         <div>
                           <div className="flex items-center gap-2">
-                            <h3 className="text-base font-bold text-white">{cand.fullName}</h3>
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 font-mono">
+                            <h3 className="text-base font-bold text-white">
+                              {cand.fullName}
+                            </h3>
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono bg-amber-500/15 text-amber-300 border border-amber-500/30">
                               {cand.status}
                             </span>
                           </div>
-                          <p className="text-xs text-amber-400 font-medium">{cand.position}</p>
-                          <div className="flex items-center gap-3 text-[11px] text-slate-400 mt-1">
+                          <p className="text-xs font-semibold text-amber-400">
+                            {cand.position}
+                          </p>
+                          <div className="flex items-center gap-3 text-[11px] mt-1 text-[#E0E0E0]">
                             <span className="flex items-center gap-1">
-                              <MapPin className="w-3 h-3 text-slate-500" />
+                              <MapPin className="w-3 h-3 text-[#BDBDBD]" />
                               {cand.currentLocation || 'Waiting Lounge'}
                             </span>
                             {cand.checkedInAt && (
                               <span className="flex items-center gap-1 font-mono">
-                                <Clock className="w-3 h-3 text-slate-500" />
+                                <Clock className="w-3 h-3 text-[#BDBDBD]" />
                                 Arrived: {new Date(cand.checkedInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                               </span>
                             )}
@@ -231,7 +234,7 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
                         </button>
                         <button
                           onClick={() => onOpenDossier(cand.id)}
-                          className="text-[11px] text-slate-400 hover:text-white transition underline"
+                          className="text-[11px] underline transition cursor-pointer text-[#E0E0E0] hover:text-white"
                         >
                           View Full Dossier &rarr;
                         </button>
@@ -239,22 +242,22 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
                     </div>
 
                     {/* Quick HR Kimmi Mam Escalation */}
-                    <div className="pt-2 border-t border-white/6 flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-1.5 text-slate-400 text-[11px]">
+                    <div className="pt-2 border-t border-white/10 flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-1.5 text-[11px] text-[#E0E0E0]">
                         <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>Experience: <strong className="text-slate-200">{cand.totalExperience || '0'}y</strong></span>
+                        <span>Experience: <strong className="text-white">{cand.totalExperience || '0'}y</strong></span>
                         <span>&bull;</span>
-                        <span>Notice: <strong className="text-slate-200">{cand.noticePeriod || 'Immediate'}</strong></span>
+                        <span>Notice: <strong className="text-white">{cand.noticePeriod || 'Immediate'}</strong></span>
                       </div>
 
                       {!isKimmi && (
                         <button
                           onClick={() => handleAssignToKimmi(cand.id)}
                           disabled={assigningKimmiId === cand.id}
-                          className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-amber-300 border border-white/8 text-[11px] font-semibold transition cursor-pointer flex items-center gap-1"
+                          className="px-2.5 py-1 rounded-lg text-[11px] font-semibold transition cursor-pointer flex items-center gap-1 bg-[#25272B] hover:bg-[#35383D] text-amber-300 border border-white/10"
                         >
                           <Award className="w-3 h-3 text-amber-400" />
-                          <span>{assigningKimmiId === cand.id ? 'Routing...' : 'Route to Kimmi Mam (Co-founder)'}</span>
+                          <span>{assigningKimmiId === cand.id ? 'Routing...' : 'Route to Kimmi Mam'}</span>
                         </button>
                       )}
                     </div>
@@ -267,40 +270,42 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
           {/* In-Interview Candidates Pipeline Section */}
           {inInterviewCandidates.length > 0 && (
             <div className="space-y-3 pt-4">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <UserCheck className="w-4 h-4 text-blue-400" />
+              <h3 className="text-sm font-bold text-[#111318] flex items-center gap-2">
+                <UserCheck className="w-4 h-4 text-blue-600" />
                 <span>In-Session Candidates ({inInterviewCandidates.length})</span>
               </h3>
               <div className="space-y-2">
-                {inInterviewCandidates.map((cand) => (
-                  <motion.div
-                    key={cand.id}
-                    whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
-                    whileTap={{ scale: 0.99 }}
-                    className="p-3.5 glass-panel dashboard-card rounded-2xl border border-blue-500/30 flex items-center justify-between text-xs shadow-lg hover:shadow-xl hover:shadow-blue-500/10"
-                  >
-                    <div>
-                      <strong className="text-white block text-sm">{cand.fullName}</strong>
-                      <span className="text-[11px] text-slate-400">
-                        {cand.position} &bull; Room: <span className="text-amber-400">{cand.assignedRoomName || cand.currentLocation}</span>
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => onAssignRoom(cand.id, cand.currentInterviewId)}
-                        className="px-3 py-1.5 bg-white/6 hover:bg-white/10 text-amber-300 font-bold text-xs rounded-xl border border-white/8 transition"
-                      >
-                        Change Room
-                      </button>
-                      <button
-                        onClick={() => onOpenDossier(cand.id)}
-                        className="px-3 py-1.5 bg-white/6 hover:bg-white/10 text-slate-300 text-xs rounded-xl border border-white/8"
-                      >
-                        Details
-                      </button>
-                    </div>
-                  </motion.div>
-                ))}
+                {inInterviewCandidates.map((cand) => {
+                  return (
+                    <motion.div
+                      key={cand.id}
+                      whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
+                      whileTap={{ scale: 0.99 }}
+                      className="p-3.5 rounded-2xl flex items-center justify-between text-xs shadow-lg card-dark bg-[#0B0B0D] border border-blue-500/30 text-white"
+                    >
+                      <div>
+                        <strong className="block text-sm text-white">{cand.fullName}</strong>
+                        <span className="text-[11px] text-[#E0E0E0]">
+                          {cand.position} &bull; Room: <span className="text-amber-400 font-semibold">{cand.assignedRoomName || cand.currentLocation}</span>
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => onAssignRoom(cand.id, cand.currentInterviewId)}
+                          className="px-3 py-1.5 font-bold text-xs rounded-xl border border-white/10 transition cursor-pointer bg-[#25272B] hover:bg-[#35383D] text-amber-300"
+                        >
+                          Change Room
+                        </button>
+                        <button
+                          onClick={() => onOpenDossier(cand.id)}
+                          className="px-3 py-1.5 text-xs rounded-xl border border-white/10 transition cursor-pointer bg-[#25272B] hover:bg-[#35383D] text-[#E0E0E0] hover:text-white"
+                        >
+                          Details
+                        </button>
+                      </div>
+                    </motion.div>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -308,12 +313,12 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
 
         {/* Right Col: Live Rooms Status Grid */}
         <div className="space-y-4">
-          <div className="pb-1 border-b border-white/6">
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
-              <DoorOpen className="w-4 h-4 text-amber-400" />
+          <div className="pb-1 border-b border-black/10">
+            <h2 className="text-base font-bold text-[#111318] flex items-center gap-2">
+              <DoorOpen className="w-4 h-4 text-amber-500" />
               Office Rooms & Cabins
             </h2>
-            <p className="text-xs text-slate-400 mt-0.5">Real-time room occupancy and readiness.</p>
+            <p className="text-xs text-[#252A32] mt-0.5">Real-time room occupancy and readiness.</p>
           </div>
 
           <div className="space-y-2.5">
@@ -328,7 +333,7 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
                   key={room.id}
                   whileHover={{ scale: 1.02, y: -2, transition: { duration: 0.2, ease: 'easeOut' } }}
                   whileTap={{ scale: 0.99 }}
-                  className="p-3.5 glass-panel dashboard-card rounded-2xl space-y-1 text-xs border border-white/8 shadow-md hover:shadow-xl hover:shadow-amber-500/10"
+                  className="p-3.5 rounded-2xl space-y-1 text-xs shadow-md transition card-dark bg-[#0B0B0D] border border-white/10 text-white"
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-white">{room.name}</span>
@@ -341,18 +346,18 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
                           : isCleaning
                           ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse'
                           : isOccupied
-                          ? 'bg-blue-500/15 text-blue-400 border border-blue-500/30'
-                          : 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
+                          ? 'bg-blue-500/15 text-blue-300 border border-blue-500/30'
+                          : 'bg-rose-500/15 text-rose-300 border border-rose-500/30'
                       }`}
                     >
                       {isCleaning ? 'Cleaning' : room.status}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between text-[11px] text-slate-400">
+                  <div className="flex items-center justify-between text-[11px] text-[#E0E0E0]">
                     <span className="capitalize">{room.type?.replace('_', ' ').toLowerCase() || 'Meeting Cabin'}</span>
                     {room.currentCandidateName && (
-                      <span className="text-amber-400 font-semibold truncate max-w-[140px]">
+                      <span className="font-semibold truncate max-w-[140px] text-amber-400">
                         Occupant: {room.currentCandidateName}
                       </span>
                     )}
@@ -366,7 +371,7 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
             <button
               type="button"
               onClick={onOpenChat}
-              className="w-full p-3.5 glass-panel dashboard-card hover:border-amber-500/40 rounded-2xl flex items-center justify-between text-xs text-white font-semibold transition shadow-md group cursor-pointer border border-white/8"
+              className="w-full p-3.5 card-dark bg-[#0B0B0D] hover:border-amber-500/40 rounded-2xl flex items-center justify-between text-xs text-white font-semibold transition shadow-md group cursor-pointer border border-white/10"
             >
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 group-hover:scale-105 transition">
@@ -374,7 +379,7 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
                 </div>
                 <div className="text-left">
                   <div className="text-xs font-bold text-white">Internal Office Chat</div>
-                  <div className="text-[10px] text-slate-400 font-normal">Direct line to Interviewers & Pantry</div>
+                  <div className="text-[10px] text-[#D5DAE2] font-normal">Direct line to Interviewers & Pantry</div>
                 </div>
               </div>
               <ArrowRight className="w-4 h-4 text-amber-400 group-hover:translate-x-1 transition" />
@@ -382,12 +387,12 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
           )}
 
           {/* HR Information Authority Card */}
-          <div className="p-4 glass-panel-subtle dashboard-card rounded-2xl space-y-1.5 text-xs border border-white/6">
+          <div className="p-4 card-dark bg-[#0B0B0D] rounded-2xl space-y-1.5 text-xs border border-white/10 shadow-md">
             <div className="flex items-center gap-1.5 text-amber-400 font-bold text-[11px]">
               <Sparkles className="w-3.5 h-3.5" />
               <span>HR Information Authority</span>
             </div>
-            <p className="text-[11px] text-slate-400 leading-relaxed">
+            <p className="text-[11px] text-[#D5DAE2] leading-relaxed">
               HR commands the complete candidate pipeline including contact details, live photo, resume, compensation remarks, and stage timeline.
             </p>
           </div>

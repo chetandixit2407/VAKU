@@ -22,6 +22,7 @@ interface OperationsCommandHeaderProps {
   visitors?: Visitor[];
   userName?: string;
   userRole?: string;
+  onSelectKpi?: (kpiId: string) => void;
 }
 
 // Counting number component
@@ -61,6 +62,7 @@ export const OperationsCommandHeader: React.FC<OperationsCommandHeaderProps> = (
   visitors = [],
   userName = 'Officer',
   userRole = 'Operations',
+  onSelectKpi,
 }) => {
   const [greeting, setGreeting] = useState<'Good Morning' | 'Good Afternoon' | 'Good Evening'>('Good Morning');
   const [timeString, setTimeString] = useState<string>('');
@@ -156,14 +158,14 @@ export const OperationsCommandHeader: React.FC<OperationsCommandHeaderProps> = (
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-            <span className="text-[11px] font-bold tracking-wider uppercase text-[#17191D] font-mono">
+            <span className="text-[11px] font-bold tracking-wider uppercase text-[#343A40] font-mono">
               Live Operations Deck
             </span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-[#17191D] tracking-tight">
-            {greeting}, <span className="text-[#17191D]">{userName.split(' ')[0]}</span>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-[#111318] tracking-tight">
+            {greeting}, <span className="text-[#111318]">{userName.split(' ')[0]}</span>
           </h2>
-          <p className="text-xs sm:text-sm text-[#17191D] font-medium mt-0.5">
+          <p className="text-xs sm:text-sm text-[#252A32] font-medium mt-0.5">
             White Collar Realty &mdash; Office Operations
           </p>
         </div>
@@ -179,41 +181,61 @@ export const OperationsCommandHeader: React.FC<OperationsCommandHeaderProps> = (
         </div>
       </div>
 
-      {/* Staggered Animated KPI Row */}
+      {/* Staggered Animated KPI Row — Mixed Black & White Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {kpis.map((kpi, idx) => {
           const Icon = kpi.icon;
+          const isWhiteCard = idx % 2 === 0;
+
           return (
             <motion.div
               key={kpi.id}
+              role="button"
+              tabIndex={0}
+              onClick={() => onSelectKpi && onSelectKpi(kpi.id)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  if (onSelectKpi) onSelectKpi(kpi.id);
+                }
+              }}
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45, delay: idx * 0.07, ease: [0.16, 1, 0.3, 1] }}
-              whileHover={{ y: -2, scale: 1.01, transition: { duration: 0.2 } }}
-              className="relative group glass-panel dashboard-card rounded-2xl p-4 border border-white/8 hover:border-white/16 transition-all overflow-hidden"
+              whileHover={{ y: -3, scale: 1.01, transition: { duration: 0.2 } }}
+              whileTap={{ scale: 0.98 }}
+              className="card-dark bg-[#0B0B0D] border border-white/12 text-white relative group rounded-2xl p-4 shadow-xl overflow-hidden transition-all cursor-pointer select-none"
+              title={`Click to view ${kpi.label} details`}
             >
               {/* Subtle Ambient Hover Glow */}
               <div
                 className={`absolute inset-0 bg-gradient-to-br ${kpi.glow} opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none`}
               />
 
-              <div className="relative z-10 flex items-center justify-between text-xs text-slate-400">
-                <span className="font-medium tracking-tight text-slate-300">{kpi.label}</span>
-                <div className="w-7 h-7 rounded-lg bg-white/5 border border-white/8 flex items-center justify-center">
+              <div className="relative z-10 flex items-center justify-between text-xs">
+                <span className="font-semibold tracking-tight text-white">
+                  {kpi.label}
+                </span>
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center transition-transform group-hover:scale-110 bg-white/5 border border-white/10">
                   <Icon className={`w-3.5 h-3.5 ${kpi.accentColor}`} />
                 </div>
               </div>
 
               <div className="relative z-10 mt-3 flex items-baseline gap-2">
-                <span className="text-3xl font-extrabold text-white tracking-tight">
+                <span className="text-3xl font-extrabold tracking-tight text-white">
                   <AnimatedNumber value={kpi.value} />
                 </span>
                 <span className={`w-2 h-2 rounded-full ${kpi.dotColor} shadow-sm`} />
               </div>
 
-              <p className="relative z-10 text-[11px] text-slate-400 mt-1 truncate">
-                {kpi.sublabel}
-              </p>
+              <div className="relative z-10 flex items-center justify-between text-[11px] mt-1">
+                <p className="truncate text-[#E0E0E0]">
+                  {kpi.sublabel}
+                </p>
+                <span className="text-[10px] font-semibold text-amber-500 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5 shrink-0 ml-1">
+                  View &rarr;
+                </span>
+              </div>
             </motion.div>
           );
         })}

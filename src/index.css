@@ -73,122 +73,641 @@
   background: rgba(212, 163, 115, 0.45);
 }
 
-/* Premium Black & White Card System on Steel Mist Background (#8F94A1) */
-.card-dark {
-  background-color: #17191D;
-  color: #FFFFFF;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
-  border-radius: 1rem;
-}
-
-.card-light {
-  background-color: #FFFFFF;
-  color: #17191D;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  border-radius: 1rem;
-}
-
 /* ========================================================
-   MISTY-WHITE (#E9EDF2) DASHBOARD CARD HOVER SYSTEM
-   Smooth 250ms transition, lift translateY(-2px) scale(1.01),
-   with dark charcoal (#17191D) typography on hover
+   DASHBOARD CARD & INNER BOX STYLING SYSTEM
+   1. Default: Solid black / near-black (#0B0B0D) background for cards
+   2. Inner boxes: Solid dark-grey (#25272B) background
+   3. Text Hierarchy:
+      - Primary text, headings, titles, counts: #FFFFFF
+      - Secondary text, descriptions, details: #E0E0E0
+      - Muted text, tiny labels, captions, helper text: #BDBDBD
+   4. Hover on card: Smooth 200-250ms transition to mist-white (#F1F3F5)
+      with high-contrast dark typography (#17191C)
+   5. Inner boxes stay #25272B with high-contrast text on card hover; on direct hover #35383D
+   6. Preserves independent Visitor & Candidate Intake Flow
    ======================================================== */
-.dashboard-card,
+
 .card-dark,
-.card-light {
+.dashboard-card {
+  background-color: #0B0B0D !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.25),
+              0 2px 4px -1px rgba(0, 0, 0, 0.12),
+              0 14px 28px -4px rgba(0, 0, 0, 0.38);
+  border-radius: 1rem;
   position: relative;
-  transition: background-color 250ms cubic-bezier(0.16, 1, 0.3, 1),
-              color 250ms cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 250ms cubic-bezier(0.16, 1, 0.3, 1),
-              transform 250ms cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 250ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 220ms cubic-bezier(0.16, 1, 0.3, 1),
+              color 220ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 220ms cubic-bezier(0.16, 1, 0.3, 1),
+              transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform, background-color;
 }
 
+/* ========================================================
+   LIGHT CANDIDATE CARDS & PANELS (.card-light)
+   White/light background with readable, high-contrast dark typography:
+   - Primary Headings & Candidate Name: #111827
+   - Job Designation: #374151
+   - Candidate Details, Experience, Notice values: #1F2937
+   - Location, secondary labels, bullets: #4B5563
+   ======================================================== */
+.card-light,
+.candidate-card-light {
+  background-color: #FFFFFF !important;
+  color: #111827 !important;
+  border: 1px solid #E5E7EB !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.05) !important;
+  border-radius: 1rem;
+  position: relative;
+  transition: background-color 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+}
+
+.card-light h1, .card-light h2, .card-light h3, .card-light h4, .card-light h5, .card-light h6,
+.candidate-card-light h1, .candidate-card-light h2, .candidate-card-light h3, .candidate-card-light h4 {
+  color: #111827 !important;
+}
+
+.card-light p,
+.candidate-card-light p {
+  color: #374151 !important;
+}
+
+.card-light strong, .card-light b,
+.candidate-card-light strong, .candidate-card-light b {
+  color: #1F2937 !important;
+}
+
+/* ========================================================
+   1. WHITE & HIGH-CONTRAST LIGHT TEXT ON EVERY BLACK DASHBOARD CARD
+   Ensures ALL text inside black dashboard cards is crisp and readable,
+   overriding Tailwind dark utilities (text-black, text-slate-*, etc.)
+   ======================================================== */
+.card-dark:not(:hover) h1,
+.card-dark:not(:hover) h2,
+.card-dark:not(:hover) h3,
+.card-dark:not(:hover) h4,
+.card-dark:not(:hover) h5,
+.card-dark:not(:hover) h6,
+.card-dark:not(:hover) strong,
+.card-dark:not(:hover) b,
+.card-dark:not(:hover) th,
+.card-dark:not(:hover) .font-bold,
+.card-dark:not(:hover) .font-black,
+.card-dark:not(:hover) .font-extrabold,
+.card-dark:not(:hover) .font-semibold,
+.card-dark:not(:hover) .tabular-nums,
+.card-dark:not(:hover) .font-mono:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]):not([class*="badge"]),
+.dashboard-card:not(:hover) h1,
+.dashboard-card:not(:hover) h2,
+.dashboard-card:not(:hover) h3,
+.dashboard-card:not(:hover) h4,
+.dashboard-card:not(:hover) h5,
+.dashboard-card:not(:hover) h6,
+.dashboard-card:not(:hover) strong,
+.dashboard-card:not(:hover) b,
+.dashboard-card:not(:hover) th,
+.dashboard-card:not(:hover) .font-bold,
+.dashboard-card:not(:hover) .font-black,
+.dashboard-card:not(:hover) .font-extrabold,
+.dashboard-card:not(:hover) .font-semibold,
+.dashboard-card:not(:hover) .tabular-nums,
+.dashboard-card:not(:hover) .font-mono:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]):not([class*="badge"]) {
+  color: #FFFFFF !important;
+}
+
+/* Secondary text, descriptions, lists, labels, and table cells */
+.card-dark:not(:hover) p,
+.card-dark:not(:hover) li,
+.card-dark:not(:hover) label,
+.card-dark:not(:hover) small,
+.card-dark:not(:hover) td,
+.dashboard-card:not(:hover) p,
+.dashboard-card:not(:hover) li,
+.dashboard-card:not(:hover) label,
+.dashboard-card:not(:hover) small,
+.dashboard-card:not(:hover) td,
+.card-dark:not(:hover) span:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]):not([class*="badge"]):not([class*="tracking-"]),
+.dashboard-card:not(:hover) span:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]):not([class*="badge"]):not([class*="tracking-"]) {
+  color: #E0E0E0 !important;
+}
+
+/* Override dark and low-contrast text utilities on default unhovered black cards */
+.card-dark:not(:hover) .text-\[\#111318\],
+.card-dark:not(:hover) .text-\[\#343A40\],
+.card-dark:not(:hover) .text-\[\#252A32\],
+.card-dark:not(:hover) .text-black,
+.card-dark:not(:hover) .text-slate-900,
+.card-dark:not(:hover) .text-slate-800,
+.card-dark:not(:hover) .text-slate-700,
+.card-dark:not(:hover) .text-gray-900,
+.card-dark:not(:hover) .text-gray-800,
+.card-dark:not(:hover) .text-gray-700,
+.dashboard-card:not(:hover) .text-\[\#111318\],
+.dashboard-card:not(:hover) .text-\[\#343A40\],
+.dashboard-card:not(:hover) .text-\[\#252A32\],
+.dashboard-card:not(:hover) .text-black,
+.dashboard-card:not(:hover) .text-slate-900,
+.dashboard-card:not(:hover) .text-slate-800,
+.dashboard-card:not(:hover) .text-slate-700,
+.dashboard-card:not(:hover) .text-gray-900,
+.dashboard-card:not(:hover) .text-gray-800,
+.dashboard-card:not(:hover) .text-gray-700 {
+  color: #FFFFFF !important;
+}
+
+/* Muted secondary and metadata text (guaranteed high contrast #BDBDBD) */
+.card-dark:not(:hover) .text-slate-400,
+.card-dark:not(:hover) .text-slate-500,
+.card-dark:not(:hover) .text-slate-600,
+.card-dark:not(:hover) .text-gray-400,
+.card-dark:not(:hover) .text-gray-500,
+.card-dark:not(:hover) .text-gray-600,
+.card-dark:not(:hover) .text-zinc-400,
+.card-dark:not(:hover) .text-zinc-500,
+.card-dark:not(:hover) .text-\[\#AEB4BC\],
+.card-dark:not(:hover) .text-\[\#D5D8DD\],
+.card-dark:not(:hover) .text-\[\#D5DAE2\],
+.dashboard-card:not(:hover) .text-slate-400,
+.dashboard-card:not(:hover) .text-slate-500,
+.dashboard-card:not(:hover) .text-slate-600,
+.dashboard-card:not(:hover) .text-gray-400,
+.dashboard-card:not(:hover) .text-gray-500,
+.dashboard-card:not(:hover) .text-gray-600,
+.dashboard-card:not(:hover) .text-zinc-400,
+.dashboard-card:not(:hover) .text-zinc-500,
+.dashboard-card:not(:hover) .text-\[\#AEB4BC\],
+.dashboard-card:not(:hover) .text-\[\#D5D8DD\],
+.dashboard-card:not(:hover) .text-\[\#D5DAE2\] {
+  color: #BDBDBD !important;
+}
+
+/* Neutral icons inside default black cards */
+.card-dark:not(:hover) svg:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]):not([class*="text-green-"]):not([class*="text-red-"]):not([class*="text-orange-"]),
+.dashboard-card:not(:hover) svg:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]):not([class*="text-green-"]):not([class*="text-red-"]):not([class*="text-orange-"]) {
+  color: #E0E0E0 !important;
+}
+
+/* Prevent low opacity from washing out text inside black cards */
+.card-dark:not(:hover) [class*="opacity-"],
+.dashboard-card:not(:hover) [class*="opacity-"] {
+  opacity: 1 !important;
+}
+
+/* Base inner box styling inside dashboard cards: #25272B */
+.card-inner,
+.inner-box,
+[class*="bg-[#25272B]"],
+.bg-\[\#25272B\],
+.dashboard-card div.bg-black\/30,
+.dashboard-card div.bg-black\/40,
+.dashboard-card div.bg-black\/20,
+.dashboard-card div.bg-white\/5,
+.dashboard-card div.bg-white\/4,
+.dashboard-card div.bg-slate-950\/40,
+.dashboard-card div.bg-slate-50,
+.card-dark div.bg-black\/30,
+.card-dark div.bg-black\/40,
+.card-dark div.bg-black\/20,
+.card-dark div.bg-white\/5,
+.card-dark div.bg-white\/4,
+.card-dark div.bg-slate-50 {
+  background-color: #25272B !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #FFFFFF !important;
+  transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease;
+}
+
+.card-inner h1, .card-inner h2, .card-inner h3, .card-inner h4, .card-inner strong, .card-inner b,
+.inner-box h1, .inner-box h2, .inner-box h3, .inner-box h4, .inner-box strong, .inner-box b,
+[class*="bg-[#25272B]"] h1, [class*="bg-[#25272B]"] h2, [class*="bg-[#25272B]"] h3, [class*="bg-[#25272B]"] h4, [class*="bg-[#25272B]"] strong, [class*="bg-[#25272B]"] b,
+.bg-\[\#25272B\] h1, .bg-\[\#25272B\] h2, .bg-\[\#25272B\] h3, .bg-\[\#25272B\] h4, .bg-\[\#25272B\] strong, .bg-\[\#25272B\] b,
+.dashboard-card div.bg-black\/30 strong,
+.dashboard-card div.bg-black\/40 strong,
+.dashboard-card div.bg-slate-50 strong,
+.card-dark div.bg-black\/30 strong,
+.card-dark div.bg-black\/40 strong,
+.card-dark div.bg-slate-50 strong {
+  color: #FFFFFF !important;
+}
+
+.card-inner p, .inner-box p,
+[class*="bg-[#25272B]"] p, .bg-\[\#25272B\] p,
+.card-inner li, .inner-box li,
+.card-inner label, .inner-box label,
+.dashboard-card div.bg-black\/30 p,
+.dashboard-card div.bg-black\/40 p,
+.dashboard-card div.bg-slate-50 p,
+.card-dark div.bg-black\/30 p,
+.card-dark div.bg-black\/40 p,
+.card-dark div.bg-slate-50 p {
+  color: #E0E0E0 !important;
+}
+
+.card-inner span:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]),
+.inner-box span:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]),
+[class*="bg-[#25272B]"] span:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]),
+.bg-\[\#25272B\] span:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]),
+.dashboard-card div.bg-black\/30 span:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]),
+.dashboard-card div.bg-black\/40 span:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]),
+.dashboard-card div.bg-slate-50 span:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]),
+.card-dark div.bg-black\/30 span:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]),
+.card-dark div.bg-black\/40 span:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]),
+.card-dark div.bg-slate-50 span:not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-blue-"]):not([class*="text-cyan-"]):not([class*="text-purple-"]):not([class*="text-sky-"]) {
+  color: #BDBDBD !important;
+}
+
+/* Hovering directly on an inner box: slightly lighter grey #35383D */
+.card-inner:hover,
+.inner-box:hover,
+[class*="bg-[#25272B]"]:hover,
+.bg-\[\#25272B\]:hover,
+.dashboard-card div.bg-black\/30:hover,
+.dashboard-card div.bg-black\/40:hover,
+.dashboard-card div.bg-black\/20:hover,
+.dashboard-card div.bg-white\/5:hover,
+.dashboard-card div.bg-white\/4:hover,
+.dashboard-card div.bg-slate-50:hover,
+.card-dark div.bg-black\/30:hover,
+.card-dark div.bg-black\/40:hover,
+.card-dark div.bg-black\/20:hover,
+.card-dark div.bg-white\/5:hover,
+.card-dark div.bg-white\/4:hover,
+.card-dark div.bg-slate-50:hover {
+  background-color: #35383D !important;
+  border-color: rgba(255, 255, 255, 0.22) !important;
+  color: #FFFFFF !important;
+}
+
+/* ========================================================
+   AUTOMATIC HOVER EFFECT ON ANY DASHBOARD CARD
+   Background -> Mist-white (#F1F3F5)
+   Text/Icons -> Suitable dark colors (#17191C)
+   Smooth 200-250ms transition
+   Inner boxes maintain their dark-grey (#25272B) background!
+   ======================================================== */
 @media (hover: hover) and (pointer: fine) {
-  .dashboard-card:hover,
-  .card-dark:hover,
-  .card-light:hover {
-    background-color: #E9EDF2 !important;
-    border-color: rgba(255, 255, 255, 0.92) !important;
-    transform: translateY(-2px) scale(1.01);
-    box-shadow: 0 12px 28px -6px rgba(15, 23, 42, 0.16), 0 0 0 1px rgba(255, 255, 255, 0.7) !important;
+  .dashboard-card:not(.intake-flow-container):not(.intake-stage-card):hover,
+  .card-dark:not(.intake-flow-container):not(.intake-stage-card):hover {
+    background-color: #F1F3F5 !important;
+    border-color: rgba(0, 0, 0, 0.15) !important;
+    transform: translateY(-3px) scale(1.01);
+    box-shadow: 0 16px 32px -6px rgba(15, 23, 42, 0.22),
+                0 4px 8px -2px rgba(15, 23, 42, 0.12),
+                0 0 0 1px rgba(0, 0, 0, 0.08) !important;
+    color: #17191C !important;
   }
 
-  /* Transition text and icons smoothly */
-  .dashboard-card *,
-  .card-dark *,
-  .card-light * {
-    transition: color 250ms cubic-bezier(0.16, 1, 0.3, 1),
-                border-color 250ms cubic-bezier(0.16, 1, 0.3, 1),
-                background-color 250ms cubic-bezier(0.16, 1, 0.3, 1);
+  /* Transition text and icons smoothly (excluding intake flow and inner boxes) */
+  .dashboard-card:not(.intake-flow-container) *:not(.intake-stage-card):not(.intake-stage-card *):not(.card-inner):not(.card-inner *):not(.inner-box):not(.inner-box *),
+  .card-dark:not(.intake-flow-container) *:not(.intake-stage-card):not(.intake-stage-card *):not(.card-inner):not(.card-inner *):not(.inner-box):not(.inner-box *) {
+    transition: color 220ms cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 220ms cubic-bezier(0.16, 1, 0.3, 1),
+                background-color 220ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  /* Headings, metrics, and primary text switch to dark charcoal (#17191D) on hover */
-  .dashboard-card:hover,
-  .card-dark:hover,
-  .card-light:hover,
-  .dashboard-card:hover h1,
-  .dashboard-card:hover h2,
-  .dashboard-card:hover h3,
-  .dashboard-card:hover h4,
-  .dashboard-card:hover h5,
-  .dashboard-card:hover strong,
-  .dashboard-card:hover b,
-  .dashboard-card:hover .text-white,
-  .dashboard-card:hover .text-slate-100,
-  .dashboard-card:hover .text-slate-200,
-  .dashboard-card:hover .text-slate-300,
-  .card-dark:hover .text-white,
-  .card-dark:hover .text-slate-100,
-  .card-dark:hover .text-slate-200,
-  .card-dark:hover .text-slate-300 {
-    color: #17191D !important;
+  /* Headings, metrics, and primary text switch to dark (#17191C) on card hover (excluding inner boxes) */
+  .dashboard-card:not(.intake-flow-container):hover > h1,
+  .dashboard-card:not(.intake-flow-container):hover > h2,
+  .dashboard-card:not(.intake-flow-container):hover > h3,
+  .dashboard-card:not(.intake-flow-container):hover > h4,
+  .dashboard-card:not(.intake-flow-container):hover > h5,
+  .dashboard-card:not(.intake-flow-container):hover h1:not(.card-inner *):not(.inner-box *),
+  .dashboard-card:not(.intake-flow-container):hover h2:not(.card-inner *):not(.inner-box *),
+  .dashboard-card:not(.intake-flow-container):hover h3:not(.intake-flow-title):not(.card-inner *):not(.inner-box *),
+  .dashboard-card:not(.intake-flow-container):hover h4:not(.card-inner *):not(.inner-box *),
+  .dashboard-card:not(.intake-flow-container):hover h5:not(.card-inner *):not(.inner-box *),
+  .dashboard-card:not(.intake-flow-container):hover strong:not(.card-inner *):not(.inner-box *),
+  .dashboard-card:not(.intake-flow-container):hover b:not(.card-inner *):not(.inner-box *),
+  .dashboard-card:not(.intake-flow-container):hover .text-white:not(.intake-stage-count):not(.intake-stage-label):not(.card-inner *):not(.inner-box *),
+  .dashboard-card:not(.intake-flow-container):hover .text-slate-100:not(.card-inner *):not(.inner-box *),
+  .dashboard-card:not(.intake-flow-container):hover .text-slate-200:not(.card-inner *):not(.inner-box *),
+  .dashboard-card:not(.intake-flow-container):hover .text-slate-300:not(.card-inner *):not(.inner-box *),
+  .card-dark:not(.intake-flow-container):hover h1:not(.card-inner *):not(.inner-box *),
+  .card-dark:not(.intake-flow-container):hover h2:not(.card-inner *):not(.inner-box *),
+  .card-dark:not(.intake-flow-container):hover h3:not(.card-inner *):not(.inner-box *),
+  .card-dark:not(.intake-flow-container):hover h4:not(.card-inner *):not(.inner-box *),
+  .card-dark:not(.intake-flow-container):hover strong:not(.card-inner *):not(.inner-box *),
+  .card-dark:not(.intake-flow-container):hover b:not(.card-inner *):not(.inner-box *),
+  .card-dark:not(.intake-flow-container):hover .text-white:not(.intake-stage-count):not(.intake-stage-label):not(.card-inner *):not(.inner-box *),
+  .card-dark:not(.intake-flow-container):hover .text-slate-100:not(.card-inner *):not(.inner-box *),
+  .card-dark:not(.intake-flow-container):hover .text-slate-200:not(.card-inner *):not(.inner-box *),
+  .card-dark:not(.intake-flow-container):hover .text-slate-300:not(.card-inner *):not(.inner-box *) {
+    color: #17191C !important;
   }
 
-  /* Secondary descriptions smoothly shift to readable dark charcoal grey */
-  .dashboard-card:hover p,
-  .dashboard-card:hover .text-slate-400,
-  .dashboard-card:hover .text-slate-500,
-  .dashboard-card:hover .text-\[\#AEB4BC\],
-  .dashboard-card:hover .text-\[\#D5D8DD\],
-  .card-dark:hover p,
-  .card-dark:hover .text-slate-400,
-  .card-dark:hover .text-slate-500,
-  .card-dark:hover .text-\[\#AEB4BC\],
-  .card-dark:hover .text-\[\#D5D8DD\] {
-    color: #4A515E !important;
+  /* Secondary descriptions smoothly shift to readable dark charcoal grey #343A40 */
+  .dashboard-card:not(.intake-flow-container):hover p:not(.intake-stage-label):not(.card-inner *):not(.inner-box *),
+  .dashboard-card:not(.intake-flow-container):hover .text-slate-400:not(.card-inner *):not(.inner-box *),
+  .dashboard-card:not(.intake-flow-container):hover .text-slate-500:not(.card-inner *):not(.inner-box *),
+  .dashboard-card:not(.intake-flow-container):hover .text-\[\#AEB4BC\]:not(.card-inner *):not(.inner-box *),
+  .dashboard-card:not(.intake-flow-container):hover .text-\[\#D5D8DD\]:not(.card-inner *):not(.inner-box *),
+  .dashboard-card:not(.intake-flow-container):hover .text-\[\#D5DAE2\]:not(.card-inner *):not(.inner-box *),
+  .card-dark:not(.intake-flow-container):hover p:not(.intake-stage-label):not(.card-inner *):not(.inner-box *),
+  .card-dark:not(.intake-flow-container):hover .text-slate-400:not(.card-inner *):not(.inner-box *),
+  .card-dark:not(.intake-flow-container):hover .text-slate-500:not(.card-inner *):not(.inner-box *),
+  .card-dark:not(.intake-flow-container):hover .text-\[\#AEB4BC\]:not(.card-inner *):not(.inner-box *),
+  .card-dark:not(.intake-flow-container):hover .text-\[\#D5D8DD\]:not(.card-inner *):not(.inner-box *),
+  .card-dark:not(.intake-flow-container):hover .text-\[\#D5DAE2\]:not(.card-inner *):not(.inner-box *) {
+    color: #343A40 !important;
   }
 
   /* Tabular figures and monospace metric values */
-  .dashboard-card:hover .font-mono:not([class*="bg-"]):not([class*="badge"]),
-  .dashboard-card:hover .tabular-nums:not([class*="bg-"]):not([class*="badge"]),
-  .card-dark:hover .font-mono:not([class*="bg-"]):not([class*="badge"]),
-  .card-dark:hover .tabular-nums:not([class*="bg-"]):not([class*="badge"]) {
-    color: #17191D;
+  .dashboard-card:not(.intake-flow-container):hover .font-mono:not([class*="bg-"]):not([class*="badge"]):not(.intake-stage-count):not(.card-inner *):not(.inner-box *),
+  .dashboard-card:not(.intake-flow-container):hover .tabular-nums:not([class*="bg-"]):not([class*="badge"]):not(.intake-stage-count):not(.card-inner *):not(.inner-box *),
+  .card-dark:not(.intake-flow-container):hover .font-mono:not([class*="bg-"]):not([class*="badge"]):not(.intake-stage-count):not(.card-inner *):not(.inner-box *),
+  .card-dark:not(.intake-flow-container):hover .tabular-nums:not([class*="bg-"]):not([class*="badge"]):not(.intake-stage-count):not(.card-inner *):not(.inner-box *) {
+    color: #17191C !important;
   }
 
-  /* Translucent inner cards adapt cleanly to the misty-white card surface */
-  .dashboard-card:hover div.bg-black\/30,
-  .dashboard-card:hover div.bg-black\/20,
-  .dashboard-card:hover div.bg-white\/5,
-  .dashboard-card:hover div.bg-white\/4,
-  .dashboard-card:hover div.bg-slate-950\/40,
-  .card-dark:hover div.bg-black\/30,
-  .card-dark:hover div.bg-black\/20,
-  .card-dark:hover div.bg-white\/5,
-  .card-dark:hover div.bg-white\/4 {
-    background-color: rgba(255, 255, 255, 0.78) !important;
-    border-color: rgba(0, 0, 0, 0.08) !important;
+  /* CRITICAL: INNER BOXES REMAIN DARK GREY (#25272B) WHEN PARENT CARD IS HOVERED */
+  .dashboard-card:hover .card-inner:not(:hover),
+  .dashboard-card:hover .inner-box:not(:hover),
+  .dashboard-card:hover [class*="bg-[#25272B]"]:not(:hover),
+  .dashboard-card:hover .bg-\[\#25272B\]:not(:hover),
+  .dashboard-card:hover div.bg-black\/30:not(:hover),
+  .dashboard-card:hover div.bg-black\/40:not(:hover),
+  .dashboard-card:hover div.bg-black\/20:not(:hover),
+  .dashboard-card:hover div.bg-white\/5:not(:hover),
+  .dashboard-card:hover div.bg-white\/4:not(:hover),
+  .dashboard-card:hover div.bg-slate-950\/40:not(:hover),
+  .dashboard-card:hover div.bg-slate-50:not(:hover),
+  .card-dark:hover .card-inner:not(:hover),
+  .card-dark:hover .inner-box:not(:hover),
+  .card-dark:hover [class*="bg-[#25272B]"]:not(:hover),
+  .card-dark:hover .bg-\[\#25272B\]:not(:hover),
+  .card-dark:hover div.bg-black\/30:not(:hover),
+  .card-dark:hover div.bg-black\/40:not(:hover),
+  .card-dark:hover div.bg-black\/20:not(:hover),
+  .card-dark:hover div.bg-white\/5:not(:hover),
+  .card-dark:hover div.bg-white\/4:not(:hover),
+  .card-dark:hover div.bg-slate-50:not(:hover) {
+    background-color: #25272B !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    color: #FFFFFF !important;
   }
 
-  /* Neutral SVGs transition nicely */
-  .dashboard-card:hover svg:not([class*="text-"]):not([class*="bg-"]),
-  .card-dark:hover svg:not([class*="text-"]):not([class*="bg-"]) {
-    color: #17191D !important;
+  /* Inner box text stays crisp light when parent is hovered */
+  .dashboard-card:hover .card-inner:not(:hover) strong,
+  .dashboard-card:hover .card-inner:not(:hover) b,
+  .dashboard-card:hover .inner-box:not(:hover) strong,
+  .dashboard-card:hover .inner-box:not(:hover) b,
+  .dashboard-card:hover [class*="bg-[#25272B]"]:not(:hover) strong,
+  .dashboard-card:hover [class*="bg-[#25272B]"]:not(:hover) b,
+  .dashboard-card:hover .bg-\[\#25272B\]:not(:hover) strong,
+  .dashboard-card:hover .bg-\[\#25272B\]:not(:hover) b,
+  .dashboard-card:hover div.bg-black\/30:not(:hover) strong,
+  .dashboard-card:hover div.bg-black\/40:not(:hover) strong,
+  .dashboard-card:hover div.bg-slate-50:not(:hover) strong,
+  .card-dark:hover .card-inner:not(:hover) strong,
+  .card-dark:hover .inner-box:not(:hover) strong,
+  .card-dark:hover [class*="bg-[#25272B]"]:not(:hover) strong,
+  .card-dark:hover [class*="bg-[#25272B]"]:not(:hover) b,
+  .card-dark:hover .bg-\[\#25272B\]:not(:hover) strong,
+  .card-dark:hover .bg-\[\#25272B\]:not(:hover) b,
+  .card-dark:hover div.bg-black\/30:not(:hover) strong,
+  .card-dark:hover div.bg-black\/40:not(:hover) strong,
+  .card-dark:hover div.bg-slate-50:not(:hover) strong {
+    color: #FFFFFF !important;
   }
+
+  .dashboard-card:hover .card-inner:not(:hover) span,
+  .dashboard-card:hover .inner-box:not(:hover) span,
+  .dashboard-card:hover [class*="bg-[#25272B]"]:not(:hover) span,
+  .dashboard-card:hover .bg-\[\#25272B\]:not(:hover) span,
+  .dashboard-card:hover div.bg-black\/30:not(:hover) span,
+  .dashboard-card:hover div.bg-black\/40:not(:hover) span,
+  .dashboard-card:hover div.bg-slate-50:not(:hover) span,
+  .card-dark:hover .card-inner:not(:hover) span,
+  .card-dark:hover .inner-box:not(:hover) span,
+  .card-dark:hover [class*="bg-[#25272B]"]:not(:hover) span,
+  .card-dark:hover .bg-\[\#25272B\]:not(:hover) span,
+  .card-dark:hover div.bg-black\/30:not(:hover) span,
+  .card-dark:hover div.bg-black\/40:not(:hover) span,
+  .card-dark:hover div.bg-slate-50:not(:hover) span {
+    color: #BDBDBD !important;
+  }
+
+  /* Neutral SVGs transition cleanly on parent hover (outside inner box) */
+  .dashboard-card:not(.intake-flow-container):hover svg:not([class*="text-"]):not([class*="bg-"]):not(.card-inner *):not(.inner-box *),
+  .card-dark:not(.intake-flow-container):hover svg:not([class*="text-"]):not([class*="bg-"]):not(.card-inner *):not(.inner-box *) {
+    color: #17191C !important;
+  }
+
+  /* Nested cards preserve solid black when only parent card is hovered */
+  .dashboard-card:hover .card-dark:not(:hover) {
+    background-color: #0B0B0D !important;
+    color: #FFFFFF !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+  }
+  .dashboard-card:hover .card-dark:not(:hover) h1,
+  .dashboard-card:hover .card-dark:not(:hover) h2,
+  .dashboard-card:hover .card-dark:not(:hover) h3,
+  .dashboard-card:hover .card-dark:not(:hover) strong,
+  .dashboard-card:hover .card-light:not(:hover) h1,
+  .dashboard-card:hover .card-light:not(:hover) h2,
+  .dashboard-card:hover .card-light:not(:hover) h3,
+  .dashboard-card:hover .card-light:not(:hover) strong {
+    color: #FFFFFF !important;
+  }
+  .dashboard-card:hover .card-dark:not(:hover) p,
+  .dashboard-card:hover .card-light:not(:hover) p {
+    color: #E0E0E0 !important;
+  }
+}
+
+/* ========================================================
+   VISITOR & CANDIDATE INTAKE FLOW - INDEPENDENT CARD HOVER & SELECTION
+   Isolate intake container and stage tiles from unwanted cascade.
+   Ensures independent stage hover, dark theme preservation, and readable text.
+   ======================================================== */
+.intake-flow-container,
+.intake-flow-container:hover,
+.intake-flow-container:focus,
+.intake-flow-container:focus-within,
+.dashboard-card:hover .intake-flow-container,
+.card-dark:hover .intake-flow-container {
+  background-color: #0B0F14 !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #FFFFFF !important;
+  transform: none !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5) !important;
+}
+
+.intake-flow-container h3,
+.intake-flow-container:hover h3,
+.dashboard-card:hover .intake-flow-container h3,
+.card-dark:hover .intake-flow-container h3 {
+  color: #FFFFFF !important;
+}
+
+/* Individual Stage Card - Base unselected state */
+.intake-stage-card,
+.intake-flow-container .intake-stage-card,
+.intake-flow-container:hover .intake-stage-card:not(:hover):not(.is-selected),
+.dashboard-card:hover .intake-stage-card:not(:hover):not(.is-selected),
+.card-dark:hover .intake-stage-card:not(:hover):not(.is-selected) {
+  background-color: #141820 !important;
+  border-color: #252A32 !important;
+  color: #FFFFFF !important;
+  transition: transform 180ms ease, border-color 180ms ease, background-color 180ms ease, box-shadow 180ms ease !important;
+}
+
+/* Ensure focus states on unselected cards stay dark without flashing white */
+.intake-stage-card:focus:not(.is-selected),
+.intake-flow-container .intake-stage-card:focus:not(.is-selected) {
+  background-color: #141820 !important;
+  border-color: #252A32 !important;
+  color: #FFFFFF !important;
+}
+
+/* Keyboard focus visibility - accessible amber outline */
+.intake-stage-card:focus-visible {
+  outline: 2px solid #F59E0B !important;
+  outline-offset: 2px !important;
+}
+
+/* Count typography - stays crisp white in base and unselected states */
+.intake-stage-card .intake-stage-count,
+.intake-stage-card:not(.is-selected) .intake-stage-count,
+.intake-flow-container .intake-stage-card .intake-stage-count,
+.intake-flow-container:hover .intake-stage-card:not(.is-selected) .intake-stage-count,
+.dashboard-card:hover .intake-stage-card .intake-stage-count,
+.card-dark:hover .intake-stage-card .intake-stage-count {
+  color: #FFFFFF !important;
+}
+
+/* Label typography - stays crisp and visible */
+.intake-stage-card .intake-stage-label,
+.intake-stage-card:not(.is-selected) .intake-stage-label,
+.intake-flow-container .intake-stage-card .intake-stage-label,
+.intake-flow-container:hover .intake-stage-card:not(.is-selected) .intake-stage-label,
+.dashboard-card:hover .intake-stage-card .intake-stage-label,
+.card-dark:hover .intake-stage-card .intake-stage-label {
+  color: #F5F6F8 !important;
+}
+
+/* Footer link label in card */
+.intake-stage-card .intake-stage-footer,
+.intake-flow-container .intake-stage-card .intake-stage-footer {
+  color: #AEB7C4 !important;
+}
+
+/* Inner Icon Badge - stays dark and never turns white */
+.intake-stage-card .intake-icon-badge,
+.intake-flow-container .intake-stage-card .intake-icon-badge,
+.intake-flow-container:hover .intake-stage-card:not(:hover) .intake-icon-badge,
+.dashboard-card:hover .intake-icon-badge,
+.card-dark:hover .intake-icon-badge {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Stage icon accent colors preserved under all parent and hover conditions */
+.intake-flow-container .intake-stage-card .text-slate-300 {
+  color: #CBD5E1 !important;
+}
+.intake-flow-container .intake-stage-card .text-amber-400 {
+  color: #FB923C !important;
+}
+.intake-flow-container .intake-stage-card .text-cyan-400 {
+  color: #22D3EE !important;
+}
+.intake-flow-container .intake-stage-card .text-blue-400 {
+  color: #60A5FA !important;
+}
+.intake-flow-container .intake-stage-card .text-purple-400 {
+  color: #C084FC !important;
+}
+.intake-flow-container .intake-stage-card .text-emerald-400 {
+  color: #34D399 !important;
+}
+.intake-flow-container .intake-stage-card .text-slate-400 {
+  color: #94A3B8 !important;
+}
+
+/* Independent hover behavior: hover applies exclusively to the hovered stage card */
+.intake-stage-card:hover:not(.is-selected),
+.intake-flow-container .intake-stage-card:hover:not(.is-selected) {
+  background-color: #1B2028 !important;
+  border-color: rgba(255, 255, 255, 0.32) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 10px 22px -4px rgba(0, 0, 0, 0.5) !important;
+}
+
+.intake-stage-card:hover:not(.is-selected) .intake-stage-count {
+  color: #FFFFFF !important;
+}
+
+.intake-stage-card:hover:not(.is-selected) .intake-stage-label {
+  color: #FFFFFF !important;
+}
+
+.intake-stage-card:hover:not(.is-selected) .intake-stage-footer {
+  color: #E2E8F0 !important;
+  opacity: 1 !important;
+}
+
+.intake-stage-card:hover:not(.is-selected) .intake-icon-badge {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.22) !important;
+}
+
+/* Click / Tap / Active state */
+.intake-stage-card:active:not(.is-selected),
+.intake-flow-container .intake-stage-card:active:not(.is-selected) {
+  background-color: #10141C !important;
+  color: #FFFFFF !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+}
+
+/* Active / Selected stage state */
+.intake-stage-card.is-selected,
+.intake-stage-card.is-selected:focus,
+.intake-flow-container .intake-stage-card.is-selected,
+.intake-flow-container:hover .intake-stage-card.is-selected {
+  background-color: rgba(245, 158, 11, 0.22) !important;
+  border-color: #F59E0B !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 0 0 1px #F59E0B, 0 10px 24px -4px rgba(245, 158, 11, 0.25) !important;
+}
+
+.intake-stage-card.is-selected:hover,
+.intake-flow-container .intake-stage-card.is-selected:hover {
+  background-color: rgba(245, 158, 11, 0.28) !important;
+  border-color: #FBBF24 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 0 0 1px #FBBF24, 0 12px 28px -4px rgba(245, 158, 11, 0.35) !important;
+}
+
+.intake-stage-card.is-selected:active,
+.intake-flow-container .intake-stage-card.is-selected:active {
+  background-color: rgba(245, 158, 11, 0.35) !important;
+  color: #FFFFFF !important;
+}
+
+.intake-stage-card.is-selected .intake-stage-count,
+.intake-stage-card.is-selected:hover .intake-stage-count {
+  color: #FCD34D !important;
+}
+
+.intake-stage-card.is-selected .intake-stage-label,
+.intake-stage-card.is-selected:hover .intake-stage-label {
+  color: #FFFFFF !important;
+}
+
+.intake-stage-card.is-selected .intake-stage-footer,
+.intake-stage-card.is-selected:hover .intake-stage-footer {
+  color: #FDE68A !important;
+  opacity: 1 !important;
+}
+
+.intake-stage-card.is-selected .intake-icon-badge,
+.intake-stage-card.is-selected:hover .intake-icon-badge {
+  background-color: rgba(245, 158, 11, 0.25) !important;
+  border-color: rgba(245, 158, 11, 0.50) !important;
 }
 
 .card-pill {

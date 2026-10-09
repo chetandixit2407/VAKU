@@ -37,6 +37,10 @@ import { ForgotPasswordModal } from './components/ForgotPasswordModal.tsx';
 import { ResetPasswordView } from './components/ResetPasswordView.tsx';
 import { InternalChatModal } from './components/InternalChatModal.tsx';
 import {
+  DashboardCardDetailsModal,
+  type DashboardModalTarget,
+} from './components/DashboardCardDetailsModal.tsx';
+import {
   authenticatedFetch,
   safeJson,
   setStoredStaffToken,
@@ -114,6 +118,7 @@ export default function App() {
   const [activeSection, setActiveSection] = useState<NavSection>('dashboard');
   const [isMobileNavOpen, setIsMobileNavOpen] = useState<boolean>(false);
   const [filterStage, setFilterStage] = useState<ArrivalStage | null>(null);
+  const [dashboardDetailsModalTarget, setDashboardDetailsModalTarget] = useState<DashboardModalTarget | null>(null);
 
   // Staff Login State
   const [loginEmail, setLoginEmail] = useState<string>('nisha@whitecollarrealty.com');
@@ -971,7 +976,7 @@ export default function App() {
   // STAFF & OPERATIONS CONSOLE (HR, ADMIN, CEO, INTERVIEWER, RECEPTION, PANTRY)
   // ==========================================
   return (
-    <div className="min-h-screen bg-[#8F94A1] text-slate-100 flex font-sans selection:bg-[#f36515] selection:text-white relative overflow-x-hidden">
+    <div className="h-[100dvh] max-h-[100dvh] bg-[#8F94A1] text-slate-100 flex font-sans selection:bg-[#f36515] selection:text-white relative overflow-hidden">
       {/* Desktop Glass Sidebar Navigation */}
       <SidebarNav
         currentRole={currentRole}
@@ -1009,7 +1014,7 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <div className="flex-1 min-w-0 flex flex-col relative z-10">
+      <div className="flex-1 min-w-0 flex flex-col h-[100dvh] overflow-y-auto lg:ml-64 relative z-10">
         {/* Top Operations Header */}
         <TopHeader
           pageTitle={`WCR Operations: ${currentRole.replace('_', ' ')} Console`}
@@ -1089,6 +1094,12 @@ export default function App() {
             visitors={visitors}
             userName={currentUser?.name || 'Officer'}
             userRole={currentRole}
+            onSelectKpi={(kpiId) => {
+              if (kpiId === 'lobby') setDashboardDetailsModalTarget('kpi_lobby');
+              else if (kpiId === 'interviews') setDashboardDetailsModalTarget('kpi_interviews');
+              else if (kpiId === 'rooms') setDashboardDetailsModalTarget('kpi_rooms');
+              else if (kpiId === 'pantry') setDashboardDetailsModalTarget('kpi_pantry');
+            }}
           />
 
           {/* Visitor Arrival Journey Flow Filter Banner */}
@@ -1096,6 +1107,9 @@ export default function App() {
             candidates={candidates}
             selectedStage={filterStage}
             onSelectStage={(stage) => setFilterStage(stage)}
+            onOpenStageDetails={(stage) => {
+              setDashboardDetailsModalTarget(`stage_${stage}` as DashboardModalTarget);
+            }}
           />
 
           {/* Realtime Candidate Intake Alert Banner */}
@@ -1142,7 +1156,7 @@ export default function App() {
           )}
 
           {/* Interactive Testing Quick Launcher Strip */}
-          <div className="p-4 glass-panel rounded-3xl border border-white/8 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 text-xs shadow-xl">
+          <div className="p-4 card-dark bg-[#0B0B0D] text-white rounded-3xl border border-white/10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 text-xs shadow-xl">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -1150,7 +1164,7 @@ export default function App() {
                   WCR Dual QR Architecture & Desk Photo Verification
                 </strong>
               </div>
-              <p className="text-slate-400 text-xs">
+              <p className="text-[#E0E0E0] text-xs">
                 <strong className="text-emerald-400">1. General Reception QR</strong> (100% blank form, isolated session) &bull;{' '}
                 <strong className="text-amber-400">2. Scheduled QR</strong> (Appointment pass) &bull;{' '}
                 <strong className="text-cyan-400">3. Reception Live Photo</strong> (WebRTC desk verification).
@@ -1757,6 +1771,40 @@ export default function App() {
           }}
         />
       )}
+
+      {/* 10. EXPANDABLE DASHBOARD CARD DETAILS MODAL */}
+      <DashboardCardDetailsModal
+        isOpen={dashboardDetailsModalTarget !== null}
+        onClose={() => setDashboardDetailsModalTarget(null)}
+        target={dashboardDetailsModalTarget}
+        candidates={candidates}
+        interviews={interviews}
+        rooms={rooms}
+        pantryTasks={pantryTasks}
+        visitors={visitors}
+        actionTasks={actionTasks}
+        currentRole={currentRole}
+        onOpenDossier={(candId) => {
+          setSelectedCandidateId(candId);
+          setActiveModal('DOSSIER');
+        }}
+        onAssignRoom={(candId, intvId) => {
+          setSelectedCandidateId(candId);
+          setSelectedInterview(intvId ? interviews.find((i) => i.id === intvId) || null : null);
+          setActiveModal('ASSIGN_ROOM');
+        }}
+        onStartInterview={handleStartInterview}
+        onOpenEndInterviewModal={(intv) => {
+          setSelectedInterview(intv);
+          setActiveModal('END_INTERVIEW');
+        }}
+        onOpenDeskPhoto={(cand) => {
+          setSelectedCandidateId(cand.id);
+        }}
+        onCompletePantryTask={handleCompletePantryTask}
+        onMarkRoomCleaned={handleMarkRoomCleaned}
+        onCheckout={handleCheckout}
+      />
     </div>
   );
 }

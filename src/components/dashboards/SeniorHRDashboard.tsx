@@ -91,7 +91,7 @@ export const SeniorHRDashboard: React.FC<SeniorHRDashboardProps> = ({
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="p-6 glass-panel-elevated rounded-3xl border border-white/8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="p-6 card-dark bg-[#0B0B0D] rounded-3xl border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl">
         <div className="flex items-center gap-3.5">
           <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center justify-center font-black text-lg shadow-inner font-mono">
             KM
@@ -105,8 +105,8 @@ export const SeniorHRDashboard: React.FC<SeniorHRDashboardProps> = ({
                 Senior Level
               </span>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Authorized Role: <strong className="text-slate-200">Senior HR Interviewer</strong> • Executive Leadership
+            <p className="text-xs text-[#E0E0E0] mt-0.5">
+              Authorized Role: <strong className="text-white">Senior HR Interviewer</strong> • Executive Leadership
             </p>
           </div>
         </div>
@@ -168,10 +168,10 @@ export const SeniorHRDashboard: React.FC<SeniorHRDashboardProps> = ({
 
       {/* Interviews List */}
       {displayedInterviews.length === 0 ? (
-        <div className="p-12 text-center glass-panel rounded-3xl border border-white/8 space-y-3">
+        <div className="p-12 text-center card-dark bg-[#0B0B0D] rounded-3xl border border-white/10 space-y-3">
           <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto" />
           <h3 className="text-sm font-bold text-white">No senior interviews in this view</h3>
-          <p className="text-xs text-slate-400 max-w-md mx-auto">
+          <p className="text-xs text-[#E0E0E0] max-w-md mx-auto">
             Candidates assigned for Senior HR Review with Kimmi Mam will appear here automatically in real time.
           </p>
         </div>
@@ -186,7 +186,7 @@ export const SeniorHRDashboard: React.FC<SeniorHRDashboardProps> = ({
                 key={intv.id}
                 whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
                 whileTap={{ scale: 0.99 }}
-                className="p-5 glass-panel dashboard-card rounded-2xl border border-white/8 hover:border-white/16 shadow-xl hover:shadow-2xl hover:shadow-amber-500/15 space-y-4 transition"
+                className="p-5 rounded-2xl shadow-xl space-y-4 transition card-dark bg-[#0B0B0D] border border-white/10 text-white"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3.5">
@@ -197,14 +197,14 @@ export const SeniorHRDashboard: React.FC<SeniorHRDashboardProps> = ({
                         className="w-14 h-14 rounded-2xl object-cover border-2 border-amber-500 shadow-md shrink-0"
                       />
                     ) : (
-                      <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/8 flex items-center justify-center text-slate-400 shrink-0">
+                      <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 bg-[#25272B] border border-white/10 text-white">
                         <UserCheck className="w-7 h-7" />
                       </div>
                     )}
                     <div>
                       <h3 className="text-base font-bold text-white">{intv.candidateName}</h3>
-                      <p className="text-xs text-amber-400 font-semibold">{intv.position}</p>
-                      <p className="text-[11px] text-slate-400 mt-0.5">{intv.roundName}</p>
+                      <p className="text-xs font-semibold text-amber-400">{intv.position}</p>
+                      <p className="text-[11px] mt-0.5 text-[#E0E0E0]">{intv.roundName}</p>
                     </div>
                   </div>
 
@@ -216,7 +216,7 @@ export const SeniorHRDashboard: React.FC<SeniorHRDashboardProps> = ({
                         ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
                         : hasRoom
                         ? 'bg-amber-500/10 text-amber-300 border border-amber-500/30'
-                        : 'bg-white/5 text-slate-400 border border-white/8'
+                        : 'bg-white/10 text-[#E0E0E0] border border-white/15'
                     }`}
                   >
                     {intv.status === 'INTERVIEW_STARTED'
@@ -230,54 +230,54 @@ export const SeniorHRDashboard: React.FC<SeniorHRDashboardProps> = ({
                 </div>
 
                 {/* Details Box */}
-                <div className="p-3 bg-black/30 border border-white/6 rounded-xl space-y-2 text-xs">
+                <div className="p-3 card-inner inner-box bg-[#25272B] rounded-xl space-y-2 text-xs border border-white/10 text-white">
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-slate-400">Interview Level:</span>
+                    <span className="text-[#BDBDBD]">Interview Level:</span>
                     <strong className="text-amber-400 font-bold font-mono">Senior Level (Kimmi Mam)</strong>
                   </div>
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-slate-400">Designated Room:</span>
-                    <strong className={hasRoom ? 'text-amber-400 font-bold' : 'text-slate-500 italic'}>
+                    <span className="text-[#BDBDBD]">Designated Room:</span>
+                    <strong className={hasRoom ? 'text-amber-400 font-bold' : 'text-[#BDBDBD] italic'}>
                       {intv.roomName || 'Pending Room Assignment'}
                     </strong>
                   </div>
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-slate-400">Current Location:</span>
-                    <span className="text-slate-200 font-medium">
+                    <span className="text-[#BDBDBD]">Current Location:</span>
+                    <span className="text-white font-medium">
                       {cand?.currentLocation || 'Waiting Lounge'}
                     </span>
                   </div>
                   {intv.interviewerFeedback && (
-                    <div className="pt-1.5 border-t border-slate-900 text-[11px]">
-                      <span className="text-slate-400 block mb-0.5">Remarks / Feedback:</span>
-                      <p className="text-slate-300 italic">{intv.interviewerFeedback}</p>
+                    <div className="pt-1.5 border-t border-white/10 text-[11px]">
+                      <span className="text-[#BDBDBD] block mb-0.5">Remarks / Feedback:</span>
+                      <p className="italic text-[#E0E0E0]">{intv.interviewerFeedback}</p>
                     </div>
                   )}
                 </div>
 
                 {/* Candidate Summary Snippet */}
                 {cand && (
-                  <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-400">
+                  <div className="grid grid-cols-2 gap-2 text-[11px] text-[#E0E0E0]">
                     <div>
                       <span>Experience: </span>
-                      <strong className="text-slate-200">{cand.totalExperience}</strong>
+                      <strong className="text-white">{cand.totalExperience}</strong>
                     </div>
                     <div>
                       <span>Notice Period: </span>
-                      <strong className="text-slate-200">{cand.noticePeriod}</strong>
+                      <strong className="text-white">{cand.noticePeriod}</strong>
                     </div>
                   </div>
                 )}
 
                 {/* Actions */}
-                <div className="flex items-center gap-2 pt-2 border-t border-slate-800">
+                <div className="flex items-center gap-2 pt-2 border-t border-white/10">
                   <button
                     type="button"
                     onClick={() => onOpenDossier(intv.candidateId)}
-                    className="flex-1 py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs transition cursor-pointer flex items-center justify-center gap-1.5"
+                    className="flex-1 py-2 px-3 rounded-xl font-medium text-xs transition cursor-pointer flex items-center justify-center gap-1.5 bg-[#25272B] hover:bg-[#35383D] text-[#E0E0E0] hover:text-white border border-white/10"
                     title="View candidate dossier & verified resume"
                   >
-                    <Eye className="w-3.5 h-3.5 text-amber-400" />
+                    <Eye className="w-3.5 h-3.5 text-amber-500" />
                     <span>View Dossier & Resume</span>
                   </button>
 
@@ -300,7 +300,7 @@ export const SeniorHRDashboard: React.FC<SeniorHRDashboardProps> = ({
                       <span>Conclude & Pass/Fail</span>
                     </button>
                   ) : (
-                    <span className="text-[11px] text-slate-500 font-medium px-2">
+                    <span className="text-[11px] text-[#BDBDBD] font-medium px-2">
                       Completed
                     </span>
                   )}

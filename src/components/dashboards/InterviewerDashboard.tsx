@@ -46,7 +46,7 @@ export const InterviewerDashboard: React.FC<InterviewerDashboardProps> = ({
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="p-6 glass-panel-elevated rounded-3xl border border-white/8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="p-6 card-dark bg-[#0B0B0D] text-white rounded-3xl border border-white/10 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
             <UserCheck className="w-5 h-5 text-blue-400" />
@@ -54,7 +54,7 @@ export const InterviewerDashboard: React.FC<InterviewerDashboardProps> = ({
               Interviewer Command Station
             </h1>
           </div>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-[#E0E0E0] mt-0.5">
             Active logged-in interviewer: <strong className="text-amber-400">Nisha Verma (Senior Director)</strong>
           </p>
         </div>
@@ -71,16 +71,16 @@ export const InterviewerDashboard: React.FC<InterviewerDashboardProps> = ({
 
       {/* High-Priority Waiting Queue */}
       <div className="space-y-4">
-        <h2 className="text-base font-bold text-white flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping" />
+        <h2 className="text-base font-bold text-[#111318] flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping" />
           Candidates Arrived & Assigned To You
         </h2>
 
         {waitingInterviews.length === 0 ? (
-          <div className="p-10 text-center glass-panel rounded-3xl border border-white/8 space-y-2">
+          <div className="p-10 text-center card-dark bg-[#0B0B0D] rounded-3xl border border-white/10 space-y-2">
             <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" />
             <h3 className="text-sm font-bold text-white">No candidates waiting for your review</h3>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-[#E0E0E0]">
               When HR schedules or advances a candidate to your round, and they arrive, you will receive an automated alert here.
             </p>
           </div>
@@ -95,7 +95,7 @@ export const InterviewerDashboard: React.FC<InterviewerDashboardProps> = ({
                   key={intv.id}
                   whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
                   whileTap={{ scale: 0.99 }}
-                  className="p-5 glass-panel dashboard-card rounded-2xl border border-white/8 hover:border-white/16 shadow-xl hover:shadow-2xl hover:shadow-blue-500/15 space-y-4 transition"
+                  className="p-5 rounded-2xl shadow-xl space-y-4 transition card-dark bg-[#0B0B0D] border border-white/10 text-white"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3.5">
@@ -106,14 +106,14 @@ export const InterviewerDashboard: React.FC<InterviewerDashboardProps> = ({
                           className="w-14 h-14 rounded-2xl object-cover border-2 border-amber-500 shadow-md shrink-0"
                         />
                       ) : (
-                        <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/8 flex items-center justify-center text-slate-400 shrink-0">
+                        <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 bg-[#25272B] border border-white/10 text-white">
                           <UserCheck className="w-7 h-7" />
                         </div>
                       )}
                       <div>
                         <h3 className="text-base font-bold text-white">{intv.candidateName}</h3>
-                        <p className="text-xs text-amber-400 font-semibold">{intv.position}</p>
-                        <p className="text-[11px] text-slate-400 mt-0.5">{intv.roundName}</p>
+                        <p className="text-xs font-semibold text-amber-400">{intv.position}</p>
+                        <p className="text-[11px] mt-0.5 text-[#E0E0E0]">{intv.roundName}</p>
                       </div>
                     </div>
 
@@ -129,16 +129,16 @@ export const InterviewerDashboard: React.FC<InterviewerDashboardProps> = ({
                   </div>
 
                   {/* Room & Location Status */}
-                  <div className="p-3 bg-black/30 border border-white/6 rounded-xl space-y-1.5 text-xs">
+                  <div className="p-3 card-inner inner-box bg-[#25272B] border border-white/10 rounded-xl space-y-1.5 text-xs text-white">
                     <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-slate-400">Designated Room:</span>
-                      <strong className={hasRoom ? 'text-amber-400 font-bold' : 'text-slate-500 italic'}>
+                      <span className="text-[#BDBDBD]">Designated Room:</span>
+                      <strong className={hasRoom ? 'text-amber-400 font-bold' : 'text-[#BDBDBD] italic'}>
                         {intv.roomName || 'Pending HR Assignment'}
                       </strong>
                     </div>
                     <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-slate-400">Current Location:</span>
-                      <span className="text-slate-200 font-medium">
+                      <span className="text-[#BDBDBD]">Current Location:</span>
+                      <span className="text-white font-medium">
                         {cand?.currentLocation || 'Waiting Lounge'}
                       </span>
                     </div>
@@ -146,20 +146,20 @@ export const InterviewerDashboard: React.FC<InterviewerDashboardProps> = ({
 
                   {/* Candidate Profile Snippet */}
                   {cand && (
-                    <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-400">
+                    <div className="grid grid-cols-2 gap-2 text-[11px] text-[#E0E0E0]">
                       <div>
                         <span>Experience: </span>
-                        <strong className="text-slate-200">{cand.totalExperience}</strong>
+                        <strong className="text-white">{cand.totalExperience}</strong>
                       </div>
                       <div>
                         <span>Notice Period: </span>
-                        <strong className="text-slate-200">{cand.noticePeriod}</strong>
+                        <strong className="text-white">{cand.noticePeriod}</strong>
                       </div>
                     </div>
                   )}
 
                   {/* Actions */}
-                  <div className="flex items-center gap-2 pt-2 border-t border-white/8">
+                  <div className="flex items-center gap-2 pt-2 border-t border-white/10">
                     <button
                       onClick={() => onStartInterview(intv.id)}
                       className="flex-1 py-2 px-3 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 text-xs font-bold rounded-xl shadow-lg transition cursor-pointer flex items-center justify-center gap-1.5"
@@ -170,7 +170,7 @@ export const InterviewerDashboard: React.FC<InterviewerDashboardProps> = ({
                     {cand && (
                       <button
                         onClick={() => onOpenDossier(cand.id)}
-                        className="py-2 px-3 bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-semibold rounded-xl border border-white/8 transition cursor-pointer"
+                        className="py-2 px-3 text-xs font-semibold rounded-xl border border-white/10 transition cursor-pointer bg-[#25272B] hover:bg-[#35383D] text-[#E0E0E0] hover:text-white"
                       >
                         View Resume
                       </button>
@@ -185,9 +185,9 @@ export const InterviewerDashboard: React.FC<InterviewerDashboardProps> = ({
 
       {/* Active Interviews In Session */}
       {activeInterviews.length > 0 && (
-        <div className="space-y-4 pt-4 border-t border-slate-800">
-          <h2 className="text-base font-bold text-white flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-blue-400" />
+        <div className="space-y-4 pt-4 border-t border-black/10">
+          <h2 className="text-base font-bold text-[#111318] flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
             Interviews Currently In Progress ({activeInterviews.length})
           </h2>
 
@@ -195,7 +195,7 @@ export const InterviewerDashboard: React.FC<InterviewerDashboardProps> = ({
             {activeInterviews.map((intv) => (
               <div
                 key={intv.id}
-                className="p-5 glass-panel dashboard-card rounded-2xl border border-blue-500/30 shadow-xl space-y-4"
+                className="p-5 card-dark bg-[#0B0B0D] rounded-2xl border border-blue-500/30 shadow-xl space-y-4 text-white"
               >
                 <div className="flex items-center justify-between">
                   <div>
@@ -208,9 +208,9 @@ export const InterviewerDashboard: React.FC<InterviewerDashboardProps> = ({
                   </span>
                 </div>
 
-                <div className="p-3 bg-black/30 rounded-xl text-xs text-slate-300 border border-white/6">
+                <div className="p-3 card-inner inner-box bg-[#25272B] rounded-xl text-xs text-[#E0E0E0] border border-white/10">
                   <p>Round: <strong className="text-white">{intv.roundName}</strong></p>
-                  <p className="text-[11px] text-slate-400 mt-1">
+                  <p className="text-[11px] text-[#BDBDBD] mt-1">
                     Started: {intv.startedAt ? new Date(intv.startedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Active now'}
                   </p>
                 </div>
@@ -226,7 +226,7 @@ export const InterviewerDashboard: React.FC<InterviewerDashboardProps> = ({
                   {intv.candidateId && (
                     <button
                       onClick={() => onOpenDossier(intv.candidateId)}
-                      className="px-3.5 py-2 bg-white/5 text-slate-300 rounded-xl text-xs font-semibold hover:bg-white/10 border border-white/8 transition cursor-pointer"
+                      className="px-3.5 py-2 bg-[#25272B] text-[#E0E0E0] hover:text-white rounded-xl text-xs font-semibold hover:bg-[#35383D] border border-white/10 transition cursor-pointer"
                     >
                       Dossier
                     </button>
@@ -240,22 +240,22 @@ export const InterviewerDashboard: React.FC<InterviewerDashboardProps> = ({
 
       {/* Completed Interviews Today */}
       {completedInterviews.length > 0 && (
-        <div className="space-y-3 pt-4 border-t border-slate-800">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+        <div className="space-y-3 pt-4 border-t border-black/10">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-[#343A40]">
             Concluded Interviews Today ({completedInterviews.length})
           </h3>
           <div className="space-y-2">
             {completedInterviews.map((intv) => (
               <div
                 key={intv.id}
-                className="p-3 bg-slate-900/60 border border-slate-800 rounded-xl flex items-center justify-between text-xs"
+                className="p-3 card-dark bg-[#0B0B0D] border border-white/10 rounded-xl flex items-center justify-between text-xs text-white"
               >
                 <div>
                   <span className="font-bold text-white">{intv.candidateName}</span>
-                  <span className="text-slate-400 ml-2">({intv.roundName})</span>
+                  <span className="text-[#E0E0E0] ml-2">({intv.roundName})</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-emerald-400">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/10 text-emerald-400">
                     Decision: {intv.outcome}
                   </span>
                   {intv.candidateId && (
