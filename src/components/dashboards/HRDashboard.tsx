@@ -18,6 +18,7 @@ import {
   Edit3,
   Trash2,
   User,
+  RotateCcw,
 } from 'lucide-react';
 import type { Candidate, Interview, Room, ActionTask } from '../../types/index.ts';
 import { authenticatedFetch } from '../../utils/apiClient.ts';
@@ -25,11 +26,14 @@ import { formatPhotoTimestamp } from '../../utils/dateFormatter.ts';
 import { HRSubProfileView, HRProfileKey } from '../HRSubProfileView.tsx';
 import { EditRecordModal } from '../modals/EditRecordModal.tsx';
 import { DeleteConfirmModal, DeleteRecordType } from '../modals/DeleteConfirmModal.tsx';
+import type { ArrivalStage } from '../VisitorArrivalTimeline.tsx';
 
 interface HRDashboardProps {
   candidates: Candidate[];
   interviews: Interview[];
   rooms: Room[];
+  filterStage?: ArrivalStage | null;
+  onClearFilterStage?: () => void;
   actionTasks?: ActionTask[];
   initialSubProfile?: 'all' | 'nisha' | 'shriyanshi';
   onOpenDossier: (candidateId: string) => void;
@@ -49,6 +53,8 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
   candidates,
   interviews,
   rooms,
+  filterStage,
+  onClearFilterStage,
   actionTasks = [],
   initialSubProfile = 'all',
   onOpenDossier,
@@ -119,12 +125,14 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
     }
   };
 
-  const waitingCandidates = candidates.filter(
-    (c) =>
-      c.status === 'ARRIVED' ||
-      c.status === 'WAITING' ||
-      c.status === 'With Kimmi Mam – Senior HR Interview'
-  );
+  const waitingCandidates = filterStage
+    ? candidates
+    : candidates.filter(
+        (c) =>
+          c.status === 'ARRIVED' ||
+          c.status === 'WAITING' ||
+          c.status === 'With Kimmi Mam – Senior HR Interview'
+      );
   const inInterviewCandidates = candidates.filter((c) => c.status === 'IN_INTERVIEW');
 
   // Operational rooms strictly exclude reserved Next Round rooms
@@ -139,6 +147,30 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* Filter Stage Active Indicator Banner */}
+      {filterStage && (
+        <div className="p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-amber-300">
+          <div className="flex items-center gap-2.5">
+            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+            <span className="font-bold text-white">Stage Filter Applied:</span>
+            <span className="font-mono uppercase px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold">
+              {filterStage}
+            </span>
+            <span className="text-[#AEB7C4]">
+              ({waitingCandidates.length} matching candidate records)
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => onClearFilterStage?.()}
+            className="px-3 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer self-end sm:self-auto"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Reset / Clear Filter</span>
+          </button>
+        </div>
+      )}
+
       {/* HR Module Profile Selector Header */}
       <div className="p-4 rounded-2xl card-dark bg-[#0B0B0D] border border-white/10 shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">

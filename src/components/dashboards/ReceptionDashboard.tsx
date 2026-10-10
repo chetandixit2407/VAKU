@@ -27,11 +27,13 @@ import {
   EyeOff,
   Edit3,
   Trash2,
+  RotateCcw,
+  X,
 } from 'lucide-react';
 import type { Candidate, Room, Visitor, ActionTask } from '../../types/index.ts';
 import { ReceptionPhotoModal } from '../ReceptionPhotoModal.tsx';
 import { CandidateDossierModal } from '../CandidateDossierModal.tsx';
-import { VisitorArrivalTimeline } from '../VisitorArrivalTimeline.tsx';
+import { VisitorArrivalTimeline, type ArrivalStage } from '../VisitorArrivalTimeline.tsx';
 import { formatPhotoTimestamp } from '../../utils/dateFormatter.ts';
 import { authenticatedFetch } from '../../utils/apiClient.ts';
 import { EditRecordModal } from '../modals/EditRecordModal.tsx';
@@ -41,6 +43,8 @@ interface ReceptionDashboardProps {
   candidates: Candidate[];
   rooms: Room[];
   visitors: Visitor[];
+  filterStage?: ArrivalStage | null;
+  onClearFilterStage?: () => void;
   actionTasks?: ActionTask[];
   onAcknowledgeTask?: (taskId: string) => void;
   onCompleteTask?: (taskId: string) => void;
@@ -64,6 +68,8 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
   candidates,
   rooms,
   visitors,
+  filterStage,
+  onClearFilterStage,
   actionTasks = [],
   onAcknowledgeTask,
   onCompleteTask,
@@ -83,6 +89,14 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [showSecondarySections, setShowSecondarySections] = useState(false);
   const moreMenuRef = React.useRef<HTMLDivElement>(null);
+
+  // Automatically clear conflicting local filters when dashboard card is clicked
+  useEffect(() => {
+    if (filterStage) {
+      setSearchQuery('');
+      setActiveFilter('ALL');
+    }
+  }, [filterStage]);
 
   // Edit / Delete Modal State
   const [editModal, setEditModal] = useState<{
@@ -176,12 +190,17 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
       return (c as any).registrationSource === 'WALK_IN' || (c as any).isWalkIn;
     if (activeFilter === 'PRIORITY')
       return c.status === 'ARRIVED' || (c as any).isPriority;
+    
+    // When a stage card is active, do not exclude checked-out or scheduled candidates
+    if (filterStage) return true;
     return c.status !== 'CHECKED_OUT';
   });
 
-  const activeCandidates = candidates.filter(
-    (c) => c.status !== 'CHECKED_OUT' && c.status !== 'SCHEDULED'
-  );
+  const activeCandidates = filterStage
+    ? candidates
+    : candidates.filter(
+        (c) => c.status !== 'CHECKED_OUT' && c.status !== 'SCHEDULED'
+      );
   const waitingCandidates = candidates.filter(
     (c) => c.status === 'ARRIVED' || c.status === 'WAITING'
   );
@@ -410,6 +429,34 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
         </motion.div>
       )}
 
+      {/* Filter Stage Active Indicator Banner */}
+      {filterStage && (
+        <div className="p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-amber-300">
+          <div className="flex items-center gap-2.5">
+            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+            <span className="font-bold text-white">Stage Filter Applied:</span>
+            <span className="font-mono uppercase px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold">
+              {filterStage}
+            </span>
+            <span className="text-[#AEB7C4]">
+              ({filteredCandidates.length} candidate records matching stage)
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              onClearFilterStage?.();
+              setSearchQuery('');
+              setActiveFilter('ALL');
+            }}
+            className="px-3 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer self-end sm:self-auto"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Reset / Clear Filter</span>
+          </button>
+        </div>
+      )}
+
       {/* Filter & Search Bar */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 bg-[#0B0B0D] dashboard-card card-dark rounded-3xl border border-white/10 shadow-xl">
         <div className="flex items-center gap-2.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
@@ -572,8 +619,18 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search candidates / mobile..."
-            className="wcr-search-input w-full pl-8 pr-3 py-1.5 bg-[#111317] border border-white/15 rounded-xl text-xs text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50"
+            className="wcr-search-input w-full pl-8 pr-8 py-1.5 bg-[#111317] border border-white/15 rounded-xl text-xs text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50"
           />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded text-slate-400 hover:text-white transition cursor-pointer"
+              title="Clear search text"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
       </div>
 

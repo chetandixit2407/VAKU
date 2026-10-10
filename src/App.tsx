@@ -21,6 +21,7 @@ import {
   VisitorArrivalTimeline,
   VisitorJourneyOverview,
   computeArrivalStage,
+  computeVisitorArrivalStage,
   type ArrivalStage,
 } from './components/VisitorArrivalTimeline.tsx';
 import { OfflineIndicator } from './components/OfflineIndicator.tsx';
@@ -1033,6 +1034,10 @@ export default function App() {
     ? candidates.filter((c) => computeArrivalStage(c).currentStage === filterStage)
     : candidates;
 
+  const activeVisitorsList = filterStage
+    ? visitors.filter((v) => computeVisitorArrivalStage(v) === filterStage)
+    : visitors;
+
   // ==========================================
   // STAFF & OPERATIONS CONSOLE (HR, ADMIN, CEO, INTERVIEWER, RECEPTION, PANTRY)
   // ==========================================
@@ -1228,8 +1233,15 @@ export default function App() {
                   {/* Visitor Arrival Journey Flow Filter Banner */}
                   <VisitorJourneyOverview
                     candidates={candidates}
+                    visitors={visitors}
                     selectedStage={filterStage}
                     onSelectStage={(stage) => setFilterStage(stage)}
+                    onClearAllFilters={() => setFilterStage(null)}
+                    onOpenDossier={(cId) => {
+                      setSelectedCandidateId(cId);
+                      setActiveModal('DOSSIER');
+                    }}
+                    onCheckout={handleCheckout}
                   />
 
                   {/* Realtime Candidate Intake Alert Banner */}
@@ -1374,6 +1386,8 @@ export default function App() {
                 candidates={activeCandidatesList}
                 interviews={interviews}
                 rooms={rooms}
+                filterStage={filterStage}
+                onClearFilterStage={() => setFilterStage(null)}
                 actionTasks={actionTasks}
                 onOpenDossier={(candId) => {
                   setSelectedCandidateId(candId);
@@ -1451,7 +1465,9 @@ export default function App() {
               <ReceptionDashboard
                 candidates={activeCandidatesList}
                 rooms={rooms}
-                visitors={visitors}
+                visitors={activeVisitorsList}
+                filterStage={filterStage}
+                onClearFilterStage={() => setFilterStage(null)}
                 actionTasks={actionTasks}
                 onAcknowledgeTask={handleAcknowledgeActionTask}
                 onCompleteTask={handleCompleteActionTask}
@@ -1678,6 +1694,7 @@ export default function App() {
           onClose={() => {
             setSelectedCandidateId('');
             setActiveModal(null);
+            setFilterStage(null);
           }}
           onCandidateUpdated={fetchAllData}
           onCandidateDeleted={() => {

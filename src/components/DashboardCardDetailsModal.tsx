@@ -38,7 +38,6 @@ import { formatPhotoTimestamp } from '../utils/dateFormatter.ts';
 export type DashboardModalTarget =
   | 'stage_EXPECTED'
   | 'stage_ARRIVED'
-  | 'stage_QR_VERIFIED'
   | 'stage_PHOTO_CAPTURED'
   | 'stage_HOST_NOTIFIED'
   | 'stage_IN_OFFICE'
@@ -157,16 +156,6 @@ export const DashboardCardDetailsModal: React.FC<DashboardCardDetailsModalProps>
       matchedCandidates = candidates.filter((c) => computeArrivalStage(c).currentStage === 'ARRIVED');
       break;
 
-    case 'stage_QR_VERIFIED':
-      title = 'QR Verified Passholders';
-      subtitle = 'Candidate profiles successfully authenticated through dual QR station standee scans';
-      icon = QrCode;
-      accentColor = 'text-cyan-400';
-      badgeColor = 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40';
-      recordType = 'candidates';
-      matchedCandidates = candidates.filter((c) => computeArrivalStage(c).currentStage === 'QR_VERIFIED');
-      break;
-
     case 'stage_PHOTO_CAPTURED':
       title = 'Desk Photo Verified Profiles';
       subtitle = 'Candidates with live WebRTC reception desk photo authenticated and locked';
@@ -174,7 +163,7 @@ export const DashboardCardDetailsModal: React.FC<DashboardCardDetailsModalProps>
       accentColor = 'text-blue-400';
       badgeColor = 'bg-blue-500/20 text-blue-300 border-blue-500/40';
       recordType = 'candidates';
-      matchedCandidates = candidates.filter((c) => computeArrivalStage(c).currentStage === 'PHOTO_CAPTURED');
+      matchedCandidates = candidates.filter((c) => Boolean(c.receptionPhotoUrl || c.photoUrl || c.livePhoto || c.arrivalPhoto));
       break;
 
     case 'stage_HOST_NOTIFIED':
@@ -184,7 +173,7 @@ export const DashboardCardDetailsModal: React.FC<DashboardCardDetailsModalProps>
       accentColor = 'text-purple-400';
       badgeColor = 'bg-purple-500/20 text-purple-300 border-purple-500/40';
       recordType = 'candidates';
-      matchedCandidates = candidates.filter((c) => computeArrivalStage(c).currentStage === 'HOST_NOTIFIED');
+      matchedCandidates = candidates.filter((c) => Boolean(c.assignedInterviewerName || c.status === 'WAITING'));
       break;
 
     case 'stage_IN_OFFICE':
