@@ -139,8 +139,8 @@ export const VisitorArrivalTimeline: React.FC<VisitorArrivalTimelineProps> = ({
   }
 
   return (
-    <div className="w-full glass-panel-subtle rounded-2xl p-3 border border-white/6 overflow-x-auto">
-      <div className="flex items-center justify-between min-w-[480px] gap-2">
+    <div className="w-full glass-panel-subtle rounded-2xl p-3.5 border border-white/8 overflow-x-auto">
+      <div className="flex items-center justify-between min-w-[500px] gap-2.5">
         {stages.map((stg, i) => {
           const Icon = stg.icon;
           const isPassed = i < stageIndex;
@@ -148,36 +148,36 @@ export const VisitorArrivalTimeline: React.FC<VisitorArrivalTimelineProps> = ({
 
           return (
             <React.Fragment key={stg.id}>
-              <div className="flex flex-col items-center gap-1.5 flex-1 min-w-[70px]">
+              <div className="flex flex-col items-center gap-1.5 flex-1 min-w-[75px]">
                 {/* Node circle */}
                 <motion.div
                   initial={false}
                   animate={{
-                    scale: isCurrent ? 1.08 : 1,
+                    scale: isCurrent ? 1.1 : 1,
                   }}
-                  className={`w-7 h-7 rounded-full flex items-center justify-center transition-all duration-300 ${
+                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
                     isCurrent
-                      ? 'bg-amber-500 text-slate-950 font-bold ring-4 ring-amber-400/20 shadow-lg shadow-amber-500/25'
+                      ? 'bg-amber-500 text-slate-950 font-bold ring-4 ring-amber-400/25 shadow-lg shadow-amber-500/25'
                       : isPassed
                       ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
                       : 'bg-white/5 text-slate-500 border border-white/8'
                   }`}
                 >
                   {isPassed ? (
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                   ) : (
-                    <Icon className="w-3.5 h-3.5" />
+                    <Icon className="w-4 h-4" />
                   )}
                 </motion.div>
 
                 {/* Stage Label */}
                 <span
-                  className={`text-[10px] font-medium tracking-tight text-center whitespace-nowrap ${
+                  className={`text-xs font-semibold tracking-tight text-center whitespace-nowrap ${
                     isCurrent
                       ? 'text-amber-400 font-bold'
                       : isPassed
-                      ? 'text-slate-300'
-                      : 'text-slate-500'
+                      ? 'text-slate-200'
+                      : 'text-slate-400'
                   }`}
                 >
                   {stg.label}
@@ -359,40 +359,40 @@ export const VisitorJourneyOverview: React.FC<{
   const selectedStageMeta = stages.find((s) => s.id === selectedStage) || stages[0];
 
   return (
-    <div className="intake-flow-container bg-[#0B0F14] rounded-2xl p-4 border border-white/12 border-t-white/20 space-y-4 shadow-xl relative">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1 border-b border-white/8">
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-          <h3 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
+    <div className="intake-flow-container bg-[#0B0F14] rounded-2xl p-5 sm:p-6 border border-white/12 border-t-white/20 space-y-5 shadow-xl relative">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-white/10">
+        <div className="flex items-center gap-2.5">
+          <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />
+          <h3 className="text-sm sm:text-base font-extrabold text-white uppercase tracking-wider font-mono">
             Visitor & Candidate Intake Flow
           </h3>
-          <span className="text-[10px] text-[#AEB7C4] hidden md:inline">
+          <span className="text-xs text-[#AEB7C4] hidden md:inline">
             (Click any stage card to view records & filter queue)
           </span>
         </div>
         {selectedStage ? (
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] text-amber-300 font-mono font-medium">
+          <div className="flex items-center gap-2.5">
+            <span className="text-xs sm:text-sm text-amber-300 font-mono font-semibold">
               Stage: <strong>{selectedStageMeta?.label}</strong> ({matchingRecords.length} records)
             </span>
             <button
               type="button"
               onClick={handleManualClear}
-              className="px-2.5 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 rounded-lg text-[11px] font-bold transition flex items-center gap-1 cursor-pointer"
+              className="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-xs"
             >
-              <RotateCcw className="w-3 h-3" />
+              <RotateCcw className="w-3.5 h-3.5" />
               <span>Reset / Clear Filter</span>
             </button>
           </div>
         ) : (
-          <span className="text-[11px] text-[#AEB7C4] font-mono">
+          <span className="text-xs sm:text-[13px] text-[#AEB7C4] font-mono">
             Showing all ({allUnifiedRecords.length}) records
           </span>
         )}
       </div>
 
-      {/* 4 Stage Cards Evenly Distributed Across Available Width */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full">
+      {/* 4 Stage Cards Evenly Distributed Across Available Width with Increased Size & Readability */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 w-full">
         {stages.map((stg) => {
           const Icon = stg.icon;
           const count = countsByStage[stg.id] || 0;
@@ -406,47 +406,50 @@ export const VisitorJourneyOverview: React.FC<{
               onClick={() => handleTileClick(stg.id)}
               whileHover={{ y: -3, scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className={`intake-stage-card p-3.5 rounded-xl border text-left transition-all cursor-pointer relative overflow-hidden group select-none focus-visible:outline-2 focus-visible:outline-amber-400 focus-visible:outline-offset-2 ${
+              className={`intake-stage-card p-5 sm:p-6 rounded-2xl border text-left transition-all cursor-pointer relative overflow-hidden group select-none min-h-[148px] flex flex-col justify-between focus-visible:outline-2 focus-visible:outline-amber-400 focus-visible:outline-offset-2 ${
                 isSelected
-                  ? 'is-selected bg-amber-500/20 border-amber-400 text-white shadow-xl ring-2 ring-amber-400 scale-[1.02]'
+                  ? 'is-selected bg-amber-500/20 border-amber-400 text-white shadow-xl ring-2 ring-amber-400'
                   : 'bg-[#141820] border-[#252A32] text-white shadow-md hover:bg-[#1B2028] hover:border-white/20'
               }`}
               title={`Click to filter ${stg.label} records (${count})`}
             >
               {isSelected && (
-                <div className="absolute top-1.5 right-1.5">
-                  <span className="px-1.5 py-0.5 rounded-md text-[9px] font-mono font-bold bg-amber-400 text-slate-950 uppercase">
+                <div className="absolute top-2.5 right-2.5">
+                  <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-black bg-amber-400 text-slate-950 uppercase tracking-wide">
                     Active
                   </span>
                 </div>
               )}
-              <div className="flex items-center justify-between gap-1 mb-2 pointer-events-none">
-                <div
-                  className={`intake-icon-badge w-7 h-7 rounded-lg flex items-center justify-center transition-transform group-hover:scale-110 ${
-                    isSelected
-                      ? 'bg-amber-400 text-slate-950 shadow-md'
-                      : 'bg-white/[0.06] border border-white/[0.08]'
-                  }`}
-                >
-                  <Icon className={`w-4 h-4 ${isSelected ? 'text-slate-950' : stg.accent}`} />
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-3 pointer-events-none">
+                  <div
+                    className={`intake-icon-badge w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 ${
+                      isSelected
+                        ? 'bg-amber-400 text-slate-950 shadow-md'
+                        : 'bg-white/[0.08] border border-white/[0.12]'
+                    }`}
+                  >
+                    <Icon className={`w-5 h-5 ${isSelected ? 'text-slate-950' : stg.accent}`} />
+                  </div>
+                  <span className="text-2xl sm:text-3xl font-mono font-black tabular-nums text-white intake-stage-count pr-1">
+                    {count}
+                  </span>
                 </div>
-                <span className="text-base font-mono font-bold tabular-nums text-white intake-stage-count pr-1">
-                  {count}
-                </span>
+                <p className="text-base sm:text-lg font-bold tracking-tight text-[#F5F6F8] intake-stage-label pointer-events-none">
+                  {stg.label}
+                </p>
+                <p className="text-xs text-[#AEB7C4] leading-relaxed line-clamp-2 mt-1 pointer-events-none">
+                  {stg.description}
+                </p>
               </div>
-              <p className="text-xs font-bold tracking-tight truncate text-[#F5F6F8] intake-stage-label pointer-events-none">
-                {stg.label}
-              </p>
-              <p className="text-[10px] text-[#AEB7C4] truncate mt-0.5 pointer-events-none">
-                {stg.description}
-              </p>
+
               <div
-                className={`flex items-center justify-between mt-2 pt-1.5 border-t border-white/[0.08] text-[9px] transition-opacity pointer-events-none ${
+                className={`flex items-center justify-between mt-3 pt-2.5 border-t border-white/[0.1] text-xs font-semibold transition-opacity pointer-events-none ${
                   isSelected ? 'text-amber-300 opacity-100 font-bold' : 'text-[#AEB7C4] opacity-0 group-hover:opacity-100'
                 }`}
               >
                 <span>{isSelected ? 'Selected • Click to Clear' : 'View Records'}</span>
-                <span>&rarr;</span>
+                <span className="text-sm">&rarr;</span>
               </div>
             </motion.button>
           );
@@ -463,20 +466,20 @@ export const VisitorJourneyOverview: React.FC<{
             transition={{ duration: 0.25 }}
             className="overflow-hidden"
           >
-            <div className="p-4 rounded-xl bg-[#0E131A] border border-amber-500/30 space-y-3 shadow-inner">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-white/8">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs font-bold">
-                    <selectedStageMeta.icon className="w-3.5 h-3.5" />
+            <div className="p-5 sm:p-6 rounded-2xl bg-[#0E131A] border border-amber-500/35 space-y-4 shadow-inner">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/10">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-sm font-bold">
+                    <selectedStageMeta.icon className="w-4.5 h-4.5" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-white tracking-tight flex items-center gap-1.5">
+                    <h4 className="text-sm sm:text-base font-bold text-white tracking-tight flex items-center gap-2">
                       <span>{selectedStageMeta?.label} Records ({matchingRecords.length})</span>
-                      <span className="px-1.5 py-0.2 rounded-full text-[9px] font-mono bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
                         Stage Filter Active
                       </span>
                     </h4>
-                    <p className="text-[10px] text-[#AEB7C4]">
+                    <p className="text-xs text-[#AEB7C4]">
                       Showing relevant visitors and candidates for {selectedStageMeta?.label}.
                     </p>
                   </div>
@@ -485,52 +488,52 @@ export const VisitorJourneyOverview: React.FC<{
                 <button
                   type="button"
                   onClick={handleManualClear}
-                  className="px-3 py-1 bg-white/6 hover:bg-white/10 text-white text-xs font-semibold rounded-lg border border-white/10 transition flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
+                  className="px-3.5 py-1.5 bg-white/10 hover:bg-white/15 text-white text-xs sm:text-[13px] font-semibold rounded-xl border border-white/15 transition flex items-center gap-2 cursor-pointer self-start sm:self-auto"
                 >
-                  <RotateCcw className="w-3 h-3 text-amber-400" />
+                  <RotateCcw className="w-3.5 h-3.5 text-amber-400" />
                   <span>Clear Filter & Restore All</span>
                 </button>
               </div>
 
               {/* Records Listing or Clean Empty State */}
               {matchingRecords.length === 0 ? (
-                <div className="py-8 px-4 text-center space-y-2 bg-[#141820] rounded-xl border border-white/6">
-                  <div className="w-10 h-10 rounded-full bg-white/5 text-slate-400 flex items-center justify-center mx-auto">
-                    <Users className="w-5 h-5" />
+                <div className="py-10 px-4 text-center space-y-3 bg-[#141820] rounded-2xl border border-white/8">
+                  <div className="w-12 h-12 rounded-full bg-white/5 text-slate-400 flex items-center justify-center mx-auto">
+                    <Users className="w-6 h-6" />
                   </div>
-                  <h5 className="text-xs font-bold text-white">
+                  <h5 className="text-sm sm:text-base font-bold text-white">
                     No records found for {selectedStageMeta?.label}
                   </h5>
-                  <p className="text-[11px] text-[#AEB7C4] max-w-md mx-auto">
+                  <p className="text-xs sm:text-[13px] text-[#AEB7C4] max-w-md mx-auto leading-relaxed">
                     There are currently no candidates or visitors in this stage. Click another card or restore the full view.
                   </p>
                   <div className="pt-2">
                     <button
                       type="button"
                       onClick={handleManualClear}
-                      className="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl shadow transition cursor-pointer"
+                      className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs sm:text-sm rounded-xl shadow transition cursor-pointer"
                     >
                       Restore All Records
                     </button>
                   </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {matchingRecords.map((item) => {
                     const isCandidate = item.recordType === 'CANDIDATE';
                     return (
                       <div
                         key={`${item.recordType}-${item.id}`}
-                        className="p-3.5 rounded-xl bg-[#141820] border border-white/8 hover:border-amber-400/50 transition shadow-sm space-y-2.5 text-xs text-white"
+                        className="p-4 sm:p-5 rounded-2xl bg-[#141820] border border-white/10 hover:border-amber-400/50 transition shadow-md space-y-3 text-xs sm:text-sm text-white"
                       >
-                        <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-start justify-between gap-2.5">
                           <div className="min-w-0">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <h5 className="font-bold text-xs text-white truncate">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h5 className="font-bold text-sm sm:text-base text-white truncate">
                                 {item.fullName}
                               </h5>
                               <span
-                                className={`px-1.5 py-0.2 rounded text-[9px] font-mono font-bold uppercase ${
+                                className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase ${
                                   isCandidate
                                     ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                                     : 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
@@ -539,35 +542,35 @@ export const VisitorJourneyOverview: React.FC<{
                                 {isCandidate ? 'Candidate' : 'Visitor'}
                               </span>
                             </div>
-                            <p className="text-[11px] text-amber-300 font-medium truncate mt-0.5">
+                            <p className="text-xs sm:text-[13px] text-amber-300 font-semibold truncate mt-1">
                               {item.positionOrPurpose}
                             </p>
-                            <p className="text-[10px] text-[#AEB7C4] truncate">
+                            <p className="text-xs text-[#AEB7C4] truncate">
                               {item.departmentOrCompany}
                             </p>
                           </div>
 
-                          <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-white/10 text-white shrink-0 border border-white/15">
+                          <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-white/10 text-white shrink-0 border border-white/15">
                             {item.status}
                           </span>
                         </div>
 
                         {/* Metadata Details */}
-                        <div className="p-2 rounded-lg bg-black/40 border border-white/5 space-y-1 text-[10px] text-slate-300">
-                          <div className="flex justify-between items-center gap-1">
+                        <div className="p-3 rounded-xl bg-black/40 border border-white/8 space-y-1.5 text-xs text-slate-200">
+                          <div className="flex justify-between items-center gap-1.5">
                             <span className="text-[#AEB7C4]">Host / Recruiter:</span>
-                            <span className="font-medium text-white truncate max-w-[150px]">
+                            <span className="font-semibold text-white truncate max-w-[170px]">
                               {item.hostOrRecruiter}
                             </span>
                           </div>
                           {item.phone && (
-                            <div className="flex justify-between items-center gap-1">
+                            <div className="flex justify-between items-center gap-1.5">
                               <span className="text-[#AEB7C4]">Contact:</span>
-                              <span className="font-mono text-amber-300">{item.phone}</span>
+                              <span className="font-mono text-amber-300 font-medium">{item.phone}</span>
                             </div>
                           )}
                           {item.checkInTime && (
-                            <div className="flex justify-between items-center gap-1">
+                            <div className="flex justify-between items-center gap-1.5">
                               <span className="text-[#AEB7C4]">Arrival / Check-in:</span>
                               <span className="font-mono text-slate-300">
                                 {new Date(item.checkInTime).toLocaleTimeString([], {
@@ -578,26 +581,26 @@ export const VisitorJourneyOverview: React.FC<{
                             </div>
                           )}
                           {item.room && (
-                            <div className="flex justify-between items-center gap-1">
+                            <div className="flex justify-between items-center gap-1.5">
                               <span className="text-[#AEB7C4]">Room:</span>
-                              <span className="text-emerald-400 font-semibold">{item.room}</span>
+                              <span className="text-emerald-400 font-bold">{item.room}</span>
                             </div>
                           )}
                         </div>
 
                         {/* Action buttons */}
-                        <div className="flex items-center justify-between pt-1 border-t border-white/6 text-[10px]">
-                          <span className="text-[#AEB7C4] font-mono">
+                        <div className="flex items-center justify-between pt-2 border-t border-white/8 text-xs">
+                          <span className="text-[#AEB7C4] font-mono text-[11px]">
                             ID: {item.id.slice(0, 12)}...
                           </span>
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex items-center gap-2">
                             {isCandidate && onOpenDossier && (
                               <button
                                 type="button"
                                 onClick={() => onOpenDossier(item.id)}
-                                className="px-2 py-1 rounded-md bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold transition flex items-center gap-1 cursor-pointer"
+                                className="px-2.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold transition flex items-center gap-1.5 cursor-pointer shadow-xs"
                               >
-                                <Eye className="w-3 h-3" />
+                                <Eye className="w-3.5 h-3.5" />
                                 <span>Dossier</span>
                               </button>
                             )}
@@ -605,9 +608,9 @@ export const VisitorJourneyOverview: React.FC<{
                               <button
                                 type="button"
                                 onClick={() => onCheckout(item.id)}
-                                className="px-2 py-1 rounded-md bg-white/8 hover:bg-rose-500/20 text-slate-300 hover:text-rose-300 font-semibold border border-white/10 transition flex items-center gap-1 cursor-pointer"
+                                className="px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-rose-500/20 text-slate-200 hover:text-rose-300 font-semibold border border-white/15 transition flex items-center gap-1.5 cursor-pointer shadow-xs"
                               >
-                                <LogOut className="w-3 h-3" />
+                                <LogOut className="w-3.5 h-3.5" />
                                 <span>Check-Out</span>
                               </button>
                             )}

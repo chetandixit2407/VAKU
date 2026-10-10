@@ -204,7 +204,7 @@ export const SeniorHRDashboard: React.FC<SeniorHRDashboardProps> = ({
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {displayedInterviews.map((intv) => {
             const cand = candidates.find((c) => c.id === intv.candidateId);
             const hasRoom = intv.roomId || intv.status === 'ROOM_ASSIGNED';
@@ -214,91 +214,93 @@ export const SeniorHRDashboard: React.FC<SeniorHRDashboardProps> = ({
                 key={intv.id}
                 whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
                 whileTap={{ scale: 0.99 }}
-                className="p-5 rounded-2xl shadow-xl space-y-4 transition card-dark bg-[#0B0B0D] border border-white/10 text-white"
+                className="p-5 sm:p-6 rounded-2xl shadow-xl space-y-4 transition card-dark bg-[#0B0B0D] border border-white/10 text-white flex flex-col justify-between"
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-3.5">
-                    {cand?.livePhoto ? (
-                      <img
-                        src={cand.livePhoto}
-                        alt={intv.candidateName}
-                        className="w-14 h-14 rounded-2xl object-cover border-2 border-amber-500 shadow-md shrink-0"
-                      />
-                    ) : (
-                      <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 bg-[#25272B] border border-white/10 text-white">
-                        <UserCheck className="w-7 h-7" />
+                <div className="space-y-3.5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3.5">
+                      {cand?.livePhoto ? (
+                        <img
+                          src={cand.livePhoto}
+                          alt={intv.candidateName}
+                          className="w-14 h-14 rounded-2xl object-cover border-2 border-amber-500 shadow-md shrink-0"
+                        />
+                      ) : (
+                        <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 bg-[#25272B] border border-white/10 text-white">
+                          <UserCheck className="w-7 h-7" />
+                        </div>
+                      )}
+                      <div>
+                        <h3 className="text-base sm:text-lg font-bold text-white">{intv.candidateName}</h3>
+                        <p className="text-xs sm:text-sm font-semibold text-amber-400">{intv.position}</p>
+                        <p className="text-xs mt-0.5 text-[#E0E0E0]">{intv.roundName}</p>
                       </div>
-                    )}
-                    <div>
-                      <h3 className="text-base font-bold text-white">{intv.candidateName}</h3>
-                      <p className="text-xs font-semibold text-amber-400">{intv.position}</p>
-                      <p className="text-[11px] mt-0.5 text-[#E0E0E0]">{intv.roundName}</p>
                     </div>
-                  </div>
 
-                  <span
-                    className={`px-2.5 py-1 rounded-full text-[10px] font-bold font-mono ${
-                      intv.status === 'INTERVIEW_STARTED'
-                        ? 'bg-blue-500/10 text-blue-400 border border-blue-500/30'
+                    <span
+                      className={`px-2.5 py-1 rounded-full text-xs font-bold font-mono ${
+                        intv.status === 'INTERVIEW_STARTED'
+                          ? 'bg-blue-500/10 text-blue-400 border border-blue-500/30'
+                          : intv.status === 'INTERVIEW_COMPLETED'
+                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+                          : hasRoom
+                          ? 'bg-amber-500/10 text-amber-300 border border-amber-500/30'
+                          : 'bg-white/10 text-[#E0E0E0] border border-white/15'
+                      }`}
+                    >
+                      {intv.status === 'INTERVIEW_STARTED'
+                        ? 'In Session'
                         : intv.status === 'INTERVIEW_COMPLETED'
-                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+                        ? `Completed (${intv.outcome || 'PASS'})`
                         : hasRoom
-                        ? 'bg-amber-500/10 text-amber-300 border border-amber-500/30'
-                        : 'bg-white/10 text-[#E0E0E0] border border-white/15'
-                    }`}
-                  >
-                    {intv.status === 'INTERVIEW_STARTED'
-                      ? 'In Session'
-                      : intv.status === 'INTERVIEW_COMPLETED'
-                      ? `Completed (${intv.outcome || 'PASS'})`
-                      : hasRoom
-                      ? 'Room Assigned'
-                      : 'Pending Room'}
-                  </span>
-                </div>
-
-                {/* Details Box */}
-                <div className="p-3 card-inner inner-box bg-[#25272B] rounded-xl space-y-2 text-xs border border-white/10 text-white">
-                  <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-[#BDBDBD]">Interview Level:</span>
-                    <strong className="text-amber-400 font-bold font-mono">Senior Level (Kimmi Mam)</strong>
-                  </div>
-                  <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-[#BDBDBD]">Designated Room:</span>
-                    <strong className={hasRoom ? 'text-amber-400 font-bold' : 'text-[#BDBDBD] italic'}>
-                      {intv.roomName || 'Pending Room Assignment'}
-                    </strong>
-                  </div>
-                  <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-[#BDBDBD]">Current Location:</span>
-                    <span className="text-white font-medium">
-                      {cand?.currentLocation || 'Waiting Lounge'}
+                        ? 'Room Assigned'
+                        : 'Pending Room'}
                     </span>
                   </div>
-                  {intv.interviewerFeedback && (
-                    <div className="pt-1.5 border-t border-white/10 text-[11px]">
-                      <span className="text-[#BDBDBD] block mb-0.5">Remarks / Feedback:</span>
-                      <p className="italic text-[#E0E0E0]">{intv.interviewerFeedback}</p>
+
+                  {/* Details Box */}
+                  <div className="p-3.5 card-inner inner-box bg-[#25272B] rounded-xl space-y-2 text-xs border border-white/10 text-white">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-[#BDBDBD]">Interview Level:</span>
+                      <strong className="text-amber-400 font-bold font-mono">Senior Level (Kimmi Mam)</strong>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-[#BDBDBD]">Designated Room:</span>
+                      <strong className={hasRoom ? 'text-amber-400 font-bold' : 'text-[#BDBDBD] italic'}>
+                        {intv.roomName || 'Pending Room Assignment'}
+                      </strong>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-[#BDBDBD]">Current Location:</span>
+                      <span className="text-white font-medium">
+                        {cand?.currentLocation || 'Waiting Lounge'}
+                      </span>
+                    </div>
+                    {intv.interviewerFeedback && (
+                      <div className="pt-2 border-t border-white/10 text-xs">
+                        <span className="text-[#BDBDBD] block mb-0.5">Remarks / Feedback:</span>
+                        <p className="italic text-[#E0E0E0]">{intv.interviewerFeedback}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Candidate Summary Snippet */}
+                  {cand && (
+                    <div className="grid grid-cols-2 gap-2 text-xs text-[#E0E0E0]">
+                      <div>
+                        <span>Experience: </span>
+                        <strong className="text-white font-bold">{cand.totalExperience}</strong>
+                      </div>
+                      <div>
+                        <span>Notice Period: </span>
+                        <strong className="text-white font-bold">{cand.noticePeriod}</strong>
+                      </div>
                     </div>
                   )}
                 </div>
 
-                {/* Candidate Summary Snippet */}
-                {cand && (
-                  <div className="grid grid-cols-2 gap-2 text-[11px] text-[#E0E0E0]">
-                    <div>
-                      <span>Experience: </span>
-                      <strong className="text-white">{cand.totalExperience}</strong>
-                    </div>
-                    <div>
-                      <span>Notice Period: </span>
-                      <strong className="text-white">{cand.noticePeriod}</strong>
-                    </div>
-                  </div>
-                )}
-
                 {/* Actions */}
-                <div className="flex items-center gap-2 pt-2 border-t border-white/10">
+                <div className="flex items-center gap-2 pt-3 border-t border-white/10">
                   <button
                     type="button"
                     onClick={() => onOpenDossier(intv.candidateId)}

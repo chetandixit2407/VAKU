@@ -242,7 +242,7 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
             <span className="text-[10px] text-[#BDBDBD]">Real-time request channel</span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 pt-1">
             {pantryActionTasks.map((task) => {
               const isPending = task.status === 'PENDING';
               const resolvedRoom = resolveRoomName(task.destinationRoomId || task.roomId, task.destinationRoomName);
@@ -250,26 +250,26 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
               return (
                 <div
                   key={task.id}
-                  className="p-4 dashboard-card card-dark bg-[#0B0B0D] rounded-2xl border border-amber-400/60 flex flex-col justify-between space-y-3 shadow-xl"
+                  className="p-5 sm:p-6 dashboard-card card-dark bg-[#0B0B0D] rounded-2xl border border-amber-400/60 flex flex-col justify-between space-y-3.5 shadow-xl"
                 >
-                  <div className="flex items-center justify-between text-xs pb-2 border-b border-white/10">
-                    <span className="font-bold text-white truncate">{task.title}</span>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-300 font-mono">
+                  <div className="flex items-center justify-between text-xs pb-2.5 border-b border-white/10">
+                    <span className="font-bold text-sm sm:text-base text-white truncate">{task.title}</span>
+                    <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 font-mono border border-amber-500/30">
                       {task.status}
                     </span>
                   </div>
 
-                  <div className="space-y-1 text-xs">
-                    <span className="text-[11px] text-[#BDBDBD]">Target Room:</span>
-                    <strong className="text-amber-400 block font-mono text-sm">{resolvedRoom}</strong>
-                    <p className="text-xs text-[#E0E0E0] mt-1">{task.instruction || 'Serve refreshments'}</p>
+                  <div className="space-y-1.5 text-xs sm:text-sm">
+                    <span className="text-xs text-[#BDBDBD] font-mono">Target Room:</span>
+                    <strong className="text-amber-400 block font-mono text-base font-bold">{resolvedRoom}</strong>
+                    <p className="text-xs sm:text-sm text-[#E0E0E0] mt-1 leading-relaxed">{task.instruction || 'Serve refreshments'}</p>
                   </div>
 
-                  <div className="pt-2 border-t border-white/10 flex justify-end gap-2">
+                  <div className="pt-3 border-t border-white/10 flex justify-end gap-2.5">
                     {isPending && onAcknowledgeTask && (
                       <button
                         onClick={() => onAcknowledgeTask(task.id)}
-                        className="px-3 py-1.5 bg-white/10 hover:bg-white/15 text-white font-semibold text-xs rounded-xl"
+                        className="px-3.5 py-2 bg-white/10 hover:bg-white/15 text-white font-semibold text-xs sm:text-[13px] rounded-xl transition cursor-pointer"
                       >
                         Acknowledge
                       </button>
@@ -279,9 +279,9 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
                         if (onCompleteActionTask) onCompleteActionTask(task.id);
                         if (task.roomId && onMarkRoomCleaned) onMarkRoomCleaned(task.roomId);
                       }}
-                      className="px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1 shadow"
+                      className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs sm:text-[13px] rounded-xl flex items-center gap-1.5 shadow transition cursor-pointer"
                     >
-                      <Check className="w-3.5 h-3.5 stroke-[3]" />
+                      <Check className="w-4 h-4 stroke-[3]" />
                       <span>Mark Completed</span>
                     </button>
                   </div>

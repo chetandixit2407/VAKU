@@ -826,28 +826,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       {activeTab === 'candidates' && (
         <div className="space-y-4 animate-in fade-in duration-200">
           {/* Summary Metric Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="p-4 bg-[#0B0B0D] card-dark dashboard-card border border-white/10 rounded-2xl">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#BDBDBD] block">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+            <div className="p-5 sm:p-6 bg-[#0B0B0D] card-dark dashboard-card border border-white/10 rounded-2xl min-h-[140px] flex flex-col justify-between shadow-lg">
+              <span className="text-xs sm:text-sm font-bold uppercase tracking-wider text-[#BDBDBD] block font-mono">
                 Total Intake
               </span>
-              <div className="text-xl font-black text-white mt-1">{candidates.length}</div>
-              <span className="text-[10px] text-[#BDBDBD]">Authorized View</span>
+              <div className="text-2xl sm:text-3xl font-black text-white mt-1 tabular-nums">{candidates.length}</div>
+              <span className="text-xs text-[#BDBDBD]">Authorized View</span>
             </div>
-            <div className="p-4 bg-[#0B0B0D] card-dark dashboard-card border border-blue-500/30 rounded-2xl">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400 block">
+            <div className="p-5 sm:p-6 bg-[#0B0B0D] card-dark dashboard-card border border-blue-500/30 rounded-2xl min-h-[140px] flex flex-col justify-between shadow-lg">
+              <span className="text-xs sm:text-sm font-bold uppercase tracking-wider text-blue-400 block font-mono">
                 In Session
               </span>
-              <div className="text-xl font-black text-blue-300 mt-1">
+              <div className="text-2xl sm:text-3xl font-black text-blue-300 mt-1 tabular-nums">
                 {candidates.filter((c) => c.status === 'IN_INTERVIEW').length}
               </div>
-              <span className="text-[10px] text-blue-300">Live Interviews</span>
+              <span className="text-xs text-blue-300">Live Interviews</span>
             </div>
-            <div className="p-4 bg-[#0B0B0D] card-dark dashboard-card border border-amber-500/30 rounded-2xl">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 block">
+            <div className="p-5 sm:p-6 bg-[#0B0B0D] card-dark dashboard-card border border-amber-500/30 rounded-2xl min-h-[140px] flex flex-col justify-between shadow-lg">
+              <span className="text-xs sm:text-sm font-bold uppercase tracking-wider text-amber-400 block font-mono">
                 Waiting / Assigned
               </span>
-              <div className="text-xl font-black text-amber-300 mt-1">
+              <div className="text-2xl sm:text-3xl font-black text-amber-300 mt-1 tabular-nums">
                 {
                   candidates.filter(
                     (c) =>
@@ -858,13 +858,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   ).length
                 }
               </div>
-              <span className="text-[10px] text-amber-300">In Pipeline</span>
+              <span className="text-xs text-amber-300">In Pipeline</span>
             </div>
-            <div className="p-4 bg-[#0B0B0D] card-dark dashboard-card border border-emerald-500/30 rounded-2xl">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 block">
+            <div className="p-5 sm:p-6 bg-[#0B0B0D] card-dark dashboard-card border border-emerald-500/30 rounded-2xl min-h-[140px] flex flex-col justify-between shadow-lg">
+              <span className="text-xs sm:text-sm font-bold uppercase tracking-wider text-emerald-400 block font-mono">
                 Completed Today
               </span>
-              <div className="text-xl font-black text-emerald-300 mt-1">
+              <div className="text-2xl sm:text-3xl font-black text-emerald-300 mt-1 tabular-nums">
                 {
                   candidates.filter(
                     (c) =>
@@ -875,7 +875,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   ).length
                 }
               </div>
-              <span className="text-[10px] text-emerald-300">Evaluated / Departed</span>
+              <span className="text-xs text-emerald-300">Evaluated / Departed</span>
             </div>
           </div>
 
@@ -1270,44 +1270,44 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       {activeTab === 'rooms' && (
         <div className="space-y-4">
           {/* Room & Cleaning Status Metric Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="p-4 bg-slate-900 border border-slate-800 rounded-2xl">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+            <div className="p-5 sm:p-6 bg-[#0B0B0D] card-dark dashboard-card border border-white/10 rounded-2xl min-h-[140px] flex flex-col justify-between shadow-lg">
+              <span className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-300 block font-mono">
                 Total Rooms
               </span>
-              <div className="text-xl font-black text-white mt-1">{rooms.length}</div>
-              <span className="text-[10px] text-slate-500">Registry Total</span>
+              <div className="text-2xl sm:text-3xl font-black text-white mt-1 tabular-nums">{rooms.length}</div>
+              <span className="text-xs text-slate-400">Registry Total</span>
             </div>
-            <div className="p-4 bg-slate-900 border border-emerald-500/30 rounded-2xl">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 block">
+            <div className="p-5 sm:p-6 bg-[#0B0B0D] card-dark dashboard-card border border-emerald-500/30 rounded-2xl min-h-[140px] flex flex-col justify-between shadow-lg">
+              <span className="text-xs sm:text-sm font-bold uppercase tracking-wider text-emerald-400 block font-mono">
                 Available / Ready
               </span>
-              <div className="text-xl font-black text-emerald-300 mt-1">
+              <div className="text-2xl sm:text-3xl font-black text-emerald-300 mt-1 tabular-nums">
                 {rooms.filter((r) => r.status === 'AVAILABLE' && r.isActive !== false).length}
               </div>
-              <span className="text-[10px] text-emerald-400/70">Ready for Interviews</span>
+              <span className="text-xs text-emerald-300/80">Ready for Interviews</span>
             </div>
-            <div className="p-4 bg-slate-900 border border-blue-500/30 rounded-2xl">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400 block">
+            <div className="p-5 sm:p-6 bg-[#0B0B0D] card-dark dashboard-card border border-blue-500/30 rounded-2xl min-h-[140px] flex flex-col justify-between shadow-lg">
+              <span className="text-xs sm:text-sm font-bold uppercase tracking-wider text-blue-400 block font-mono">
                 Assigned / In Session
               </span>
-              <div className="text-xl font-black text-blue-300 mt-1">
+              <div className="text-2xl sm:text-3xl font-black text-blue-300 mt-1 tabular-nums">
                 {rooms.filter((r) => r.status === 'ASSIGNED' || r.status === 'OCCUPIED').length}
               </div>
-              <span className="text-[10px] text-blue-400/70">Candidate in Room</span>
+              <span className="text-xs text-blue-300/80">Candidate in Room</span>
             </div>
-            <div className="p-4 bg-slate-900 border border-amber-500/30 rounded-2xl">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 block">
+            <div className="p-5 sm:p-6 bg-[#0B0B0D] card-dark dashboard-card border border-amber-500/30 rounded-2xl min-h-[140px] flex flex-col justify-between shadow-lg">
+              <span className="text-xs sm:text-sm font-bold uppercase tracking-wider text-amber-400 block font-mono">
                 Pantry Cleaning Active
               </span>
-              <div className="text-xl font-black text-amber-300 mt-1">
+              <div className="text-2xl sm:text-3xl font-black text-amber-300 mt-1 tabular-nums">
                 {
                   rooms.filter(
                     (r) => r.status === 'CLEANING' || r.status === 'NEEDS_CLEANING'
                   ).length
                 }
               </div>
-              <span className="text-[10px] text-amber-400/70">Pending Reset & Sanitize</span>
+              <span className="text-xs text-amber-300/80">Pending Reset & Sanitize</span>
             </div>
           </div>
 

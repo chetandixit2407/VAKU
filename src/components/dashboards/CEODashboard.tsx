@@ -63,47 +63,47 @@ export const CEODashboard: React.FC<CEODashboardProps> = ({
       </div>
 
       {/* Strategic Metrics — All Black Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         <motion.div
           whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
           whileTap={{ scale: 0.99 }}
-          className="p-4 card-dark bg-[#0B0B0D] text-white rounded-2xl border border-white/10 shadow-md hover:shadow-xl transition"
+          className="p-5 sm:p-6 card-dark bg-[#0B0B0D] text-white rounded-2xl border border-white/10 shadow-lg hover:shadow-xl transition min-h-[140px] flex flex-col justify-between"
         >
-          <span className="text-xs text-[#E0E0E0] block font-medium">Active Office Presence</span>
-          <p className="text-2xl font-black text-white mt-1 tabular-nums">{activeCandidates.length}</p>
-          <span className="text-[10px] text-amber-400 font-semibold font-mono">Candidates on premises</span>
+          <span className="text-xs sm:text-sm text-[#E0E0E0] block font-semibold">Active Office Presence</span>
+          <p className="text-2xl sm:text-3xl font-black text-white mt-1 tabular-nums">{activeCandidates.length}</p>
+          <span className="text-xs text-amber-400 font-semibold font-mono">Candidates on premises</span>
         </motion.div>
 
         <motion.div
           whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
           whileTap={{ scale: 0.99 }}
-          className="p-4 card-dark bg-[#0B0B0D] text-white rounded-2xl border border-white/10 shadow-md hover:shadow-xl transition"
+          className="p-5 sm:p-6 card-dark bg-[#0B0B0D] text-white rounded-2xl border border-white/10 shadow-lg hover:shadow-xl transition min-h-[140px] flex flex-col justify-between"
         >
-          <span className="text-xs text-[#E0E0E0] block font-medium">Interviews Live</span>
-          <p className="text-2xl font-black text-white mt-1 tabular-nums">{inSessionCount}</p>
-          <span className="text-[10px] text-[#BDBDBD] font-mono">Active evaluation rounds</span>
+          <span className="text-xs sm:text-sm text-[#E0E0E0] block font-semibold">Interviews Live</span>
+          <p className="text-2xl sm:text-3xl font-black text-white mt-1 tabular-nums">{inSessionCount}</p>
+          <span className="text-xs text-[#BDBDBD] font-mono">Active evaluation rounds</span>
         </motion.div>
 
         <motion.div
           whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
           whileTap={{ scale: 0.99 }}
-          className="p-4 card-dark bg-[#0B0B0D] text-white rounded-2xl border border-white/10 shadow-md hover:shadow-xl transition"
+          className="p-5 sm:p-6 card-dark bg-[#0B0B0D] text-white rounded-2xl border border-white/10 shadow-lg hover:shadow-xl transition min-h-[140px] flex flex-col justify-between"
         >
-          <span className="text-xs text-[#E0E0E0] block font-medium">Leadership Offers / Hires</span>
-          <p className="text-2xl font-black text-emerald-400 mt-1 tabular-nums">{offeredCount}</p>
-          <span className="text-[10px] text-emerald-400 font-semibold font-mono">Today's recommendations</span>
+          <span className="text-xs sm:text-sm text-[#E0E0E0] block font-semibold">Leadership Offers / Hires</span>
+          <p className="text-2xl sm:text-3xl font-black text-emerald-400 mt-1 tabular-nums">{offeredCount}</p>
+          <span className="text-xs text-emerald-400 font-semibold font-mono">Today's recommendations</span>
         </motion.div>
 
         <motion.div
           whileHover={{ scale: 1.02, y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
           whileTap={{ scale: 0.99 }}
-          className="p-4 card-dark bg-[#0B0B0D] text-white rounded-2xl border border-white/10 shadow-md hover:shadow-xl transition"
+          className="p-5 sm:p-6 card-dark bg-[#0B0B0D] text-white rounded-2xl border border-white/10 shadow-lg hover:shadow-xl transition min-h-[140px] flex flex-col justify-between"
         >
-          <span className="text-xs text-[#E0E0E0] block font-medium">Executive Boardrooms</span>
-          <p className="text-2xl font-black text-white mt-1 tabular-nums">
+          <span className="text-xs sm:text-sm text-[#E0E0E0] block font-semibold">Executive Boardrooms</span>
+          <p className="text-2xl sm:text-3xl font-black text-white mt-1 tabular-nums">
             {rooms.filter((r) => r.type === 'EXECUTIVE_BOARDROOM').length}
           </p>
-          <span className="text-[10px] text-[#BDBDBD] font-mono">Executive meeting suites</span>
+          <span className="text-xs text-[#BDBDBD] font-mono">Executive meeting suites</span>
         </motion.div>
       </div>
 

@@ -301,7 +301,7 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
             )}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5 pt-1">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 pt-1">
             {receptionTasks.map((task) => {
               const isPending = task.status === 'PENDING';
               const isAcknowledged = task.status === 'ACKNOWLEDGED' || task.status === 'IN_PROGRESS';
@@ -310,28 +310,28 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
               return (
                 <div
                   key={task.id}
-                  className={`p-4 rounded-2xl border transition shadow-lg relative flex flex-col justify-between ${
+                  className={`p-5 sm:p-6 rounded-2xl border transition shadow-xl relative flex flex-col justify-between ${
                     isPending
-                      ? 'glass-panel border-amber-400/80 ring-2 ring-amber-500/20'
+                      ? 'glass-panel border-amber-400/80 ring-2 ring-amber-500/25'
                       : isAcknowledged
-                      ? 'glass-panel border-sky-400/70 ring-1 ring-sky-500/20'
+                      ? 'glass-panel border-sky-400/70 ring-1 ring-sky-500/25'
                       : 'glass-panel-subtle border-emerald-500/40 opacity-80'
                   }`}
                 >
-                  <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-white/8">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 flex items-center justify-center font-black text-xs border border-amber-500/30 shrink-0">
+                  <div className="flex items-center justify-between gap-3 pb-3 border-b border-white/10">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-300 flex items-center justify-center font-black text-sm border border-amber-500/35 shrink-0 shadow-xs">
                         {task.senderName ? task.senderName.substring(0, 2).toUpperCase() : 'HR'}
                       </div>
                       <div className="min-w-0">
-                        <div className="text-xs font-bold text-white truncate flex items-center gap-1.5">
+                        <div className="text-sm font-bold text-white truncate flex items-center gap-2">
                           <span>{task.senderName}</span>
-                          <span className="px-1.5 py-0.2 rounded text-[9px] font-semibold bg-white/6 text-amber-400 border border-white/8">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/10 text-amber-300 border border-white/15">
                             {task.senderRole}
                           </span>
                         </div>
-                        <div className="text-[10px] text-slate-400 flex items-center gap-1">
-                          <Clock className="w-3 h-3 text-slate-500" />
+                        <div className="text-xs text-slate-400 flex items-center gap-1.5 mt-0.5">
+                          <Clock className="w-3.5 h-3.5 text-slate-400" />
                           <span>{new Date(task.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
                       </div>
@@ -339,52 +339,52 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
 
                     <div>
                       {isPending && (
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/50 flex items-center gap-1 animate-pulse font-mono">
-                          <AlertCircle className="w-3 h-3" />
+                        <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/50 flex items-center gap-1.5 animate-pulse font-mono">
+                          <AlertCircle className="w-3.5 h-3.5" />
                           PENDING
                         </span>
                       )}
                       {isAcknowledged && (
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/50 flex items-center gap-1 font-mono">
-                          <CheckCircle2 className="w-3 h-3 text-sky-400" />
+                        <span className="px-3 py-1 rounded-full text-xs font-bold bg-sky-500/20 text-sky-300 border border-sky-500/50 flex items-center gap-1.5 font-mono">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-sky-400" />
                           ESCORTING
                         </span>
                       )}
                       {isCompleted && (
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 flex items-center gap-1 font-mono">
-                          <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                        <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 flex items-center gap-1.5 font-mono">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                           COMPLETED
                         </span>
                       )}
                     </div>
                   </div>
 
-                  <div className="py-3 space-y-2">
-                    <div className="text-xs sm:text-sm font-bold text-white tracking-tight leading-snug">
+                  <div className="py-4 space-y-3">
+                    <div className="text-sm sm:text-base font-bold text-white tracking-tight leading-snug">
                       {task.title || `Bring ${task.candidateName || 'Candidate'} to ${task.destinationRoomName || 'Room'}`}
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div className="p-2.5 rounded-xl bg-[#25272B] card-inner inner-box border border-white/10">
-                        <span className="text-[10px] font-bold text-[#BDBDBD] uppercase tracking-wider block">
+                    <div className="grid grid-cols-2 gap-3 text-xs">
+                      <div className="p-3 rounded-xl bg-[#25272B] card-inner inner-box border border-white/10">
+                        <span className="text-[11px] font-bold text-[#BDBDBD] uppercase tracking-wider block font-mono">
                           Candidate
                         </span>
-                        <span className="text-xs font-bold text-amber-300 truncate block mt-0.5">
+                        <span className="text-sm font-bold text-amber-300 truncate block mt-1">
                           {task.candidateName || 'Candidate'}
                         </span>
                       </div>
-                      <div className="p-2.5 rounded-xl bg-[#25272B] card-inner inner-box border border-white/10">
-                        <span className="text-[10px] font-bold text-[#BDBDBD] uppercase tracking-wider block">
+                      <div className="p-3 rounded-xl bg-[#25272B] card-inner inner-box border border-white/10">
+                        <span className="text-[11px] font-bold text-[#BDBDBD] uppercase tracking-wider block font-mono">
                           Destination Room
                         </span>
-                        <span className="text-xs font-bold text-emerald-400 truncate block mt-0.5">
+                        <span className="text-sm font-bold text-emerald-400 truncate block mt-1">
                           {task.destinationRoomName || 'Room'}
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="pt-2 border-t border-white/8 flex items-center justify-between gap-2">
+                  <div className="pt-3 border-t border-white/10 flex items-center justify-between gap-3">
                     {onOpenChatWithContext && (
                       <button
                         onClick={() =>
@@ -395,9 +395,9 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
                             initialMessage: `Reception alert response: Regarding ${task.candidateName || 'candidate'}, escort in progress.`,
                           })
                         }
-                        className="text-[11px] text-amber-300 hover:underline flex items-center gap-1 font-semibold"
+                        className="text-xs text-amber-300 hover:underline flex items-center gap-1.5 font-semibold cursor-pointer"
                       >
-                        <MessageSquare className="w-3 h-3" />
+                        <MessageSquare className="w-3.5 h-3.5" />
                         <span>Chat Thread &rarr;</span>
                       </button>
                     )}
@@ -406,7 +406,7 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
                       {isPending && onAcknowledgeTask && (
                         <button
                           onClick={() => onAcknowledgeTask(task.id)}
-                          className="px-3 py-1.5 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs rounded-xl transition shadow"
+                          className="px-3.5 py-2 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs rounded-xl transition shadow cursor-pointer"
                         >
                           Acknowledge Escort
                         </button>
@@ -414,9 +414,9 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
                       {(isPending || isAcknowledged) && onCompleteTask && (
                         <button
                           onClick={() => onCompleteTask(task.id)}
-                          className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl transition shadow flex items-center gap-1"
+                          className="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl transition shadow flex items-center gap-1.5 cursor-pointer"
                         >
-                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <CheckCircle2 className="w-4 h-4" />
                           <span>Mark Arrived in Room</span>
                         </button>
                       )}
@@ -718,56 +718,58 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
           </div>
 
           {visitors.length === 0 ? (
-            <div className="p-10 text-center bg-[#0B0B0D] card-dark rounded-2xl text-xs text-white/60 border border-white/10 shadow-lg">
+            <div className="p-12 text-center bg-[#0B0B0D] card-dark rounded-2xl text-sm text-white/60 border border-white/10 shadow-lg">
               No official visitors or clients recorded for today.
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {visitors.map((vis) => (
                 <div
                   key={vis.id}
-                  className="p-4 rounded-2xl space-y-3 text-xs shadow-xl bg-[#0B0B0D] card-dark text-white border border-purple-500/30 hover:border-purple-400/60 transition"
+                  className="p-5 sm:p-6 rounded-2xl space-y-4 text-xs sm:text-sm shadow-xl bg-[#0B0B0D] card-dark text-white border border-purple-500/35 hover:border-purple-400/70 transition flex flex-col justify-between"
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-bold text-sm text-white">{vis.fullName}</h4>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-purple-500/15 text-purple-300 border border-purple-500/30">
-                          {vis.visitorType || 'CLIENT'}
-                        </span>
+                  <div className="space-y-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="font-bold text-base sm:text-lg text-white">{vis.fullName}</h4>
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-purple-500/20 text-purple-300 border border-purple-500/40">
+                            {vis.visitorType || 'CLIENT'}
+                          </span>
+                        </div>
+                        <p className="text-xs sm:text-[13px] text-amber-300 font-semibold mt-0.5">{vis.company || 'Official Guest'}</p>
+                        <p className="text-xs text-white/70 mt-1">
+                          Host: <strong className="text-white">{vis.hostName}</strong>
+                        </p>
                       </div>
-                      <p className="text-[11px] text-amber-300 font-semibold">{vis.company || 'Official Guest'}</p>
-                      <p className="text-[10px] text-white/60 mt-0.5">
-                        Host: <strong className="text-white">{vis.hostName}</strong>
-                      </p>
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold font-mono border bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shrink-0">
+                        {vis.status || 'CHECKED_IN'}
+                      </span>
                     </div>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono border bg-emerald-500/15 text-emerald-300 border-emerald-500/30">
-                      {vis.status || 'CHECKED_IN'}
-                    </span>
-                  </div>
 
-                  <div className="p-2.5 rounded-xl bg-black/40 border border-white/5 space-y-1 text-[11px]">
-                    <div className="flex justify-between text-white/70">
-                      <span>Purpose:</span>
-                      <strong className="text-white">{vis.purpose || 'Business Meeting'}</strong>
-                    </div>
-                    <div className="flex justify-between text-white/70">
-                      <span>Phone:</span>
-                      <strong className="text-amber-400 font-mono">{vis.phone || 'N/A'}</strong>
-                    </div>
-                    {vis.checkInTime && (
-                      <div className="flex justify-between text-white/70">
-                        <span>Check-In:</span>
-                        <span className="font-mono text-slate-300">
-                          {new Date(vis.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </span>
+                    <div className="p-3.5 rounded-xl bg-black/40 border border-white/8 space-y-1.5 text-xs">
+                      <div className="flex justify-between text-white/80">
+                        <span>Purpose:</span>
+                        <strong className="text-white">{vis.purpose || 'Business Meeting'}</strong>
                       </div>
-                    )}
+                      <div className="flex justify-between text-white/80">
+                        <span>Phone:</span>
+                        <strong className="text-amber-400 font-mono">{vis.phone || 'N/A'}</strong>
+                      </div>
+                      {vis.checkInTime && (
+                        <div className="flex justify-between text-white/80">
+                          <span>Check-In:</span>
+                          <span className="font-mono text-slate-300">
+                            {new Date(vis.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* Clearly visible Edit and Delete buttons for Visitors */}
-                  <div className="pt-2 border-t border-white/10 flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1.5">
+                  <div className="pt-3 border-t border-white/10 flex items-center justify-between gap-2.5">
+                    <div className="flex items-center gap-2">
                       <button
                         type="button"
                         onClick={() =>
@@ -777,7 +779,7 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
                             record: vis,
                           })
                         }
-                        className="px-2.5 py-1.5 rounded-xl border font-bold text-xs flex items-center gap-1.5 transition cursor-pointer bg-white/5 hover:bg-amber-500/20 text-slate-300 hover:text-amber-300 border-white/10"
+                        className="px-3 py-1.5 rounded-xl border font-bold text-xs flex items-center gap-1.5 transition cursor-pointer bg-white/5 hover:bg-amber-500/20 text-slate-300 hover:text-amber-300 border-white/15"
                         title="Edit Visitor Information"
                       >
                         <Edit3 className="w-3.5 h-3.5 text-amber-400" />
@@ -794,7 +796,7 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
                             recordName: vis.fullName,
                           })
                         }
-                        className="px-2.5 py-1.5 rounded-xl border font-bold text-xs flex items-center gap-1.5 transition cursor-pointer bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 border-rose-500/25"
+                        className="px-3 py-1.5 rounded-xl border font-bold text-xs flex items-center gap-1.5 transition cursor-pointer bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 border-rose-500/25"
                         title="Delete Visitor Record"
                       >
                         <Trash2 className="w-3.5 h-3.5 text-rose-400" />
@@ -814,7 +816,7 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
                             if (onRefresh) onRefresh();
                           });
                         }}
-                        className="px-2.5 py-1.5 rounded-xl border font-bold text-xs flex items-center gap-1 transition cursor-pointer bg-emerald-500/20 hover:bg-emerald-500/30 border-emerald-500/40 text-emerald-300"
+                        className="px-3 py-1.5 rounded-xl border font-bold text-xs flex items-center gap-1.5 transition cursor-pointer bg-emerald-500/20 hover:bg-emerald-500/30 border-emerald-500/40 text-emerald-300 shadow-xs"
                       >
                         <LogOut className="w-3.5 h-3.5" />
                         <span>Check-Out</span>
@@ -845,11 +847,11 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
         </div>
 
         {filteredCandidates.length === 0 ? (
-          <div className="p-10 text-center bg-[#0B0B0D] card-dark rounded-2xl text-xs text-white/60 border border-white/10 shadow-lg">
+          <div className="p-12 text-center bg-[#0B0B0D] card-dark rounded-2xl text-sm text-white/60 border border-white/10 shadow-lg">
             No candidates matching current filter or search query.
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {filteredCandidates.map((cand) => {
               const isWaiting = cand.status === 'ARRIVED' || cand.status === 'WAITING';
               const isInMeeting = cand.status === 'IN_INTERVIEW' || cand.status === 'ROOM_ASSIGNED';
@@ -860,82 +862,84 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
                   key={cand.id}
                   whileHover={{ scale: 1.01, y: -2, transition: { duration: 0.15 } }}
                   onClick={() => setSelectedProfileCandidateId(cand.id)}
-                  className="p-4 rounded-2xl space-y-3 text-xs shadow-xl cursor-pointer transition bg-[#0B0B0D] card-dark text-white border border-white/10 hover:border-amber-400/40"
+                  className="p-5 sm:p-6 rounded-2xl space-y-4 text-xs sm:text-sm shadow-xl cursor-pointer transition bg-[#0B0B0D] card-dark text-white border border-white/10 hover:border-amber-400/50 flex flex-col justify-between"
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <div className="flex flex-col items-center shrink-0">
-                        {cand.receptionPhotoUrl || cand.photoUrl || cand.livePhoto || cand.arrivalPhoto ? (
-                          <img
-                            src={cand.receptionPhotoUrl || cand.photoUrl || cand.livePhoto || cand.arrivalPhoto}
-                            alt={cand.fullName}
-                            className="w-12 h-12 rounded-xl object-cover border-2 border-amber-500 shadow-md shrink-0"
-                          />
-                        ) : (
-                          <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 font-bold bg-[#25272B] border border-white/10 text-white">
-                            {cand.fullName.slice(0, 2).toUpperCase()}
-                          </div>
-                        )}
-                        {(cand.receptionPhotoCapturedAt || cand.arrivalPhotoCapturedAt || cand.livePhotoCapturedAt) && (
-                          <span
-                            className="text-[9px] text-amber-300 font-mono tracking-tight mt-1 text-center truncate max-w-[85px]"
-                            title={`Captured: ${formatPhotoTimestamp(cand.receptionPhotoCapturedAt || cand.arrivalPhotoCapturedAt || cand.livePhotoCapturedAt)}`}
-                          >
-                            {formatPhotoTimestamp(cand.receptionPhotoCapturedAt || cand.arrivalPhotoCapturedAt || cand.livePhotoCapturedAt).split(',')[0]}
-                          </span>
-                        )}
+                  <div className="space-y-3.5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3.5">
+                        <div className="flex flex-col items-center shrink-0">
+                          {cand.receptionPhotoUrl || cand.photoUrl || cand.livePhoto || cand.arrivalPhoto ? (
+                            <img
+                              src={cand.receptionPhotoUrl || cand.photoUrl || cand.livePhoto || cand.arrivalPhoto}
+                              alt={cand.fullName}
+                              className="w-14 h-14 rounded-2xl object-cover border-2 border-amber-500 shadow-md shrink-0"
+                            />
+                          ) : (
+                            <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 font-extrabold text-sm bg-[#25272B] border border-white/10 text-white">
+                              {cand.fullName.slice(0, 2).toUpperCase()}
+                            </div>
+                          )}
+                          {(cand.receptionPhotoCapturedAt || cand.arrivalPhotoCapturedAt || cand.livePhotoCapturedAt) && (
+                            <span
+                              className="text-[9px] text-amber-300 font-mono tracking-tight mt-1 text-center truncate max-w-[85px]"
+                              title={`Captured: ${formatPhotoTimestamp(cand.receptionPhotoCapturedAt || cand.arrivalPhotoCapturedAt || cand.livePhotoCapturedAt)}`}
+                            >
+                              {formatPhotoTimestamp(cand.receptionPhotoCapturedAt || cand.arrivalPhotoCapturedAt || cand.livePhotoCapturedAt).split(',')[0]}
+                            </span>
+                          )}
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-base sm:text-lg flex items-center gap-1.5 text-white">
+                            <span>{cand.fullName}</span>
+                            <Eye className="w-4 h-4 text-slate-400" />
+                          </h4>
+                          <p className="text-xs sm:text-[13px] font-semibold text-amber-300/90 mt-0.5">{cand.position}</p>
+                          <p className="text-xs mt-1 text-white/60">
+                            Arrived: {cand.checkedInAt ? new Date(cand.checkedInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Today'}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="font-bold text-sm flex items-center gap-1 text-white">
-                          {cand.fullName}
-                          <Eye className="w-3.5 h-3.5 text-slate-400" />
-                        </h4>
-                        <p className="text-[11px] font-semibold text-white/80">{cand.position}</p>
-                        <p className="text-[10px] mt-0.5 text-white/50">
-                          Arrived: {cand.checkedInAt ? new Date(cand.checkedInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Today'}
-                        </p>
-                      </div>
+
+                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold shrink-0 font-mono border ${
+                        isWaiting
+                          ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                          : isInMeeting
+                          ? 'bg-blue-500/20 text-blue-300 border-blue-500/40'
+                          : isCheckoutReady
+                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                          : 'bg-white/10 text-white/80 border-white/15'
+                      }`}>
+                        {cand.status}
+                      </span>
                     </div>
 
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 font-mono border ${
-                      isWaiting
-                        ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
-                        : isInMeeting
-                        ? 'bg-blue-500/15 text-blue-300 border-blue-500/30'
-                        : isCheckoutReady
-                        ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
-                        : 'bg-white/10 text-white/80 border-white/15'
-                    }`}>
-                      {cand.status}
-                    </span>
-                  </div>
-
-                  {/* Visitor Lifecycle Stage Tracker */}
-                  <div className="pt-2 border-t border-white/10">
-                    <VisitorArrivalTimeline candidate={cand} compact={true} />
+                    {/* Visitor Lifecycle Stage Tracker */}
+                    <div className="pt-2.5 border-t border-white/10">
+                      <VisitorArrivalTimeline candidate={cand} compact={true} />
+                    </div>
                   </div>
 
                   {/* Desk Photo Verification status & Action */}
-                  <div className="pt-2 border-t flex items-center justify-between gap-2 border-white/10">
+                  <div className="pt-3 border-t flex items-center justify-between gap-2.5 border-white/10">
                     {cand.receptionPhotoUrl || cand.arrivalPhoto ? (
                       <div className="flex flex-col">
-                        <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
+                        <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
                           <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                           Desk Photo Verified
                         </span>
                         {(cand.receptionPhotoCapturedAt || cand.arrivalPhotoCapturedAt) && (
-                          <span className="text-[9px] text-amber-300 font-mono">
+                          <span className="text-[10px] text-amber-300 font-mono">
                             Captured: {formatPhotoTimestamp(cand.receptionPhotoCapturedAt || cand.arrivalPhotoCapturedAt)}
                           </span>
                         )}
                       </div>
                     ) : (
-                      <span className="text-[10px] italic text-amber-300 font-medium">
+                      <span className="text-xs italic text-amber-300 font-medium">
                         Desk Photo Required
                       </span>
                     )}
 
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                       {/* Clearly visible Edit Candidate Button */}
                       <button
                         type="button"
@@ -947,10 +951,10 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
                             record: cand,
                           });
                         }}
-                        className="p-1.5 rounded-xl border font-bold text-xs flex items-center transition cursor-pointer bg-white/5 hover:bg-amber-500/20 text-slate-300 hover:text-amber-300 border-white/10"
+                        className="p-2 rounded-xl border font-bold text-xs flex items-center transition cursor-pointer bg-white/5 hover:bg-amber-500/20 text-slate-300 hover:text-amber-300 border-white/15"
                         title="Edit Candidate Information"
                       >
-                        <Edit3 className="w-3.5 h-3.5" />
+                        <Edit3 className="w-4 h-4" />
                       </button>
 
                       {/* Clearly visible Delete Candidate Button */}
@@ -966,10 +970,10 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
                             metadata: { status: cand.status },
                           });
                         }}
-                        className="p-1.5 rounded-xl border font-bold text-xs flex items-center transition cursor-pointer bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 border-rose-500/25"
+                        className="p-2 rounded-xl border font-bold text-xs flex items-center transition cursor-pointer bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 border-rose-500/25"
                         title="Delete / Archive Candidate"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
 
                       <button
@@ -977,9 +981,9 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
                           e.stopPropagation();
                           setSelectedPhotoCandidate(cand);
                         }}
-                        className="px-2.5 py-1.5 rounded-xl border font-bold text-xs flex items-center gap-1.5 transition cursor-pointer bg-cyan-500/20 hover:bg-cyan-500/30 border-cyan-500/40 text-cyan-300 shadow-xs"
+                        className="px-3 py-2 rounded-xl border font-bold text-xs flex items-center gap-1.5 transition cursor-pointer bg-cyan-500/20 hover:bg-cyan-500/30 border-cyan-500/40 text-cyan-300 shadow-xs"
                       >
-                        <Camera className="w-3.5 h-3.5" />
+                        <Camera className="w-4 h-4" />
                         <span>{cand.receptionPhotoUrl || cand.arrivalPhoto ? 'Retake Photo' : 'Capture Desk Photo'}</span>
                       </button>
 
@@ -989,9 +993,9 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
                             e.stopPropagation();
                             onCheckout(cand.id);
                           }}
-                          className="px-2.5 py-1.5 rounded-xl border font-bold text-xs flex items-center gap-1 transition cursor-pointer bg-emerald-500/20 hover:bg-emerald-500/30 border-emerald-500/40 text-emerald-300"
+                          className="px-3 py-2 rounded-xl border font-bold text-xs flex items-center gap-1.5 transition cursor-pointer bg-emerald-500/20 hover:bg-emerald-500/30 border-emerald-500/40 text-emerald-300 shadow-xs"
                         >
-                          <LogOut className="w-3.5 h-3.5" />
+                          <LogOut className="w-4 h-4" />
                           <span>Check-Out</span>
                         </button>
                       )}
