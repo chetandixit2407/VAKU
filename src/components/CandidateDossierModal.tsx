@@ -69,6 +69,29 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
   onCandidateUpdated,
   onCandidateDeleted,
 }) => {
+  // Strict privacy enforcement: Pantry role must never view candidate dossiers or personal profiles
+  if (currentRole === 'PANTRY') {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+        <div className="bg-[#141820] border border-rose-500/50 p-6 rounded-2xl max-w-md w-full text-center space-y-4 shadow-2xl">
+          <div className="w-12 h-12 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center mx-auto">
+            <Lock className="w-6 h-6" />
+          </div>
+          <h3 className="text-lg font-bold text-white tracking-tight">Access Prohibited</h3>
+          <p className="text-xs text-slate-300 leading-relaxed">
+            Users with the Pantry role are strictly restricted to assigned hospitality tasks. Full candidate profiles, dossiers, and personal information are inaccessible.
+          </p>
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs transition cursor-pointer"
+          >
+            Return to Pantry Tasks
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const [loading, setLoading] = useState<boolean>(!initialCandidate);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [candidate, setCandidate] = useState<Candidate | null>(initialCandidate || null);

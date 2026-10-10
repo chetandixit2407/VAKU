@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
 import {
   Calendar,
@@ -186,6 +186,54 @@ export const VisitorJourneyOverview: React.FC<{
   onSelectStage?: (stage: ArrivalStage | null) => void;
   onOpenStageDetails?: (stage: ArrivalStage) => void;
 }> = ({ candidates, selectedStage, onSelectStage, onOpenStageDetails }) => {
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Auto-clear filter after 5 seconds with robust cleanup and cancellation
+  useEffect(() => {
+    // Clear previous timer if one exists (handles switching stages or manual resets)
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+
+    // When a stage filter is active, start a new 5-second timer
+    if (selectedStage) {
+      timerRef.current = setTimeout(() => {
+        if (onSelectStage) {
+          onSelectStage(null);
+        }
+        timerRef.current = null;
+      }, 5000);
+    }
+
+    // Clean up timer when component unmounts or selectedStage changes
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [selectedStage, onSelectStage]);
+
+  const handleTileClick = (stageId: ArrivalStage) => {
+    if (onSelectStage) {
+      // Toggle off if clicking the already-selected stage, or switch to the new stage
+      const nextStage = selectedStage === stageId ? null : stageId;
+      onSelectStage(nextStage);
+    }
+  };
+
+  const handleManualClear = () => {
+    // Cancel timer immediately on manual clear
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    if (onSelectStage) {
+      onSelectStage(null);
+    }
+  };
+
   const stages: {
     id: ArrivalStage;
     label: string;
@@ -230,7 +278,7 @@ export const VisitorJourneyOverview: React.FC<{
         {selectedStage && (
           <button
             type="button"
-            onClick={() => onSelectStage && onSelectStage(null)}
+            onClick={handleManualClear}
             className="text-[11px] text-amber-400 hover:text-amber-300 underline cursor-pointer"
           >
             Clear Filter (Showing all {candidates.length})
@@ -249,10 +297,7 @@ export const VisitorJourneyOverview: React.FC<{
               key={stg.id}
               type="button"
               aria-pressed={isSelected}
-              onClick={() => {
-                if (onSelectStage) onSelectStage(isSelected ? null : stg.id);
-                if (onOpenStageDetails) onOpenStageDetails(stg.id);
-              }}
+              onClick={() => handleTileClick(stg.id)}
               whileHover={{ y: -3, scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               className={`intake-stage-card p-3 rounded-xl border text-left transition-all cursor-pointer relative overflow-hidden group select-none focus-visible:outline-2 focus-visible:outline-amber-400 focus-visible:outline-offset-2 ${
@@ -260,7 +305,7 @@ export const VisitorJourneyOverview: React.FC<{
                   ? 'is-selected bg-amber-500/20 border-amber-400 text-white shadow-lg ring-1 ring-amber-400'
                   : 'bg-[#141820] border-[#252A32] text-white shadow-md hover:bg-[#1B2028]'
               }`}
-              title={`Click to view ${stg.label} records (${count})`}
+              title={`Click to filter ${stg.label} records (${count})`}
             >
               <div className="flex items-center justify-between gap-1 mb-1.5 pointer-events-none">
                 <div className="intake-icon-badge w-6 h-6 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center transition-transform group-hover:scale-110">

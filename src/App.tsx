@@ -280,10 +280,15 @@ export default function App() {
 
   useEffect(() => {
     if (directCandidateId) {
+      if (currentRole === 'PANTRY') {
+        setSelectedCandidateId('');
+        setActiveModal(null);
+        return;
+      }
       setSelectedCandidateId(directCandidateId);
       setActiveModal('DOSSIER');
     }
-  }, [directCandidateId]);
+  }, [directCandidateId, currentRole]);
 
   useEffect(() => {
     if (routePath === '/staff/login') {
@@ -303,6 +308,32 @@ export default function App() {
   // Fetch all live data from server with authenticated credentials
   const fetchAllData = useCallback(async () => {
     try {
+      // Pantry role must NOT request candidate profiles, interviews, or visitors over network
+      if (currentRole === 'PANTRY') {
+        const [rRes, nRes, pRes, aRes] = await Promise.all([
+          authenticatedFetch('/api/rooms'),
+          authenticatedFetch(`/api/notifications?role=${currentRole}&userId=${currentUserId}`),
+          authenticatedFetch('/api/pantry/tasks'),
+          authenticatedFetch('/api/action-tasks'),
+        ]);
+
+        const [rData, nData, pData, aData] = await Promise.all([
+          safeJson(rRes, { success: false, rooms: [] }),
+          safeJson(nRes, { success: false, notifications: [] }),
+          safeJson(pRes, { success: false, tasks: [] }),
+          safeJson(aRes, { success: false, tasks: [] }),
+        ]);
+
+        if (rData.success && Array.isArray(rData.rooms)) setRooms(rData.rooms);
+        if (nData.success && Array.isArray(nData.notifications)) setNotifications(nData.notifications);
+        if (pData.success && Array.isArray(pData.tasks)) setPantryTasks(pData.tasks);
+        if (aData.success && Array.isArray(aData.tasks)) setActionTasks(aData.tasks);
+        setCandidates([]);
+        setInterviews([]);
+        setVisitors([]);
+        return;
+      }
+
       const [cRes, iRes, rRes, nRes, pRes, vRes, aRes] = await Promise.all([
         authenticatedFetch(`/api/candidates?role=${currentRole}`),
         authenticatedFetch('/api/interviews'),
@@ -564,8 +595,21 @@ export default function App() {
     }
   };
 
+  // Reset intake flow filter when navigating between sections or switching roles
+  useEffect(() => {
+    setFilterStage(null);
+  }, [activeSection, currentRole]);
+
   // Handle Sidebar and Mobile Section Selection
   const handleSelectSection = (section: NavSection) => {
+    // Pantry role is strictly restricted to its dedicated task-only dashboard
+    if (currentRole === 'PANTRY') {
+      if (section !== 'dashboard' && section !== 'settings' && section !== 'notifications') {
+        setActiveSection('dashboard');
+        return;
+      }
+    }
+
     setActiveSection(section);
     if (section === 'reception' || section === 'visitors') {
       handleSelectRole('RECEPTION');
@@ -1161,134 +1205,136 @@ export default function App() {
             />
           ) : (
             <>
-              {/* Operations Command Header with Live KPIs & Clock */}
-              <OperationsCommandHeader
-                candidates={candidates}
-                interviews={interviews}
-                rooms={rooms}
-                pantryTasks={pantryTasks}
-                visitors={visitors}
-                userName={currentUser?.name || 'Officer'}
-                userRole={currentRole}
-                onSelectKpi={(kpiId) => {
-                  if (kpiId === 'lobby') setDashboardDetailsModalTarget('kpi_lobby');
-                  else if (kpiId === 'interviews') setDashboardDetailsModalTarget('kpi_interviews');
-                  else if (kpiId === 'rooms') setDashboardDetailsModalTarget('kpi_rooms');
-                  else if (kpiId === 'pantry') setDashboardDetailsModalTarget('kpi_pantry');
-                }}
-              />
-
-          {/* Visitor Arrival Journey Flow Filter Banner */}
-          <VisitorJourneyOverview
-            candidates={candidates}
-            selectedStage={filterStage}
-            onSelectStage={(stage) => setFilterStage(stage)}
-            onOpenStageDetails={(stage) => {
-              setDashboardDetailsModalTarget(`stage_${stage}` as DashboardModalTarget);
-            }}
-          />
-
-          {/* Realtime Candidate Intake Alert Banner */}
-          {realtimeToast && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="p-4 bg-gradient-to-r from-amber-500/20 via-amber-600/15 to-purple-600/20 border border-amber-500/40 rounded-2xl shadow-xl flex items-center justify-between gap-3 text-xs"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-bold shadow-md animate-bounce">
-                  <Sparkles className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-black text-amber-300 uppercase tracking-wide">{realtimeToast.title}</span>
-                    <span className="text-[10px] text-slate-400 font-mono">({realtimeToast.timestamp})</span>
-                  </div>
-                  <p className="text-slate-200 font-medium mt-0.5">{realtimeToast.message}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                {realtimeToast.candidateId && (
-                  <button
-                    onClick={() => {
-                      setSelectedCandidateId(realtimeToast.candidateId!);
-                      setActiveModal('DOSSIER');
-                      setRealtimeToast(null);
+              {/* Operations Command Header, Intake Journey Flow, and Admin Strips for Authorized Staff Only */}
+              {currentRole !== 'PANTRY' && (
+                <>
+                  {/* Operations Command Header with Live KPIs & Clock */}
+                  <OperationsCommandHeader
+                    candidates={candidates}
+                    interviews={interviews}
+                    rooms={rooms}
+                    pantryTasks={pantryTasks}
+                    visitors={visitors}
+                    userName={currentUser?.name || 'Officer'}
+                    userRole={currentRole}
+                    onSelectKpi={(kpiId) => {
+                      if (kpiId === 'lobby') setDashboardDetailsModalTarget('kpi_lobby');
+                      else if (kpiId === 'interviews') setDashboardDetailsModalTarget('kpi_interviews');
+                      else if (kpiId === 'rooms') setDashboardDetailsModalTarget('kpi_rooms');
+                      else if (kpiId === 'pantry') setDashboardDetailsModalTarget('kpi_pantry');
                     }}
-                    className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl transition shadow cursor-pointer text-xs"
-                  >
-                    View Profile &rarr;
-                  </button>
-                )}
-                <button
-                  onClick={() => setRealtimeToast(null)}
-                  className="p-1 text-slate-400 hover:text-white rounded-lg cursor-pointer"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            </motion.div>
-          )}
+                  />
 
-          {/* Interactive Testing Quick Launcher Strip */}
-          <div className="p-4 card-dark bg-[#0B0B0D] text-white rounded-3xl border border-white/10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 text-xs shadow-xl">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                <strong className="text-white font-bold text-sm tracking-tight">
-                  {t('quick_architecture_title')}
-                </strong>
-              </div>
-              <p className="text-[#E0E0E0] text-xs">
-                <strong className="text-emerald-400">1. General Reception QR</strong> (100% blank form, isolated session) &bull;{' '}
-                <strong className="text-amber-400">2. Scheduled QR</strong> (Appointment pass) &bull;{' '}
-                <strong className="text-cyan-400">3. Reception Live Photo</strong> (WebRTC desk verification).
-              </p>
-            </div>
+                  {/* Visitor Arrival Journey Flow Filter Banner */}
+                  <VisitorJourneyOverview
+                    candidates={candidates}
+                    selectedStage={filterStage}
+                    onSelectStage={(stage) => setFilterStage(stage)}
+                  />
 
-            <div className="flex flex-wrap items-center gap-2 shrink-0">
-              {/* Direct Blank Registration Test Button */}
-              <button
-                onClick={() => setActiveModal('GENERAL_REGISTER')}
-                className="px-3.5 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-black text-xs rounded-xl shadow-lg transition cursor-pointer flex items-center gap-1.5"
-                title="Test General WCR Blank Self-Registration"
-              >
-                <UserPlus className="w-3.5 h-3.5" />
-                <span>{t('quick_test_blank')}</span>
-              </button>
+                  {/* Realtime Candidate Intake Alert Banner */}
+                  {realtimeToast && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="p-4 bg-gradient-to-r from-amber-500/20 via-amber-600/15 to-purple-600/20 border border-amber-500/40 rounded-2xl shadow-xl flex items-center justify-between gap-3 text-xs"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-bold shadow-md animate-bounce">
+                          <Sparkles className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-black text-amber-300 uppercase tracking-wide">{realtimeToast.title}</span>
+                            <span className="text-[10px] text-slate-400 font-mono">({realtimeToast.timestamp})</span>
+                          </div>
+                          <p className="text-slate-200 font-medium mt-0.5">{realtimeToast.message}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {realtimeToast.candidateId && (
+                          <button
+                            onClick={() => {
+                              setSelectedCandidateId(realtimeToast.candidateId!);
+                              setActiveModal('DOSSIER');
+                              setRealtimeToast(null);
+                            }}
+                            className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl transition shadow cursor-pointer text-xs"
+                          >
+                            View Profile &rarr;
+                          </button>
+                        )}
+                        <button
+                          onClick={() => setRealtimeToast(null)}
+                          className="p-1 text-slate-400 hover:text-white rounded-lg cursor-pointer"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
 
-              {/* Scheduled Check-In */}
-              <button
-                onClick={() => {
-                  setCheckInToken('WCR-APPT-901');
-                  setActiveModal('CHECK_IN');
-                }}
-                className="px-3 py-2 bg-white/5 hover:bg-white/10 border border-amber-500/40 text-amber-300 font-semibold text-xs rounded-xl transition cursor-pointer flex items-center gap-1.5"
-              >
-                <Smartphone className="w-3.5 h-3.5 text-amber-400" />
-                <span>{t('quick_scheduled_checkin')}</span>
-              </button>
+                  {/* Interactive Testing Quick Launcher Strip */}
+                  <div className="p-4 card-dark bg-[#0B0B0D] text-white rounded-3xl border border-white/10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 text-xs shadow-xl">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                        <strong className="text-white font-bold text-sm tracking-tight">
+                          {t('quick_architecture_title')}
+                        </strong>
+                      </div>
+                      <p className="text-[#E0E0E0] text-xs">
+                        <strong className="text-emerald-400">1. General Reception QR</strong> (100% blank form, isolated session) &bull;{' '}
+                        <strong className="text-amber-400">2. Scheduled QR</strong> (Appointment pass) &bull;{' '}
+                        <strong className="text-cyan-400">3. Reception Live Photo</strong> (WebRTC desk verification).
+                      </p>
+                    </div>
 
-              {/* Dual QR Station Standee */}
-              <button
-                onClick={() => setActiveModal('QR_PASS')}
-                className="px-3 py-2 bg-white/5 hover:bg-white/10 text-slate-200 font-semibold text-xs rounded-xl border border-white/8 transition cursor-pointer flex items-center gap-1.5"
-              >
-                <QrCode className="w-3.5 h-3.5 text-amber-400" />
-                <span>{t('quick_qr_standees')}</span>
-              </button>
+                    <div className="flex flex-wrap items-center gap-2 shrink-0">
+                      {/* Direct Blank Registration Test Button */}
+                      <button
+                        onClick={() => setActiveModal('GENERAL_REGISTER')}
+                        className="px-3.5 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-black text-xs rounded-xl shadow-lg transition cursor-pointer flex items-center gap-1.5"
+                        title="Test General WCR Blank Self-Registration"
+                      >
+                        <UserPlus className="w-3.5 h-3.5" />
+                        <span>{t('quick_test_blank')}</span>
+                      </button>
 
-              {/* Staff Login Modal */}
-              <button
-                onClick={() => setActiveModal('STAFF_LOGIN')}
-                className="px-3 py-2 bg-white/4 hover:bg-white/8 border border-white/8 text-slate-400 hover:text-white font-semibold text-xs rounded-xl transition cursor-pointer flex items-center gap-1.5"
-              >
-                <Key className="w-3.5 h-3.5 text-purple-400" />
-                <span>{t('quick_staff_login')}</span>
-              </button>
-            </div>
-          </div>
+                      {/* Scheduled Check-In */}
+                      <button
+                        onClick={() => {
+                          setCheckInToken('WCR-APPT-901');
+                          setActiveModal('CHECK_IN');
+                        }}
+                        className="px-3 py-2 bg-white/5 hover:bg-white/10 border border-amber-500/40 text-amber-300 font-semibold text-xs rounded-xl transition cursor-pointer flex items-center gap-1.5"
+                      >
+                        <Smartphone className="w-3.5 h-3.5 text-amber-400" />
+                        <span>{t('quick_scheduled_checkin')}</span>
+                      </button>
+
+                      {/* Dual QR Station Standee */}
+                      <button
+                        onClick={() => setActiveModal('QR_PASS')}
+                        className="px-3 py-2 bg-white/5 hover:bg-white/10 text-slate-200 font-semibold text-xs rounded-xl border border-white/8 transition cursor-pointer flex items-center gap-1.5"
+                      >
+                        <QrCode className="w-3.5 h-3.5 text-amber-400" />
+                        <span>{t('quick_qr_standees')}</span>
+                      </button>
+
+                      {/* Staff Login Modal */}
+                      <button
+                        onClick={() => setActiveModal('STAFF_LOGIN')}
+                        className="px-3 py-2 bg-white/4 hover:bg-white/8 border border-white/8 text-slate-400 hover:text-white font-semibold text-xs rounded-xl transition cursor-pointer flex items-center gap-1.5"
+                      >
+                        <Key className="w-3.5 h-3.5 text-purple-400" />
+                        <span>{t('quick_staff_login')}</span>
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
 
           {/* Dynamic Role Dashboard View with Smooth Cinematic Transition */}
           <motion.div

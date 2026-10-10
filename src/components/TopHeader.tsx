@@ -114,25 +114,29 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
             <span>{isRealtimeConnected ? t('app_live_realtime') : t('app_reconnecting')}</span>
           </div>
 
-          {/* Quick Intake Button */}
-          <button
-            onClick={onOpenCheckIn}
-            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#141820] hover:bg-[#1B2028] border border-[#252A32] text-amber-300 font-semibold text-xs transition cursor-pointer"
-            title="Candidate Self Check-In Form"
-          >
-            <Smartphone className="w-3.5 h-3.5 text-amber-400" />
-            <span>Check-In</span>
-          </button>
+          {/* Quick Intake Button (Hidden for Pantry) */}
+          {currentRole !== 'PANTRY' && (
+            <button
+              onClick={onOpenCheckIn}
+              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#141820] hover:bg-[#1B2028] border border-[#252A32] text-amber-300 font-semibold text-xs transition cursor-pointer"
+              title="Candidate Self Check-In Form"
+            >
+              <Smartphone className="w-3.5 h-3.5 text-amber-400" />
+              <span>Check-In</span>
+            </button>
+          )}
 
-          {/* QR Station */}
-          <button
-            onClick={onOpenQRPasses}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#141820] hover:bg-[#1B2028] border border-[#252A32] text-[#AEB7C4] hover:text-[#F5F6F8] font-medium text-xs transition cursor-pointer"
-            title="WCR QR Codes & Passes"
-          >
-            <QrCode className="w-3.5 h-3.5 text-amber-400" />
-            <span>QR Station</span>
-          </button>
+          {/* QR Station (Hidden for Pantry) */}
+          {currentRole !== 'PANTRY' && (
+            <button
+              onClick={onOpenQRPasses}
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#141820] hover:bg-[#1B2028] border border-[#252A32] text-[#AEB7C4] hover:text-[#F5F6F8] font-medium text-xs transition cursor-pointer"
+              title="WCR QR Codes & Passes"
+            >
+              <QrCode className="w-3.5 h-3.5 text-amber-400" />
+              <span>QR Station</span>
+            </button>
+          )}
 
           {/* Create Pantry Task for All Authorised Users */}
           {onOpenCreatePantryTask && currentRole !== 'PANTRY' && (
@@ -158,8 +162,8 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
             </button>
           )}
 
-          {/* More Navigation Button for Laptop, Desktop & Tablet */}
-          {onOpenMore && (
+          {/* More Navigation Button for Laptop, Desktop & Tablet (Hidden for Pantry) */}
+          {onOpenMore && currentRole !== 'PANTRY' && (
             <button
               onClick={onOpenMore}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition cursor-pointer ${

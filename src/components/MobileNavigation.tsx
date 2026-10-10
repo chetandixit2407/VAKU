@@ -53,24 +53,27 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
   onLogout,
 }) => {
   const { t } = useSettings();
+  const isPantry = currentRole === 'PANTRY';
 
   const navItems: {
     id: NavSection;
     label: string;
     icon: React.ComponentType<{ className?: string }>;
     badge?: number;
-  }[] = [
-    { id: 'dashboard', label: t('nav_dashboard'), icon: LayoutDashboard },
-    { id: 'reception', label: t('nav_reception'), icon: Building2 },
-    { id: 'candidates', label: t('nav_candidates'), icon: UserCheck },
-    { id: 'interviews', label: t('nav_interviews'), icon: CalendarClock },
-    { id: 'more', label: 'Secondary Sections', icon: Layers },
-    { id: 'visitors', label: t('nav_visitors'), icon: Users2 },
-    { id: 'rooms', label: t('nav_rooms'), icon: DoorOpen },
-    { id: 'hospitality', label: t('nav_hospitality'), icon: Coffee },
-    { id: 'notifications', label: t('nav_notifications'), icon: Bell, badge: unreadCount },
-    { id: 'settings', label: t('nav_settings'), icon: Settings },
-  ];
+  }[] = isPantry
+    ? [{ id: 'dashboard', label: 'Pantry Tasks', icon: Coffee }]
+    : [
+        { id: 'dashboard', label: t('nav_dashboard'), icon: LayoutDashboard },
+        { id: 'reception', label: t('nav_reception'), icon: Building2 },
+        { id: 'candidates', label: t('nav_candidates'), icon: UserCheck },
+        { id: 'interviews', label: t('nav_interviews'), icon: CalendarClock },
+        { id: 'more', label: 'Secondary Sections', icon: Layers },
+        { id: 'visitors', label: t('nav_visitors'), icon: Users2 },
+        { id: 'rooms', label: t('nav_rooms'), icon: DoorOpen },
+        { id: 'hospitality', label: t('nav_hospitality'), icon: Coffee },
+        { id: 'notifications', label: t('nav_notifications'), icon: Bell, badge: unreadCount },
+        { id: 'settings', label: t('nav_settings'), icon: Settings },
+      ];
 
   const allRoles: { role: UserRole; label: string; icon: any; color: string }[] = [
     { role: 'HR', label: 'HR Lead', icon: Users2, color: 'text-amber-400' },
@@ -92,49 +95,53 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
             activeSection === 'dashboard' ? 'text-amber-400 font-bold' : 'text-[#AEB7C4]'
           }`}
         >
-          <LayoutDashboard className="w-4 h-4" />
-          <span className="text-[10px] font-semibold mt-0.5">Dashboard</span>
+          {isPantry ? <Coffee className="w-4 h-4 text-amber-400" /> : <LayoutDashboard className="w-4 h-4" />}
+          <span className="text-[10px] font-semibold mt-0.5">{isPantry ? 'Pantry Tasks' : 'Dashboard'}</span>
         </button>
 
-        <button
-          onClick={() => onSelectSection('reception')}
-          className={`flex flex-col items-center py-1 px-3 rounded-xl transition ${
-            activeSection === 'reception' ? 'text-amber-400 font-bold' : 'text-[#AEB7C4]'
-          }`}
-        >
-          <Building2 className="w-4 h-4" />
-          <span className="text-[10px] font-semibold mt-0.5">Reception</span>
-        </button>
+        {!isPantry && (
+          <>
+            <button
+              onClick={() => onSelectSection('reception')}
+              className={`flex flex-col items-center py-1 px-3 rounded-xl transition ${
+                activeSection === 'reception' ? 'text-amber-400 font-bold' : 'text-[#AEB7C4]'
+              }`}
+            >
+              <Building2 className="w-4 h-4" />
+              <span className="text-[10px] font-semibold mt-0.5">Reception</span>
+            </button>
 
-        <button
-          onClick={onOpenQRPasses}
-          className="flex flex-col items-center py-1 px-3 rounded-xl text-amber-400 font-bold"
-        >
-          <div className="w-7 h-7 rounded-lg bg-[#1B2028] border border-[#252A32] flex items-center justify-center -mt-2 shadow-lg">
-            <QrCode className="w-4 h-4 text-amber-400" />
-          </div>
-          <span className="text-[9px] font-bold mt-0.5">QR Pass</span>
-        </button>
+            <button
+              onClick={onOpenQRPasses}
+              className="flex flex-col items-center py-1 px-3 rounded-xl text-amber-400 font-bold"
+            >
+              <div className="w-7 h-7 rounded-lg bg-[#1B2028] border border-[#252A32] flex items-center justify-center -mt-2 shadow-lg">
+                <QrCode className="w-4 h-4 text-amber-400" />
+              </div>
+              <span className="text-[9px] font-bold mt-0.5">QR Pass</span>
+            </button>
 
-        <button
-          onClick={() => onSelectSection('candidates')}
-          className={`flex flex-col items-center py-1 px-3 rounded-xl transition ${
-            activeSection === 'candidates' ? 'text-amber-400 font-bold' : 'text-[#AEB7C4]'
-          }`}
-        >
-          <UserCheck className="w-4 h-4" />
-          <span className="text-[10px] font-semibold mt-0.5">Candidates</span>
-        </button>
+            <button
+              onClick={() => onSelectSection('candidates')}
+              className={`flex flex-col items-center py-1 px-3 rounded-xl transition ${
+                activeSection === 'candidates' ? 'text-amber-400 font-bold' : 'text-[#AEB7C4]'
+              }`}
+            >
+              <UserCheck className="w-4 h-4" />
+              <span className="text-[10px] font-semibold mt-0.5">Candidates</span>
+            </button>
 
-        <button
-          onClick={() => onSelectSection('more')}
-          className={`flex flex-col items-center py-1 px-3 rounded-xl transition ${
-            activeSection === 'more' ? 'text-amber-400 font-bold' : 'text-[#AEB7C4] hover:text-[#F5F6F8]'
-          }`}
-        >
-          <MoreHorizontal className="w-4 h-4" />
-          <span className="text-[10px] font-semibold mt-0.5">More</span>
-        </button>
+            <button
+              onClick={() => onSelectSection('more')}
+              className={`flex flex-col items-center py-1 px-3 rounded-xl transition ${
+                activeSection === 'more' ? 'text-amber-400 font-bold' : 'text-[#AEB7C4] hover:text-[#F5F6F8]'
+              }`}
+            >
+              <MoreHorizontal className="w-4 h-4" />
+              <span className="text-[10px] font-semibold mt-0.5">More</span>
+            </button>
+          </>
+        )}
       </nav>
 
       {/* Mobile Drawer (When Open) */}
@@ -207,51 +214,53 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
                   );
                 })}
 
-                {/* HR Sub-Profiles Section */}
-                <div className="pt-2 border-t border-[#252A32] space-y-1">
-                  <div className="text-[10px] font-bold text-amber-400 px-3 py-1 uppercase tracking-wider font-mono">
-                    HR Profiles
-                  </div>
-                  <button
-                    onClick={() => {
-                      onSelectSection('hr-nisha');
-                      onClose();
-                    }}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs transition ${
-                      activeSection === 'hr-nisha'
-                        ? 'bg-[#1B2028] text-amber-300 font-bold border-l-2 border-amber-400'
-                        : 'text-[#AEB7C4] hover:text-[#F5F6F8] hover:bg-[#1B2028]/60'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="w-5 h-5 rounded-md bg-amber-400/20 text-amber-300 font-bold text-[10px] flex items-center justify-center">
-                        N
-                      </div>
-                      <span>Nisha (Senior HR)</span>
+                {/* HR Sub-Profiles Section (Strictly hidden for Pantry) */}
+                {!isPantry && (
+                  <div className="pt-2 border-t border-[#252A32] space-y-1">
+                    <div className="text-[10px] font-bold text-amber-400 px-3 py-1 uppercase tracking-wider font-mono">
+                      HR Profiles
                     </div>
-                    <span className="text-[10px] text-amber-400 font-mono">Active</span>
-                  </button>
+                    <button
+                      onClick={() => {
+                        onSelectSection('hr-nisha');
+                        onClose();
+                      }}
+                      className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs transition ${
+                        activeSection === 'hr-nisha'
+                          ? 'bg-[#1B2028] text-amber-300 font-bold border-l-2 border-amber-400'
+                          : 'text-[#AEB7C4] hover:text-[#F5F6F8] hover:bg-[#1B2028]/60'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 rounded-md bg-amber-400/20 text-amber-300 font-bold text-[10px] flex items-center justify-center">
+                          N
+                        </div>
+                        <span>Nisha (Senior HR)</span>
+                      </div>
+                      <span className="text-[10px] text-amber-400 font-mono">Active</span>
+                    </button>
 
-                  <button
-                    onClick={() => {
-                      onSelectSection('hr-shriyanshi');
-                      onClose();
-                    }}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs transition ${
-                      activeSection === 'hr-shriyanshi'
-                        ? 'bg-[#1B2028] text-amber-300 font-bold border-l-2 border-amber-400'
-                        : 'text-[#AEB7C4] hover:text-[#F5F6F8] hover:bg-[#1B2028]/60'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="w-5 h-5 rounded-md bg-sky-400/20 text-sky-300 font-bold text-[10px] flex items-center justify-center">
-                        S
+                    <button
+                      onClick={() => {
+                        onSelectSection('hr-shriyanshi');
+                        onClose();
+                      }}
+                      className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs transition ${
+                        activeSection === 'hr-shriyanshi'
+                          ? 'bg-[#1B2028] text-amber-300 font-bold border-l-2 border-amber-400'
+                          : 'text-[#AEB7C4] hover:text-[#F5F6F8] hover:bg-[#1B2028]/60'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 rounded-md bg-sky-400/20 text-sky-300 font-bold text-[10px] flex items-center justify-center">
+                          S
+                        </div>
+                        <span>Shriyanshi (Intake HR)</span>
                       </div>
-                      <span>Shriyanshi (Intake HR)</span>
-                    </div>
-                    <span className="text-[10px] text-sky-400 font-mono">Active</span>
-                  </button>
-                </div>
+                      <span className="text-[10px] text-sky-400 font-mono">Active</span>
+                    </button>
+                  </div>
+                )}
 
                 <div className="pt-3 border-t border-[#252A32]">
                   <div className="text-[10px] font-bold text-[#AEB7C4] px-3 py-1 uppercase tracking-wider">

@@ -96,59 +96,65 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
     };
   }, [isMoreMenuOpen]);
 
-  // Primary navigation items (always visible)
+  const isPantry = currentRole === 'PANTRY';
+
+  // Primary navigation items (always visible, filtered for Pantry)
   const primaryNavItems: {
     id: NavSection;
     label: string;
     icon: React.ComponentType<{ className?: string }>;
     badge?: number;
-  }[] = [
-    { id: 'dashboard', label: t('nav_dashboard'), icon: LayoutDashboard },
-    { id: 'reception', label: t('nav_reception'), icon: Building2 },
-    { id: 'candidates', label: t('nav_candidates'), icon: UserCheck },
-    { id: 'interviews', label: t('nav_interviews'), icon: CalendarClock },
-  ];
+  }[] = isPantry
+    ? [{ id: 'dashboard', label: 'Pantry Tasks', icon: Coffee }]
+    : [
+        { id: 'dashboard', label: t('nav_dashboard'), icon: LayoutDashboard },
+        { id: 'reception', label: t('nav_reception'), icon: Building2 },
+        { id: 'candidates', label: t('nav_candidates'), icon: UserCheck },
+        { id: 'interviews', label: t('nav_interviews'), icon: CalendarClock },
+      ];
 
-  // Secondary items housed under "More"
+  // Secondary items housed under "More" (hidden for Pantry)
   const secondaryNavItems: {
     id: NavSection;
     label: string;
     description: string;
     icon: React.ComponentType<{ className?: string }>;
     badge?: number;
-  }[] = [
-    {
-      id: 'more',
-      label: 'Secondary Sections',
-      description: 'Lounge, Active Meetings & Check-Out',
-      icon: Layers,
-    },
-    {
-      id: 'visitors',
-      label: t('nav_visitors'),
-      description: 'Client & vendor logs',
-      icon: Users2,
-    },
-    {
-      id: 'rooms',
-      label: t('nav_rooms'),
-      description: 'Facility & room monitor',
-      icon: DoorOpen,
-    },
-    {
-      id: 'hospitality',
-      label: t('nav_hospitality'),
-      description: 'Pantry beverage steward',
-      icon: Coffee,
-    },
-    {
-      id: 'notifications',
-      label: t('nav_notifications'),
-      description: 'System & intake alerts',
-      icon: Bell,
-      badge: unreadCount,
-    },
-  ];
+  }[] = isPantry
+    ? []
+    : [
+        {
+          id: 'more',
+          label: 'Secondary Sections',
+          description: 'Lounge, Active Meetings & Check-Out',
+          icon: Layers,
+        },
+        {
+          id: 'visitors',
+          label: t('nav_visitors'),
+          description: 'Client & vendor logs',
+          icon: Users2,
+        },
+        {
+          id: 'rooms',
+          label: t('nav_rooms'),
+          description: 'Facility & room monitor',
+          icon: DoorOpen,
+        },
+        {
+          id: 'hospitality',
+          label: t('nav_hospitality'),
+          description: 'Pantry beverage steward',
+          icon: Coffee,
+        },
+        {
+          id: 'notifications',
+          label: t('nav_notifications'),
+          description: 'System & intake alerts',
+          icon: Bell,
+          badge: unreadCount,
+        },
+      ];
 
   const isSecondaryActive = secondaryNavItems.some((item) => item.id === activeSection);
   const activeSecondaryItem = secondaryNavItems.find((item) => item.id === activeSection);
@@ -249,8 +255,9 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
             );
           })}
 
-          {/* More Menu Dropdown Anchor */}
-          <div className="relative pt-1" ref={moreMenuRef}>
+          {/* More Menu Dropdown Anchor (hidden for Pantry) */}
+          {!isPantry && secondaryNavItems.length > 0 && (
+            <div className="relative pt-1" ref={moreMenuRef}>
             <button
               type="button"
               onClick={() => setIsMoreMenuOpen((prev) => !prev)}
@@ -355,9 +362,11 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
               )}
             </AnimatePresence>
           </div>
+          )}
 
-          {/* HR Sub-Profiles Section */}
-          <div className="pt-2 border-t border-[#252A32]/60 my-1 space-y-1">
+          {/* HR Sub-Profiles Section (Strictly hidden for Pantry) */}
+          {!isPantry && (
+            <div className="pt-2 border-t border-[#252A32]/60 my-1 space-y-1">
             <div className="px-3 py-1 flex items-center justify-between text-[10px] font-bold text-amber-400 font-mono tracking-wider uppercase">
               <span>HR Profiles</span>
               <span className="text-[9px] text-[#AEB7C4] font-normal">Dedicated</span>
@@ -427,6 +436,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
               </span>
             </button>
           </div>
+          )}
 
           {/* Settings Section (Functional Application Settings) */}
           <div className="pt-1">
@@ -460,24 +470,26 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
           </div>
         </nav>
 
-        {/* Quick Launch Terminals */}
-        <div className="py-2.5 border-t border-[#252A32] space-y-1.5">
-          <button
-            onClick={onOpenQRPasses}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl bg-[#141820] hover:bg-[#1B2028] border border-[#252A32] text-[#F5F6F8] text-xs font-semibold transition cursor-pointer"
-          >
-            <QrCode className="w-3.5 h-3.5 text-amber-400" />
-            <span className="truncate">{t('btn_qr_standee')}</span>
-          </button>
+        {/* Quick Launch Terminals (Hidden for Pantry) */}
+        {!isPantry && (
+          <div className="py-2.5 border-t border-[#252A32] space-y-1.5">
+            <button
+              onClick={onOpenQRPasses}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-xl bg-[#141820] hover:bg-[#1B2028] border border-[#252A32] text-[#F5F6F8] text-xs font-semibold transition cursor-pointer"
+            >
+              <QrCode className="w-3.5 h-3.5 text-amber-400" />
+              <span className="truncate">{t('btn_qr_standee')}</span>
+            </button>
 
-          <button
-            onClick={onOpenBlankRegister}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-950/40 hover:bg-emerald-900/40 border border-emerald-500/30 text-emerald-300 text-xs font-semibold transition cursor-pointer"
-          >
-            <UserPlus className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="truncate">{t('btn_blank_register')}</span>
-          </button>
-        </div>
+            <button
+              onClick={onOpenBlankRegister}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-950/40 hover:bg-emerald-900/40 border border-emerald-500/30 text-emerald-300 text-xs font-semibold transition cursor-pointer"
+            >
+              <UserPlus className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="truncate">{t('btn_blank_register')}</span>
+            </button>
+          </div>
+        )}
 
         {/* Role Switcher & User Profile */}
         <div className="pt-3 border-t border-[#252A32] relative">
