@@ -546,7 +546,7 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
                           className="w-full px-2.5 py-1.5 glass-input rounded-xl text-white text-xs mt-1"
                         />
                       ) : (
-                        <span className="text-slate-200">{candidate?.address || 'Not specified'}</span>
+                        <span className="text-slate-200">{candidate?.address && candidate.address.trim() !== '' ? candidate.address : 'Address Not Provided'}</span>
                       )}
                     </div>
                     <div className="grid grid-cols-2 gap-2">
@@ -560,7 +560,7 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
                             className="w-full px-2.5 py-1.5 glass-input rounded-xl text-white text-xs mt-1"
                           />
                         ) : (
-                          <span className="text-slate-200">{candidate?.city || 'Gurugram'}</span>
+                          <span className="text-slate-200">{candidate?.city && candidate.city.trim() !== '' ? candidate.city : 'Location Not Provided'}</span>
                         )}
                       </div>
                       <div>
@@ -573,7 +573,7 @@ export const CandidateDossierModal: React.FC<CandidateDossierModalProps> = ({
                             className="w-full px-2.5 py-1.5 glass-input rounded-xl text-white text-xs mt-1"
                           />
                         ) : (
-                          <span className="text-slate-200">{candidate?.state || 'Haryana'}</span>
+                          <span className="text-slate-200">{candidate?.state && candidate.state.trim() !== '' ? candidate.state : 'Location Not Provided'}</span>
                         )}
                       </div>
                     </div>

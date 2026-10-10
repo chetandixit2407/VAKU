@@ -597,7 +597,7 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
                       </button>
                     </div>
                   </div>
-                  {room.currentCandidateName && (
+                  {!isAvail && room.currentCandidateName && (
                     <div className="text-[10px] font-semibold truncate text-amber-400 pt-0.5">
                       Occupant: {room.currentCandidateName}
                     </div>

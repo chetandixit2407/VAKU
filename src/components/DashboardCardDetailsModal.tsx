@@ -672,9 +672,9 @@ export const DashboardCardDetailsModal: React.FC<DashboardCardDetailsModalProps>
 
                           <div className="flex items-center justify-between text-[11px] text-[#AEB7C4]">
                             <span className="capitalize">{room.type?.replace('_', ' ').toLowerCase()}</span>
-                            {room.currentCandidateName && (
+                            {!isAvail && room.currentCandidateName && (
                               <span className="text-amber-400 font-semibold truncate max-w-[140px]">
-                                {room.currentCandidateName}
+                                Occupant: {room.currentCandidateName}
                               </span>
                             )}
                           </div>

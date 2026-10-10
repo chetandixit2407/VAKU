@@ -577,7 +577,7 @@ export const PantryDashboard: React.FC<PantryDashboardProps> = ({
                 >
                   <div className="space-y-0.5">
                     <h4 className="font-bold text-white">{room.name}</h4>
-                    {room.currentCandidateName ? (
+                    {!isAvailable && room.currentCandidateName ? (
                       <p className="text-[11px] font-semibold truncate max-w-[140px] text-amber-400">
                         Occupant: {room.currentCandidateName}
                       </p>

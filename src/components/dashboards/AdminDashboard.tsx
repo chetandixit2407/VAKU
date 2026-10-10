@@ -1387,7 +1387,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 </span>
                               )}
                             </h4>
-                            {room.currentCandidateName ? (
+                            {!isAvail && room.currentCandidateName ? (
                               <span className="text-[11px] text-amber-400 font-semibold">
                                 Occupant: {room.currentCandidateName}
                               </span>

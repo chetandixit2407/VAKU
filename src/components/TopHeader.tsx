@@ -66,7 +66,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   const { t } = useSettings();
 
   return (
-    <header className="sticky top-0 z-20 px-4 sm:px-6 lg:px-8 py-4 sm:py-5 border-b border-[#252A32] bg-[#0B0F14]/95 backdrop-blur-md transition-all shadow-md">
+    <header className="sticky top-0 z-20 px-4 sm:px-6 lg:px-8 py-5 sm:py-6 lg:py-7 border-b border-[#252A32] bg-[#0B0F14]/95 backdrop-blur-md transition-all shadow-md">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 sm:gap-6">
         {/* Left: Mobile trigger & Page Context */}
         <div className="flex items-center gap-3 sm:gap-4">
@@ -81,7 +81,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           )}
 
           <div className="space-y-0.5">
-            <h1 className="text-base sm:text-lg md:text-xl font-extrabold text-[#F5F6F8] tracking-tight leading-snug">
+            <h1 className="text-lg sm:text-xl md:text-2xl font-extrabold text-[#F5F6F8] tracking-tight leading-snug">
               {pageTitle}
             </h1>
             <p className="text-xs sm:text-[13px] text-[#AEB7C4] hidden md:block">
@@ -200,28 +200,6 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
               </span>
             )}
           </button>
-
-          {/* Active In-App Panel Status & Close Control */}
-          {openPanels && openPanels.length > 0 && (
-            <div className="flex items-center gap-1.5 pl-2 border-l border-[#252A32]">
-              {openPanels.map((panel) => (
-                <div
-                  key={panel.id}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-500/15 border border-amber-500/35 text-amber-300 text-xs font-semibold shadow-xs"
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shrink-0" />
-                  <span className="truncate max-w-[110px]">{panel.label}</span>
-                  <button
-                    onClick={panel.onClose}
-                    className="p-0.5 rounded-md hover:bg-white/10 text-slate-300 hover:text-white transition cursor-pointer"
-                    title={`Close ${panel.label}`}
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
 
           {/* PWA Install */}
           <PWAInstallButton />
